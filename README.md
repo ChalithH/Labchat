@@ -4,16 +4,16 @@
 How to get started (windows):
   ```bash
   git clone https://github.com/uoa-compsci399-2025-s1/capstone-project-2025-s1-team-13.git
-   ```
+  ```
 
   ```bash
-   cd ./capstone-project-2025-s1-team-13/client
-   ```
+  cd ./capstone-project-2025-s1-team-13/client
+  ```
 
-   ```bash
-   npm install
-   ```
+  ```bash
+  npm install
+  ```
 
-   ```bash
-   npm run dev
-   ```
+  ```bash
+  npm run dev
+  ```
