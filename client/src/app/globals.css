@@ -124,3 +124,7 @@
 .play-font {
   font-family: var(--font-play), sans-serif;
 }
+
+.barlow-font {
+  font-family: var(--font-barlow), sans-serif;
+}
