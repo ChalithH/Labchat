@@ -120,3 +120,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.play-font {
+  font-family: var(--font-play), sans-serif;
+}
