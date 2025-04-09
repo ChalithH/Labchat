@@ -6,20 +6,20 @@ import ThreadAuthorGroup from '../../../components/ThreadAuthorGroup'
 
 
 const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNode => {
-    const threadId = parseInt(params.id, 10);
+    const thread_id = parseInt(params.id, 10);
 
-    const matchingThread = TEST_DATA.flatMap(topic => topic.threads)
-        .find(thread => thread.id === threadId);
+    const matching_thread = TEST_DATA.flatMap(topic => topic.threads)
+        .find(thread => thread.id === thread_id);
         
     return (
         <section className="m-auto w-[90dvw]">
             <Navigation breadcrumbs={ TEST_DISCUSSION_LINKS } />
 
-            <h1>{ matchingThread ? matchingThread.title : "Not found" }</h1>
+            <h1>{ matching_thread ? matching_thread.title : "Not found" }</h1>
 
             <ThreadAuthorGroup role="Lab Manager" name="Mark McNaught" />
 
-            <p>{ matchingThread?.content }</p>
+            <p>{ matching_thread?.content }</p>
         </section>
     )
 }

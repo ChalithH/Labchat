@@ -7,16 +7,16 @@ type TitlePropTypes = {
     topic: TopicType,
 
     // Permission required to view the add to topic button. Can ignore for now
-    permToAdd: string,
+    perm_to_add: string,
 
     // Should there be a view all topics button
-    bViewAll: boolean,
+    b_view_all: boolean,
 
     // Should there be buttons for Recent / Popular categories
-    bCategories: boolean
+    b_categories: boolean
 } 
 
-const Title = ({ topic, permToAdd, bViewAll, bCategories } : TitlePropTypes) => {
+const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes) => {
     return (
         <div className="mt-12 barlow-font">
             <div className="flex justify-between items-center mb-1">
@@ -24,17 +24,17 @@ const Title = ({ topic, permToAdd, bViewAll, bCategories } : TitlePropTypes) => 
                     <h1 className="play-font text-3xl font-bold ">{ topic.name[0].toUpperCase() + topic.name.slice(1, topic.name.length) }</h1>
                 </Link>
 
-                { permToAdd && <button><img src="/add_to_topic_button.svg" alt="" /></button> }
+                { perm_to_add && <button><img src="/add_to_topic_button.svg" alt="" /></button> }
             </div>
 
             <div className="flex justify-between items-center text-lg mb-4">
-                { bCategories && 
+                { b_categories && 
                     <div className="flex justify-between items-center gap-4 mt-2">
                         <button className="discussion-topic-filter-button">Recent</button>
                         <button className="">Popular</button>
                     </div> }
 
-                { bViewAll && 
+                { b_view_all && 
                     <Link href={ `topic/${ topic.id }`}>
                         <button className="discussion-topic-filter-button">View All</button>
                     </Link> }

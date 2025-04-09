@@ -25,9 +25,9 @@ const DiscussionHome = (): React.ReactNode => {
                     <div key={ id }> 
                         <Title 
                         topic={ topic } 
-                        permToAdd='*'
-                        bViewAll={ true }
-                        bCategories={ true } />
+                        perm_to_add='*'
+                        b_view_all={ true }
+                        b_categories={ true } />
 
                         { topic.threads.slice(0, THREADS_PER_TOPIC).map( (current_thread, idx) => (
                             <Thread key={ idx } thread={ current_thread } bShowBlurb={ false }/>

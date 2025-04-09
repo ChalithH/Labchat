@@ -7,11 +7,11 @@ import { TEST_DATA, TEST_DISCUSSION_LINKS } from '../../../testdata';
 
 
 const DiscussionTopic = ({ params }:{ params: { id: string } }): React.ReactNode => {
-    const topicId = parseInt(params.id, 10);
+    const topic_id = parseInt(params.id, 10);
 
-    const matchingTopic = TEST_DATA.find(topic => topic.id === topicId)
+    const matching_topic = TEST_DATA.find(topic => topic.id === topic_id)
 
-    if (!matchingTopic){
+    if (!matching_topic){
         return 'Bruh'
     }
 
@@ -20,10 +20,10 @@ const DiscussionTopic = ({ params }:{ params: { id: string } }): React.ReactNode
             <Navigation breadcrumbs={ TEST_DISCUSSION_LINKS } />
 
 
-            <Title bCategories={ true } bViewAll={ false } permToAdd='*' topic={ matchingTopic }/>
+            <Title b_categories={ true } b_view_all={ false } perm_to_add='*' topic={ matching_topic }/>
 
-            { matchingTopic?.threads.map( (thread, idx) => (
-                <Thread key={ idx } thread={ thread } bShowBlurb={ true }/>
+            { matching_topic?.threads.map( (thread, idx) => (
+                <Thread key={ idx } thread={ thread } b_show_blurb={ true }/>
             ))}
         </section>
     )
