@@ -1,4 +1,5 @@
 import Header from "./header";
+import Link from 'next/link';
 import headerImage from "../../../public/headerImage.svg";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';
@@ -21,8 +22,8 @@ export default function Home() {
         <h2 className="text-black font-bold text-4xl">Streamlining labs to <span className="text-[#244394] font-bold text-4xl">empower research</span></h2>
       </div>
       <div className="flex justify-start mt-5 play-font">
-          <Button className="bg-[#284AA3] text-white font-medium ml-0 py-3  hover:bg-blue-300 transition duration-300"><span className="pr-18">Login</span> <ArrowRight className="w-4 h-4" /></Button>
-          <Button className="bg-white text-neutral-800 font-medium py-2 ml-4  border border-neutral-800 hover:bg-blue-800 hover:text-white transition duration-300"> <span className="pr-6">Register</span> <ArrowRight className="w-4 h-4" /> </Button>
+          <Link href="/login"><Button className="bg-[#284AA3] text-white font-medium ml-0 py-3  hover:bg-blue-300 transition duration-300"><span className="pr-18">Login</span> <ArrowRight className="w-4 h-4" /></Button></Link>
+          <Link href="/register"><Button className="bg-white text-neutral-800 font-medium py-2 ml-4  border border-neutral-800 hover:bg-blue-800 hover:text-white transition duration-300"> <span className="pr-6">Register</span> <ArrowRight className="w-4 h-4" /> </Button></Link>
       </div>
       <div className="flex justify-start mt-7 barlow-font text-xs">
         <h4 className="text-pink-600 ml-9">Stop wasting time with outdated processes and use Labchat today!</h4>
