@@ -1,11 +1,10 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import React from 'react'
+import { TopicType } from '../types/TestTypes'
 
 type TitlePropTypes = {
-    // Topic name
-    topic: string,
+    // Topic object
+    topic: TopicType,
 
     // Permission required to view the add to topic button. Can ignore for now
     permToAdd: string,
@@ -18,20 +17,13 @@ type TitlePropTypes = {
 } 
 
 const Title = ({ topic, permToAdd, bViewAll, bCategories } : TitlePropTypes) => {
-    const router = useRouter()
-
-    const handleClick = () => { 
-        const topicData = {
-            name: topic,
-        }
-        const query = new URLSearchParams(topicData).toString()
-        router.push(`/discussion/topic?${query}`)
-    }
-
     return (
         <div className="mt-12 barlow-font">
             <div className="flex justify-between items-center mb-1">
-                <h1 onClick={ handleClick }className="heading text-3xl font-bold ">{ topic }</h1>
+			<Link href={ `/discussion/topic/${ topic.id }` }>
+                    <h1 className="play-font text-3xl font-bold ">{ topic.name[0].toUpperCase() + topic.name.slice(1, topic.name.length) }</h1>
+                </Link>
+
                 { permToAdd && <button><img src="/add_to_topic_button.svg" alt="" /></button> }
             </div>
 
@@ -40,10 +32,12 @@ const Title = ({ topic, permToAdd, bViewAll, bCategories } : TitlePropTypes) => 
                     <div className="flex justify-between items-center gap-4 mt-2">
                         <button className="discussion-topic-filter-button">Recent</button>
                         <button className="">Popular</button>
-                    </div>
-                }
+                    </div> }
 
-                { bViewAll && <button onClick={ handleClick } className="discussion-topic-filter-button">View All</button> }
+                { bViewAll && 
+                    <Link href={ `topic/${ topic.id }`}>
+                        <button className="discussion-topic-filter-button">View All</button>
+                    </Link> }
             </div>
         </div>
     )

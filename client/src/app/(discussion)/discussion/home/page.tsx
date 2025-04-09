@@ -24,7 +24,7 @@ const DiscussionHome = (): React.ReactNode => {
                 { TEST_DATA.map( (topic, id) => (
                     <div key={ id }> 
                         <Title 
-                        topic={ topic.name } 
+                        topic={ topic } 
                         permToAdd='*'
                         bViewAll={ true }
                         bCategories={ true } />
