@@ -13,10 +13,10 @@ const DiscussionHome = (): React.ReactNode => {
             <section>
                 <h1 className="play-font text-3xl font-bold pb-[24px]">Recent Activity</h1>
 
-                <div className="flex gap-1 items-center justify-between m-auto">
-                    <Play className="rotate-180" />
+                <div className="flex gap-1 items-center justify-between m-auto mb-6">
+                    <img src='/play_arrow_filled.svg' alt='View previous latest post' className="mb-6 w-[52px]"/>
                     <Thread thread={ FIRST_THREAD_DATA } b_show_blurb={ false } />
-                    <Play />
+                    <img src='/play_arrow_filled.svg' alt='View next latest post' className="rotate-180 mb-6 w-[52px]" />
                 </div>
             </section>
 
