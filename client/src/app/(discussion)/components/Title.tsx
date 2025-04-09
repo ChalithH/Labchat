@@ -1,49 +1,68 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import React from 'react'
 
+import { TopicType } from '../types/TestTypes'
+
+import { Breadcrumb, useBreadcrumb } from '../context/BreadcrumbContext';
+
+
 type TitlePropTypes = {
-    // Topic name
-    topic: string,
+    // Topic object
+    topic: TopicType,
 
     // Permission required to view the add to topic button. Can ignore for now
-    permToAdd: string,
+    perm_to_add: string,
 
     // Should there be a view all topics button
-    bViewAll: boolean,
+    b_view_all: boolean,
 
     // Should there be buttons for Recent / Popular categories
-    bCategories: boolean
+    b_categories: boolean
 } 
 
-const Title = ({ topic, permToAdd, bViewAll, bCategories } : TitlePropTypes) => {
-    const router = useRouter()
+const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes) => {
+    const { breadcrumbs, setBreadcrumbs } = useBreadcrumb()
 
-    const handleClick = () => { 
-        const topicData = {
-            name: topic,
+    const handleClick = (name: string, href: string) => {
+        const newCrumb: Breadcrumb = {
+            name: name,
+            href: href
         }
-        const query = new URLSearchParams(topicData).toString()
-        router.push(`/discussion/thread?${query}`)
+        const newBreadcrumbs: Breadcrumb[] = [ ...(breadcrumbs ?? []), newCrumb ]
+        setBreadcrumbs(newBreadcrumbs)
     }
 
     return (
-        <div className="mt-12 barlow-font">
+        <div className="barlow-font">
             <div className="flex justify-between items-center mb-1">
-                <h1 onClick={ handleClick }className="heading text-3xl font-bold ">{ topic }</h1>
-                { permToAdd && <button><img src="/add_to_topic_button.svg" alt="" /></button> }
+                <Link href={ `/discussion/topic/${ topic.id }` }>
+                    <h1 className="play-font text-3xl font-bold"
+                        onClick={ () => 
+                            handleClick(topic.name, `/discussion/topic/${ topic.id }`) }>
+                            
+                        { topic.name[0].toUpperCase() + topic.name.slice(1, topic.name.length) }</h1>
+                </Link>
+
+                { perm_to_add && <button><img src="/add_to_topic_button.svg" alt="" /></button> }
             </div>
 
             <div className="flex justify-between items-center text-lg mb-4">
-                { bCategories && 
+                { b_categories && 
                     <div className="flex justify-between items-center gap-4 mt-2">
                         <button className="discussion-topic-filter-button">Recent</button>
                         <button className="">Popular</button>
-                    </div>
-                }
+                    </div> }
 
-                { bViewAll && <button onClick={ handleClick } className="discussion-topic-filter-button">View All</button> }
+                { b_view_all && 
+                    <Link 
+                        onClick={ () => 
+                            handleClick(topic.name, `/discussion/topic/${ topic.id }`) } 
+                        href={ `/discussion/topic/${ topic.id }` }>
+
+                        <button className="discussion-topic-filter-button">View All</button>
+                    </Link> }
             </div>
         </div>
     )
