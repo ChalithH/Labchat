@@ -13,7 +13,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
       <div className="w-[calc(100%-0.5rem)] mx-auto h-px bg-gray-300 mb-6"></div>
 
       <div className="relative z-10">
-        <div className="flex justify-between items-center text-sm">
+        <div className="flex justify-between items-center text-sm p-8">
           {pageType === 'login' ? (
             <>
               <Link href="/forgot-password" className="text-[#C13E70] hover:text-[#A83762]">
