@@ -121,6 +121,15 @@
   }
 }
 
+@layer components {
+  .discussion-thread {
+    @apply p-2 m-auto bg-gray-100 rounded-2xl flex justify-between flex-col shadow-xl
+  }
+  .discussion-topic-filter-button {
+    @apply bg-blue-400 text-gray-50 rounded-[12px] px-2 py-0.5
+  }
+}
+
 .play-font {
   font-family: var(--font-play), sans-serif;
 }
