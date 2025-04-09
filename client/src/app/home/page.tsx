@@ -25,8 +25,8 @@ export default function Home() {
       </div>
       <div className="relative flex flex-col items-center justify-center">
         <div className="flex justify-start mt-5 play-font">
-            <Button className="bg-[#284AA3] text-white font-medium ml-0 py-3  hover:bg-blue-300 transition duration-300"><span className="pr-18">Login</span> <ArrowRight className="w-4 h-4" /></Button>
-            <Button className="bg-white text-neutral-800 font-medium py-2 ml-4  border border-neutral-800 hover:bg-blue-800 hover:text-white transition duration-300"> <span className="pr-6">Register</span> <ArrowRight className="w-4 h-4" /> </Button>
+           <Link href={"../login"}><Button className="bg-[#284AA3] text-white font-medium ml-0 py-3  hover:bg-blue-300 transition duration-300"><span className="pr-18">Login</span> <ArrowRight className="w-4 h-4" /></Button></Link>
+           <Link href={"../register"}><Button className="bg-white text-neutral-800 font-medium py-2 ml-4  border border-neutral-800 hover:bg-blue-800 hover:text-white transition duration-300"> <span className="pr-6">Register</span> <ArrowRight className="w-4 h-4" /> </Button></Link>
         </div>
         <div className="flex justify-start mt-7 barlow-font text-xs">
           <div className="relative">
