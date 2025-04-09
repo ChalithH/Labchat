@@ -35,7 +35,7 @@ const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes
     }
 
     return (
-        <div className="mt-12 barlow-font">
+        <div className="barlow-font">
             <div className="flex justify-between items-center mb-1">
                 <Link href={ `/discussion/topic/${ topic.id }` }>
                     <h1 className="play-font text-3xl font-bold"

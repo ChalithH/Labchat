@@ -22,12 +22,15 @@ const DiscussionHome = (): React.ReactNode => {
 
             <section>
                 { TEST_DATA.map( (topic, id) => (
-                    <div key={ id }> 
+                    <div 
+                        key={ id }
+                        className="mb-12"> 
+
                         <Title 
-                        topic={ topic } 
-                        perm_to_add='*'
-                        b_view_all={ true }
-                        b_categories={ true } />
+                            topic={ topic } 
+                            perm_to_add='*'
+                            b_view_all={ true }
+                            b_categories={ true } />
 
                         { topic.threads.slice(0, THREADS_PER_TOPIC).map( (current_thread, idx) => (
                             <Thread key={ idx } thread={ current_thread } b_show_blurb={ false }/>
