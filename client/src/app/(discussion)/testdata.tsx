@@ -44,4 +44,4 @@ export const TEST_DATA: TopicType[] =
     // Query injection just to get it running for client meeting
 export const TEST_DISCUSSION_LINKS = [
     { name: "Home", href: "/discussion/home" },
-    { name: "Announcements", href: "/discussion/thread?name=Announcements" }]
+    { name: "Announcements", href: "/discussion/topic?name=Announcements" }]

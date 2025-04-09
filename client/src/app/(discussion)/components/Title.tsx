@@ -25,7 +25,7 @@ const Title = ({ topic, permToAdd, bViewAll, bCategories } : TitlePropTypes) => 
             name: topic,
         }
         const query = new URLSearchParams(topicData).toString()
-        router.push(`/discussion/thread?${query}`)
+        router.push(`/discussion/topic?${query}`)
     }
 
     return (

@@ -2,31 +2,30 @@
 
 import { useSearchParams } from 'next/navigation'
 import React from 'react'
-
+import { TEST_DATA, TEST_DISCUSSION_LINKS } from '../../testdata'
+import { ThreadType } from '../../types/TestTypes'
 import Navigation from '../../components/Navigation'
-import Title from '../../components/Title'
-import Thread from '../../components/Thread'
-import { TEST_DATA, TEST_DISCUSSION_LINKS } from '../../testdata';
+import ThreadAuthorGroup from '../../components/ThreadAuthorGroup'
 
 
 const DiscussionThread = (): React.ReactNode => {
     const searchParams = useSearchParams()
-    const topicQuery = { name: searchParams.get('name') }
-
-    const matchingTopic = TEST_DATA.find(
-		topic => topic.name.toLowerCase() === topicQuery.name?.toLowerCase()
-	)
+        const topicQuery = { name: searchParams.get('name') }
+    
+        const matchingThread = TEST_DATA.map(topic => topic.threads.find(thread => 
+            thread.title.toLowerCase() === topicQuery.name?.toLowerCase()
+        )).find((thread): thread is ThreadType => thread !== undefined)
+        
     return (
-        <div className="m-auto w-[90dvw]">
+        <section className="m-auto w-[90dvw]">
             <Navigation breadcrumbs={ TEST_DISCUSSION_LINKS } />
 
+            <h1>{ matchingThread ? matchingThread.title : "Not found" }</h1>
 
-            <Title bCategories={ true } bViewAll={ false } permToAdd='*' topic={ topicQuery.name || ''}/>
+            <ThreadAuthorGroup role="Lab Manager" name="Mark McNaught" />
 
-            { matchingTopic?.threads.map( (thread, idx) => (
-				<Thread key={ idx } thread={ thread } bShowBlurb={ true }/>
-			))}
-        </div>
+            <p>{ matchingThread?.content }</p>
+        </section>
     )
 }
 

@@ -7,7 +7,7 @@ type Breadcrumb = {
 
 const Navigation = ({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) => {
   return (
-    <div className="bg-blue-800 text-white px-4 py-2 rounded-xl inline-block">
+    <div className="bg-blue-400 text-white px-2 py-1.5 rounded-[12px] barlow-font inline-block">
     	{ breadcrumbs.map( (crumb, idx) => (
         	<span key={ idx }>
 				<Link href={ crumb.href }>{ crumb.name }</Link>

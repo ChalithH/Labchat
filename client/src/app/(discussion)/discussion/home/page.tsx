@@ -4,6 +4,7 @@ import Title from '../../components/Title'
 import { Play } from 'lucide-react';
 import { FIRST_THREAD_DATA, TEST_DATA } from '../../testdata';
 
+
 const THREADS_PER_TOPIC = 3
 
 const DiscussionHome = (): React.ReactNode => {
@@ -17,8 +18,6 @@ const DiscussionHome = (): React.ReactNode => {
                     <Thread thread={ FIRST_THREAD_DATA } bShowBlurb={ false } />
                     <Play />
                 </div>
-                
-
             </section>
 
             <section>
