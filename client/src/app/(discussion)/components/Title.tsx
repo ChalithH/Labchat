@@ -1,6 +1,12 @@
+'use client'
+
 import Link from 'next/link'
 import React from 'react'
+
 import { TopicType } from '../types/TestTypes'
+
+import { Breadcrumb, useBreadcrumb } from '../context/BreadcrumbContext';
+
 
 type TitlePropTypes = {
     // Topic object
@@ -17,11 +23,26 @@ type TitlePropTypes = {
 } 
 
 const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes) => {
+    const { breadcrumbs, setBreadcrumbs } = useBreadcrumb()
+
+    const handleClick = (name: string, href: string) => {
+        const newCrumb: Breadcrumb = {
+            name: name,
+            href: href
+        }
+        const newBreadcrumbs: Breadcrumb[] = [ ...(breadcrumbs ?? []), newCrumb ]
+        setBreadcrumbs(newBreadcrumbs)
+    }
+
     return (
         <div className="mt-12 barlow-font">
             <div className="flex justify-between items-center mb-1">
-			<Link href={ `/discussion/topic/${ topic.id }` }>
-                    <h1 className="play-font text-3xl font-bold ">{ topic.name[0].toUpperCase() + topic.name.slice(1, topic.name.length) }</h1>
+                <Link href={ `/discussion/topic/${ topic.id }` }>
+                    <h1 className="play-font text-3xl font-bold"
+                        onClick={ () => 
+                            handleClick(topic.name, `/discussion/topic/${ topic.id }`) }>
+                            
+                        { topic.name[0].toUpperCase() + topic.name.slice(1, topic.name.length) }</h1>
                 </Link>
 
                 { perm_to_add && <button><img src="/add_to_topic_button.svg" alt="" /></button> }
@@ -35,7 +56,11 @@ const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes
                     </div> }
 
                 { b_view_all && 
-                    <Link href={ `topic/${ topic.id }`}>
+                    <Link 
+                        onClick={ () => 
+                            handleClick(topic.name, `/discussion/topic/${ topic.id }`) } 
+                        href={ `/discussion/topic/${ topic.id }` }>
+
                         <button className="discussion-topic-filter-button">View All</button>
                     </Link> }
             </div>

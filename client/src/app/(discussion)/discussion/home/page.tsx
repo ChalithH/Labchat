@@ -15,7 +15,7 @@ const DiscussionHome = (): React.ReactNode => {
 
                 <div className="flex gap-1 items-center justify-between m-auto">
                     <Play className="rotate-180" />
-                    <Thread thread={ FIRST_THREAD_DATA } bShowBlurb={ false } />
+                    <Thread thread={ FIRST_THREAD_DATA } b_show_blurb={ false } />
                     <Play />
                 </div>
             </section>
@@ -30,7 +30,7 @@ const DiscussionHome = (): React.ReactNode => {
                         b_categories={ true } />
 
                         { topic.threads.slice(0, THREADS_PER_TOPIC).map( (current_thread, idx) => (
-                            <Thread key={ idx } thread={ current_thread } bShowBlurb={ false }/>
+                            <Thread key={ idx } thread={ current_thread } b_show_blurb={ false }/>
                         )) }
                     </div>
                 )) }

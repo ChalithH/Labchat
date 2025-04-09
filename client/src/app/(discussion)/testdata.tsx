@@ -45,8 +45,3 @@ export const TEST_DATA: TopicType[] =
             SECOND_THREAD_DATA, SECOND_THREAD_DATA
         ]
     }];
-
-    // Query injection just to get it running for client meeting
-export const TEST_DISCUSSION_LINKS = [
-    { name: "Home", href: "/discussion/home" },
-    { name: "Announcements", href: "/discussion/topic?name=Announcements" }]

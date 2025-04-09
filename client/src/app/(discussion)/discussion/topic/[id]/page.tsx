@@ -3,7 +3,7 @@ import React from 'react'
 import Navigation from '../../../components/Navigation'
 import Title from '../../../components/Title'
 import Thread from '../../../components/Thread'
-import { TEST_DATA, TEST_DISCUSSION_LINKS } from '../../../testdata';
+import { TEST_DATA } from '../../../testdata';
 
 
 const DiscussionTopic = ({ params }:{ params: { id: string } }): React.ReactNode => {
@@ -17,7 +17,7 @@ const DiscussionTopic = ({ params }:{ params: { id: string } }): React.ReactNode
 
     return (
         <section className="m-auto w-[90dvw]">
-            <Navigation breadcrumbs={ TEST_DISCUSSION_LINKS } />
+            <Navigation />
 
 
             <Title b_categories={ true } b_view_all={ false } perm_to_add='*' topic={ matching_topic }/>

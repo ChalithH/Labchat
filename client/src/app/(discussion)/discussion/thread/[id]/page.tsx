@@ -1,6 +1,5 @@
 import React from 'react'
-import { TEST_DATA, TEST_DISCUSSION_LINKS } from '../../../testdata'
-import { ThreadType } from '../../../types/TestTypes'
+import { TEST_DATA } from '../../../testdata'
 import Navigation from '../../../components/Navigation'
 import ThreadAuthorGroup from '../../../components/ThreadAuthorGroup'
 
@@ -13,7 +12,7 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
         
     return (
         <section className="m-auto w-[90dvw]">
-            <Navigation breadcrumbs={ TEST_DISCUSSION_LINKS } />
+            <Navigation />
 
             <h1>{ matching_thread ? matching_thread.title : "Not found" }</h1>
 
