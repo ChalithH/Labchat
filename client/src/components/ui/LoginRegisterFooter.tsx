@@ -13,7 +13,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
       <div className="w-[calc(100%-0.5rem)] mx-auto h-px bg-gray-300 mb-6"></div>
 
       <div className="relative z-10">
-        <div className="flex justify-between items-center text-sm p-8">
+        <div className="flex justify-between items-center text-sm px-4">
           {pageType === 'login' ? (
             <>
               <Link href="/forgot-password" className="text-[#C13E70] hover:text-[#A83762]">
@@ -38,7 +38,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
       </div>
 
       <div className="relative w-full h-20 mt-8">
-        <div className="absolute left-0 bottom-0 z-0 opacity-80 translate-y-4">
+        <div className="absolute left-0 bottom-0 z-0 opacity-80">
           <Image
             src={dnaBanner}
             alt="DNA Banner"
@@ -48,7 +48,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
           />
         </div>
 
-        <div className="absolute right-0 bottom-0 z-0 opacity-80 translate-y-4">
+        <div className="absolute right-0 bottom-0 z-0 opacity-80">
           <Image
             src={waveBanner}
             alt="Wave Banner"
