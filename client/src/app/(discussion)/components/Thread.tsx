@@ -15,6 +15,12 @@ const Thread = ({ thread, b_show_blurb }:{ thread : ThreadType, b_show_blurb : b
 	const { breadcrumbs, setBreadcrumbs } = useBreadcrumb()
 
 	const handleClick = (name: string, href: string) => {
+		// If the last breadcrumb added is the same as new one do not add.
+		// Easy fix to race condition problem I was having. Will check back to see
+		// if this will work with final project.
+		if (breadcrumbs && breadcrumbs[breadcrumbs.length - 1].href === href)
+			return
+
 		const newCrumb: Breadcrumb = {
 			name: name,
 			href: href

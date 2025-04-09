@@ -36,17 +36,6 @@ export const BreadcrumbProvider = ({ children }:{ children: React.ReactNode }) =
         setBreadcrumbsState(breadcrumbs)
     }
 
-    const resetBreadcrumbs = () => {
-        setBreadcrumbHistory(prevHistory => {
-            const new_history = [ ...prevHistory ]
-            new_history.pop()
-            return new_history
-        })
-        
-        const last_breadcrumbs = breadcrumbHistory[breadcrumbHistory.length - 1]
-        setBreadcrumbsState(last_breadcrumbs || [])
-    }
-
     return(
         <BreadcrumbContext.Provider value={{ breadcrumbs, setBreadcrumbs }}>
             { children }
