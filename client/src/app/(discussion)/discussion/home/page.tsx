@@ -1,44 +1,12 @@
 import React from 'react'
 import Thread from '../../components/Thread'
 import Title from '../../components/Title'
-import { TopicType, ThreadType, UserType } from '../../types/TestTypes'
 import { Play } from 'lucide-react';
+import { FIRST_THREAD_DATA, TEST_DATA } from '../../testdata';
 
-const USER_DATA: UserType = {
-    name: 'Cole Howard',
-    title: 'Lab Manager'
-}
+const THREADS_PER_TOPIC = 3
 
-const FIRST_THREAD_DATA: ThreadType = {
-    tags: 2, 
-    title: 'Very Important and Long Announcement Title',
-    author: USER_DATA,
-    post_date: new Date().toLocaleDateString(),
-    last_activity: new Date().toLocaleDateString()
-}
-
-const SECOND_THREAD_DATA: ThreadType = {
-    tags: 1, 
-    title: 'Thread about missing or broken equipment',
-    author: USER_DATA,
-    post_date: new Date().toLocaleDateString(),
-    last_activity: new Date().toLocaleDateString()
-}
-
-const TEST_DATA: TopicType[] = 
-    [{ 
-        name: 'Announcements', 
-        threads: [FIRST_THREAD_DATA, FIRST_THREAD_DATA, FIRST_THREAD_DATA]
-
-        },{
-
-        name: 'Missing or Broken', 
-        threads: [SECOND_THREAD_DATA, SECOND_THREAD_DATA]
-    }];
-
-
-
-const Home = (): React.ReactNode => {
+const DiscussionHome = (): React.ReactNode => {
     return (
         <div className="m-auto w-[90dvw]">
             <section>
@@ -46,7 +14,7 @@ const Home = (): React.ReactNode => {
 
                 <div className="flex gap-1 items-center justify-between m-auto">
                     <Play className="rotate-180" />
-                    <Thread thread={ FIRST_THREAD_DATA } />
+                    <Thread thread={ FIRST_THREAD_DATA } bShowBlurb={ false } />
                     <Play />
                 </div>
                 
@@ -57,14 +25,14 @@ const Home = (): React.ReactNode => {
                 { TEST_DATA.map( (topic, id) => (
                     <div key={ id }> 
                         <Title 
-                        topic={ topic } 
+                        topic={ topic.name } 
                         permToAdd='*'
                         bViewAll={ true }
                         bCategories={ true } />
 
-                        { topic.threads.map( (current_thread, idx) => 
-                            <Thread key={ idx } thread={ current_thread }/>)
-                        }
+                        { topic.threads.slice(0, THREADS_PER_TOPIC).map( (current_thread, idx) => (
+                            <Thread key={ idx } thread={ current_thread } bShowBlurb={ false }/>
+                        )) }
                     </div>
                 )) }
             </section>
@@ -72,4 +40,4 @@ const Home = (): React.ReactNode => {
     )
 }
 
-export default Home
+export default DiscussionHome

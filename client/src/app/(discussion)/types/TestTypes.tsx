@@ -8,6 +8,7 @@ export type ThreadType = {
     tags: number,
     title: string,
     author: UserType,
+    content: string,
     post_date: string,
     last_activity: string
 }

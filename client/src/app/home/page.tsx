@@ -1,4 +1,5 @@
 import Header from "./header";
+import Link from 'next/link';
 import headerImage from "../../../public/headerImage.svg";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';

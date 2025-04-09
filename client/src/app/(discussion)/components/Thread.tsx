@@ -3,10 +3,16 @@ import React from 'react'
 import { ThreadType } from '../types/TestTypes'
 import ThreadAuthorGroup from './ThreadAuthorGroup'
 
-const Thread = ({ thread }:{ thread : ThreadType }) => {
+const BLURB_CHAR_LIMIT: number = 128
+
+const Thread = ({ thread, bShowBlurb }:{ thread : ThreadType, bShowBlurb : boolean }) => {
 	return (
 		<div className="discussion-thread barlow-font cursor-pointer mb-6">
-      		<h1 className="text-lg">{ thread.title }</h1>
+      		<h1 className="text-lg font-semibold">{ thread.title }</h1>
+
+			{ bShowBlurb && 
+				<p className="my-2">{ thread.content.slice(0, BLURB_CHAR_LIMIT) }</p>
+			}
 
 			<div className="mt-4 flex justify-between ">
 				<ThreadAuthorGroup role="Lab Manager" name="Mark McNaught" />
