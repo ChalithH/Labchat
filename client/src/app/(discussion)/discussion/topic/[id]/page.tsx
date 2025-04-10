@@ -17,7 +17,9 @@ const DiscussionTopic = ({ params }:{ params: { id: string } }): React.ReactNode
 
     return (
         <section className="m-auto w-[90dvw]">
-            <Navigation />
+            <div className="mb-2">
+                <Navigation />
+            </div>
 
             <Title b_categories={ true } b_view_all={ false } perm_to_add='*' topic={ matching_topic }/>
 
