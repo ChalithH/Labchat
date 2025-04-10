@@ -1,7 +1,8 @@
 import React from 'react'
+
 import Thread from '../../components/Thread'
 import Title from '../../components/Title'
-import { Play } from 'lucide-react';
+
 import { FIRST_THREAD_DATA, TEST_DATA } from '../../testdata';
 
 
@@ -9,9 +10,9 @@ const THREADS_PER_TOPIC = 3
 
 const DiscussionHome = (): React.ReactNode => {
     return (
-        <div className="m-auto w-[90dvw]">
+        <div>
             <section>
-                <h1 className="play-font text-3xl font-bold pb-[24px]">Recent Activity</h1>
+                <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold pb-[24px]">Recent Activity</h1>
 
                 <div className="flex gap-1 items-center justify-between m-auto mb-6">
                     <img src='/play_arrow_filled.svg' alt='View previous latest post' className="mb-6 w-[52px]"/>
@@ -20,7 +21,7 @@ const DiscussionHome = (): React.ReactNode => {
                 </div>
             </section>
 
-            <section>
+            <section className="w-[90dvw] m-auto">
                 { TEST_DATA.map( (topic, id) => (
                     <div 
                         key={ id }

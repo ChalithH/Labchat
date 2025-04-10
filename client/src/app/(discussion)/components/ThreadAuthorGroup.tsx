@@ -10,7 +10,7 @@ const ThreadAuthorGroup = ({ role, name }:{ role: string, name: string }) => {
         alt="" />
 
       <div>
-        <p className="text-sm text-center p-0.5 w-fit bg-sky-600 text-white rounded-[6px]">{ role }</p>
+        <p className="text-sm text-center p-0.5 px-1.5 w-fit bg-sky-600 text-white rounded-[6px]">{ role }</p>
         <p className="text-sm">{ name } </p>
       </div>
     </div>

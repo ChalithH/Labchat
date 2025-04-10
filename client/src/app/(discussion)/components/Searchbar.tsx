@@ -23,7 +23,7 @@ const Searchbar = () => {
 							alt="Drop down button to select search filters" />
 					</button>
 
-					<button className="bg-sky-600 w-8 h-8 rounded-full">
+					<button className="bg-sky-600 w-8 h-8" style={{clipPath: 'circle()'}}>
 						<Search className="text-white m-auto w-5" />
 					</button>
 				</div>

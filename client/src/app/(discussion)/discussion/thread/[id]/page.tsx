@@ -1,5 +1,5 @@
 import React from 'react'
-import { TEST_DATA } from '../../../testdata'
+import { TEST_DATA, USER_DATA } from '../../../testdata'
 import Navigation from '../../../components/Navigation'
 import ThreadAuthorGroup from '../../../components/ThreadAuthorGroup'
 
@@ -16,7 +16,7 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
 
             <h1>{ matching_thread ? matching_thread.title : "Not found" }</h1>
 
-            <ThreadAuthorGroup role="Lab Manager" name="Mark McNaught" />
+            <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
 
             <p>{ matching_thread?.content }</p>
         </section>
