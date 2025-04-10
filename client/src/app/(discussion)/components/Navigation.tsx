@@ -13,7 +13,7 @@ const Navigation = () => {
     }
 
     return (
-        <div className="bg-blue-400 text-white px-2 py-1.5 rounded-[12px] barlow-font inline-block mb-4">
+        <div className="bg-blue-400 text-white px-2 py-1.5 rounded-[12px] barlow-font inline-block">
             { breadcrumbs!.map( (crumb, idx) => (
                 <span key={ idx }>
                     <Link 

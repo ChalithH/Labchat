@@ -1,4 +1,11 @@
 
+export type ReplyType = {
+    id: number,
+    author: UserType,
+    content: string,
+    post_Date: string
+}
+
 export type TopicType = {
     id: number,
     name: string,
@@ -12,7 +19,8 @@ export type ThreadType = {
     author: UserType,
     content: string,
     post_date: string,
-    last_activity: string
+    last_activity: string,
+    replies: ReplyType[]
 }
 
 export type UserType = {
