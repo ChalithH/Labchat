@@ -34,7 +34,7 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
                 <p>{ matching_thread.content }</p>
             </div>
 
-            <div className="p-4 barlow-font rounded-3xl bg-blue-50 flex flex-col gap-4">
+            <div className="p-4 barlow-font rounded-3xl bg-blue-50 flex flex-col gap-4 my-8">
                 <textarea 
                     className="bg-white p-4 w-[100%] rounded-2xl"
                     placeholder="Type a comment" />
@@ -47,6 +47,28 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
                     <button className="rounded-xl bg-sky-600 p-2 px-4 text-white">Post Reply</button>
                 </div>
             </div>
+
+            <div className='flex justify-between pb-[24px]'>
+                <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Replies</h1>
+                <img 
+					className="rotate-270"
+					src="/play_arrow_filled_black.svg" 
+					alt="Drop down button to see replies" />
+            </div>
+
+            { matching_thread.replies.map( reply =>
+                <div key={ reply.id }
+                    className="p-4 barlow-font rounded-3xl bg-blue-50 flex flex-col gap-4">
+                    
+                    <div className="flex justify-between items-center">
+                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+                        <p>Posted { reply.post_Date }</p>
+                    </div>
+
+                    <p>{ reply.content }</p>
+                </div>
+            ) }
+            
         </section>
     )
 }
