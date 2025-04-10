@@ -17,12 +17,17 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
         return <p>Not found</p>
     
     return (
-        <section className="m-auto w-[90dvw] flex flex-col gap-3">
+        <section className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
             <Navigation />
             <h1 className="text-3xl font-bold play-font">{ matching_thread.title }</h1>
 
-            <div>
+            <div className="flex justify-between items-center">
                 <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+                
+                <div className="text-right">
+                    <p>Posted { matching_thread.post_date }</p>
+                    <p>Last activity { matching_thread.last_activity }</p>
+                </div>
             </div>
 
             <div className="p-4 rounded-3xl bg-blue-50">
@@ -35,7 +40,7 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
                     placeholder="Type a comment" />
                 
                 <div className="w-[100%] flex justify-between items-center">
-                    <div className="">
+                    <div>
                         <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
                     </div>
 
