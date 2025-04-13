@@ -1,6 +1,6 @@
 import React from 'react'
 
-import Thread from '../../components/Thread'
+import Thread from '../../../../../components/discussion/Thread'
 import Title from '../../components/Title'
 
 import { FIRST_THREAD_DATA, TEST_DATA } from '@/app/testdata';

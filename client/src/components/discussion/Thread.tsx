@@ -3,12 +3,12 @@
 import React from 'react'
 import Link from 'next/link'
 
-import { USER_DATA } from '@/app/testdata'
+import { FIRST_USER_DATA } from '@/app/testdata'
 
-import { ThreadType } from '../../../types/TestTypes'
-import ThreadAuthorGroup from './ThreadAuthorGroup'
+import { ThreadType } from '../../types/TestTypes'
+import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 
-import { Breadcrumb, useBreadcrumb } from '../context/BreadcrumbContext';
+import { Breadcrumb, useBreadcrumb } from '../../app/(header_footer)/(discussion)/context/BreadcrumbContext';
 
 
 const BLURB_CHAR_LIMIT: number = 128
@@ -44,7 +44,7 @@ const Thread = ({ thread, b_show_blurb }:{ thread : ThreadType, b_show_blurb : b
 			}
 
 			<div className="mt-4 flex justify-between ">
-				<ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
+				<ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 42 } />
 
 				{/* <div className="text-xs m-auto text-right">
 					<p>Created { thread.post_date }</p>

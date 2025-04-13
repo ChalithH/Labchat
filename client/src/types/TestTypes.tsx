@@ -26,4 +26,16 @@ export type UserType = {
     id: number,
     name: string,
     title: string,
+    job_title?: string,
+    status: string,
+    bio: string,
+    contacts: UserContactType[]
+}
+
+export type UserContactType = {
+    id: number,
+    type: string,
+    info: string,
+    name: string,
+    primary: boolean
 }

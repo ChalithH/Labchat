@@ -1,9 +1,9 @@
 import React from 'react'
 
-import { TEST_DATA, USER_DATA } from '@/app/testdata'
+import { TEST_DATA, FIRST_USER_DATA } from '@/app/testdata'
 
 import Navigation from '../../../components/Navigation'
-import ThreadAuthorGroup from '../../../components/ThreadAuthorGroup'
+import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 
 
 const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
@@ -22,7 +22,7 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
             <h1 className="text-3xl font-bold play-font">{ matching_thread.title }</h1>
 
             <div className="flex justify-between items-center">
-                <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
+                <ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 64 } />
                 
                 <div className="text-right">
                     <p>Posted { matching_thread.post_date }</p>
@@ -41,7 +41,7 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
                 
                 <div className="w-[100%] flex justify-between items-center">
                     <div>
-                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
+                        <ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 42 } />
                     </div>
 
                     <button className="rounded-xl bg-sky-600 p-2 px-4 text-white">Post Reply</button>
@@ -61,7 +61,7 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
                     className="p-4 barlow-font rounded-3xl bg-blue-50 flex flex-col gap-4">
                     
                     <div className="flex justify-between items-center">
-                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
+                        <ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 42 } />
                         <p>Posted { reply.post_Date }</p>
                     </div>
 
