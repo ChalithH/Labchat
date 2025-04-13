@@ -1,4 +1,3 @@
-
 export type ReplyType = {
     id: number,
     author: UserType,

@@ -44,7 +44,7 @@ const Thread = ({ thread, b_show_blurb }:{ thread : ThreadType, b_show_blurb : b
 			}
 
 			<div className="mt-4 flex justify-between ">
-				<ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+				<ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
 
 				{/* <div className="text-xs m-auto text-right">
 					<p>Created { thread.post_date }</p>

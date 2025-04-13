@@ -1,5 +1,4 @@
 import React from 'react'
-import { useState } from 'react'
 
 import { TEST_DATA, USER_DATA } from '../../../testdata'
 
@@ -7,8 +6,9 @@ import Navigation from '../../../components/Navigation'
 import ThreadAuthorGroup from '../../../components/ThreadAuthorGroup'
 
 
-const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNode => {
-    const thread_id = parseInt(params.id, 10);
+const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
+    const { id } = await params
+    const thread_id = parseInt(id, 10)
 
     const matching_thread = TEST_DATA.flatMap(topic => topic.threads)
         .find(thread => thread.id === thread_id);
@@ -17,12 +17,12 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
         return <p>Not found</p>
     
     return (
-        <section className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
+        <main className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
             <Navigation />
             <h1 className="text-3xl font-bold play-font">{ matching_thread.title }</h1>
 
             <div className="flex justify-between items-center">
-                <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+                <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
                 
                 <div className="text-right">
                     <p>Posted { matching_thread.post_date }</p>
@@ -41,7 +41,7 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
                 
                 <div className="w-[100%] flex justify-between items-center">
                     <div>
-                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
                     </div>
 
                     <button className="rounded-xl bg-sky-600 p-2 px-4 text-white">Post Reply</button>
@@ -61,15 +61,14 @@ const DiscussionThread = ({ params }:{ params: { id: string } }): React.ReactNod
                     className="p-4 barlow-font rounded-3xl bg-blue-50 flex flex-col gap-4">
                     
                     <div className="flex justify-between items-center">
-                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
                         <p>Posted { reply.post_Date }</p>
                     </div>
 
                     <p>{ reply.content }</p>
                 </div>
             ) }
-            
-        </section>
+        </main>
     )
 }
 
