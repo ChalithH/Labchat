@@ -1,4 +1,4 @@
-import Header from "./header";
+import Header from '../../components/labchat/header';
 import Link from 'next/link';
 import headerImage from "../../../public/headerImage.svg";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import star1 from '../../../public/star1.svg';
 import star2 from '../../../public/star2.svg';
 import car from '../../../public/car.svg';
 import computer from '../../../public/computer.svg';
-import Footer from "./footer";
+import Footer from "../../components/labchat/footer";
 import aboutStar from '../../../public/aboutStar.svg';
 import chooseStar from '../../../public/chooseStar.svg';
 
