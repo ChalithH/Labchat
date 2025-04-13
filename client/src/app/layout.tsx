@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Play, Barlow } from "next/font/google";
 
 import "./globals.css";
-import Header from "@/components/ui/header";
-import Footer from "@/components/ui/footer";
 
 // Importing fonts
 const geistSans = Geist({
@@ -38,12 +36,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${play.variable} ${barlow.variable} antialiased`}
-      >
-        <Header />
-
+        >
         {children}
-
-        <Footer />
       </body>
     </html>
   );

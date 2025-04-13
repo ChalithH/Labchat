@@ -1,12 +1,28 @@
+import Image from "next/image";
+
 import frank from '../../../public/frank.svg';
 import squaremenu from '../../../public/square-menu.svg';
 
+
 export default function Header() {
   return (
-    <div className="flex items-center justify-between h-32 w-full border-b border-gray-300 bg-F5F7FA shadow-md bg-[#F5F7FA]">
-      <img src={frank.src} alt="Frank" className="w-16 h-16 ml-10" />
-      <h1 className="text-[#284AA3] text-4xl font-bold mr-12 play-font">Labchat</h1>
-      <img src={squaremenu.src} alt="burger menu" className="w-12 h-12 mr-4" />
-    </div>
+    <header className="flex items-center justify-between shadow-md border-b border-gray-300 bg-[#F5F7FA] py-4">
+      <Image
+        className="ml-10"
+        src={ frank.src  }
+        alt="Frank the Flask"
+        width={ 64 }
+        height={ 64 }
+        priority />
+
+      <h1 className="text-[#284AA3] text-4xl font-bold mr-12 play-font absolute left-1/2 transform -translate-x-1/2">Labchat</h1>
+
+      <Image
+        className="mr-4"
+        src={ squaremenu.src  }
+        alt="Burger Menu Icon"
+        width={ 48 }
+        height={ 48 } />
+    </header>
   );
 }

@@ -1,17 +1,17 @@
 import Link from 'next/link';
-import headerImage from "../../../public/headerImage.svg";
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';
-import ArrowM from '../../../public/Arrow15.svg';
-import ArrowB from '../../../public/Arrow2.svg';
-import star1 from '../../../public/star1.svg';
-import star2 from '../../../public/star2.svg';
-import car from '../../../public/car.svg';
-import computer from '../../../public/computer.svg';
-import Header from "@/components/ui/header";
-import Footer from "@/components/ui/footer";
-import aboutStar from '../../../public/aboutStar.svg';
-import chooseStar from '../../../public/chooseStar.svg';
+
+import headerImage from "@/../public/headerImage.svg";
+import ArrowM from '@/../public/Arrow15.svg';
+import ArrowB from '@/../public/Arrow2.svg';
+import star1 from '@/../public/star1.svg';
+import star2 from '@/../public/star2.svg';
+import car from '@/../public/car.svg';
+import computer from '@/../public/computer.svg';
+import aboutStar from '@/../public/aboutStar.svg';
+import chooseStar from '@/../public/chooseStar.svg';
 
 
 export default function Home() {
