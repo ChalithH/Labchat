@@ -6,8 +6,9 @@ import Thread from '../../../components/Thread'
 import { TEST_DATA } from '../../../testdata';
 
 
-const DiscussionTopic = ({ params }:{ params: { id: string } }): React.ReactNode => {
-    const topic_id = parseInt(params.id, 10);
+const DiscussionTopic = async ({ params }:{ params: { id: string } }) => {
+    const { id } = await params
+    const topic_id = parseInt(id, 10)
 
     const matching_topic = TEST_DATA.find(topic => topic.id === topic_id)
 
@@ -16,7 +17,7 @@ const DiscussionTopic = ({ params }:{ params: { id: string } }): React.ReactNode
     }
 
     return (
-        <section className="m-auto w-[90dvw]">
+        <main className="m-auto w-[90dvw]">
             <div className="mb-2">
                 <Navigation />
             </div>
@@ -26,7 +27,7 @@ const DiscussionTopic = ({ params }:{ params: { id: string } }): React.ReactNode
             { matching_topic?.threads.map( (thread, idx) => (
                 <Thread key={ idx } thread={ thread } b_show_blurb={ true }/>
             ))}
-        </section>
+        </main>
     )
 }
 

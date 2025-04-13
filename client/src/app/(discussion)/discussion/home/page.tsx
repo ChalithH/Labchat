@@ -10,7 +10,7 @@ const THREADS_PER_TOPIC = 3
 
 const DiscussionHome = (): React.ReactNode => {
     return (
-        <div>
+        <main>
             <section>
                 <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold pb-[24px]">Recent Activity</h1>
 
@@ -39,7 +39,7 @@ const DiscussionHome = (): React.ReactNode => {
                     </div>
                 )) }
             </section>
-        </div>
+        </main>
     )
 }
 
