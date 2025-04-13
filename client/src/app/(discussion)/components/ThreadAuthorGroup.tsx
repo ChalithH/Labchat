@@ -1,11 +1,19 @@
 import React from 'react'
 
+type ThreadAuthorGroupTypes = {
+  role: string,
+  name: string,
+  job_title?: string,
 
-const ThreadAuthorGroup = ({ role, name }:{ role: string, name: string }) => {
+  size: number
+}
+
+const ThreadAuthorGroup = ({ role, name, job_title, size }: ThreadAuthorGroupTypes) => {
   return (
     <div className="flex justify-start gap-2 items-center">
       <img 
-        className="w-[38px] h-[38px]"
+        style={{ width: `${size}px`, height: `${size}px` }}
+        className="rounded-full"
         src="/default_pfp.svg" 
         alt="" />
 

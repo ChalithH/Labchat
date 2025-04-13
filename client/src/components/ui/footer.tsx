@@ -20,7 +20,6 @@ export default function Footer() {
             <div className="w-full bg-[#111F44] flex flex-col items-center justify-center">
                 <p className=" text-xs barlow-font mt-1 mb-2">© 2025 Binary Bandits. All rights reserved.</p>
             </div>
-            
         </footer>
     );
 }

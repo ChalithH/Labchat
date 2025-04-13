@@ -17,7 +17,7 @@ const DiscussionTopic = async ({ params }:{ params: { id: string } }) => {
     }
 
     return (
-        <section className="m-auto w-[90dvw]">
+        <main className="m-auto w-[90dvw]">
             <div className="mb-2">
                 <Navigation />
             </div>
@@ -27,7 +27,7 @@ const DiscussionTopic = async ({ params }:{ params: { id: string } }) => {
             { matching_topic?.threads.map( (thread, idx) => (
                 <Thread key={ idx } thread={ thread } b_show_blurb={ true }/>
             ))}
-        </section>
+        </main>
     )
 }
 

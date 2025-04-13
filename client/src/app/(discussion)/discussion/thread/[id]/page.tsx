@@ -17,12 +17,12 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
         return <p>Not found</p>
     
     return (
-        <section className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
+        <main className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
             <Navigation />
             <h1 className="text-3xl font-bold play-font">{ matching_thread.title }</h1>
 
             <div className="flex justify-between items-center">
-                <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+                <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
                 
                 <div className="text-right">
                     <p>Posted { matching_thread.post_date }</p>
@@ -41,7 +41,7 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
                 
                 <div className="w-[100%] flex justify-between items-center">
                     <div>
-                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
                     </div>
 
                     <button className="rounded-xl bg-sky-600 p-2 px-4 text-white">Post Reply</button>
@@ -61,15 +61,14 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
                     className="p-4 barlow-font rounded-3xl bg-blue-50 flex flex-col gap-4">
                     
                     <div className="flex justify-between items-center">
-                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } />
+                        <ThreadAuthorGroup role={ USER_DATA.title } name={ USER_DATA.name } size={ 42 } />
                         <p>Posted { reply.post_Date }</p>
                     </div>
 
                     <p>{ reply.content }</p>
                 </div>
             ) }
-            
-        </section>
+        </main>
     )
 }
 

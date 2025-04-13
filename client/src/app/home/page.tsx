@@ -1,4 +1,3 @@
-import Header from "./header";
 import Link from 'next/link';
 import headerImage from "../../../public/headerImage.svg";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,8 @@ import star1 from '../../../public/star1.svg';
 import star2 from '../../../public/star2.svg';
 import car from '../../../public/car.svg';
 import computer from '../../../public/computer.svg';
-import Footer from "./footer";
+import Header from "@/components/ui/header";
+import Footer from "@/components/ui/footer";
 import aboutStar from '../../../public/aboutStar.svg';
 import chooseStar from '../../../public/chooseStar.svg';
 
@@ -17,7 +17,6 @@ import chooseStar from '../../../public/chooseStar.svg';
 export default function Home() {
   return (
     <div className="relative w-full  bg-[#F5F7FA] flex flex-col items-center justify-center">
-      <Header />
       <img className="mt-5 ml-4" src={headerImage.src} alt="header image" />
       <div className="flex flex-col items-center justify-center mt-5 play-font text-center">
         <h3 className="text-neutral-500 font-bold text-l mb-1">Introducing Labchat: An LMS for universities</h3>
@@ -74,8 +73,6 @@ export default function Home() {
         <h3 className="text-blue-800 font-play text-xl font-bold">Interactive</h3>
         <p className="text-neutral-800 font-barlow text-xs text-center mt-2 ml-10 mr-10">Instant access to your lab inventory: anytime, anywhere, any device.</p>
       </div>
-
-      <Footer />
   </div>
   );
 }
