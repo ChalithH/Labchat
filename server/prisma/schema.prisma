@@ -13,10 +13,365 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User Management
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int            @id @default(autoincrement())
+  roleId         Int
+  universityId   String         @db.VarChar(16)
+  loginEmail     String         @unique
+  loginPassword  String
+  firstName      String
+  lastName       String
+  displayName    String
+  jobTitle       String?
+  office         String?
+  bio            String?        @db.VarChar(256)
+  dateJoined     DateTime       @default(now())
+  
+  // Relationships
+  role           Role           @relation(fields: [roleId], references: [id])
+  labMembers     LabMember[]
+  contacts       Contact[]
+  issuePosts     IssuePost[]
+
+  @@map("user")
+}
+
+model Role {
+  id              Int        @id @default(autoincrement())
+  name            String
+  description     String?
+  permissionLevel Int
+  
+  // Relationships
+  users           User[]
+
+  @@map("role")
+}
+
+model Contact {
+  id             Int            @id @default(autoincrement())
+  userId         Int
+  type           String
+  info           String
+  name           String
+  
+  // Relationships
+  user           User           @relation(fields: [userId], references: [id])
+  memberStatuses MemberStatus[]
+
+  @@map("contact")
+}
+
+// Lab Management
+model Lab {
+  id          Int          @id @default(autoincrement())
+  name        String
+  location    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  status      String
+  
+  // Relationships
+  labMembers  LabMember[]
+  inventoryItems LabInventoryItem[]
+  discussions Discussion[]
+  tasks       Task[]
+  clockInLogs ClockInLog[]
+  instruments Instrument[]
+
+  @@map("lab")
+}
+
+model LabRole {
+  id              Int        @id @default(autoincrement())
+  name            String
+  description     String?
+  permissionLevel Int
+  
+  // Relationships
+  labMembers      LabMember[]
+
+  @@map("lab_role")
+}
+
+model LabMember {
+  id            Int            @id @default(autoincrement())
+  userId        Int
+  labId         Int
+  labRoleId     Int
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  inductionDone Boolean        @default(false)
+  
+  // Relationships
+  user         User           @relation(fields: [userId], references: [id])
+  lab          Lab            @relation(fields: [labId], references: [id])
+  labRole      LabRole        @relation(fields: [labRoleId], references: [id])
+  memberStatus MemberStatus[]
+  inventoryLogs InventoryLog[]
+  discussionPosts DiscussionPost[]
+  discussionReplies DiscussionReply[]
+  discussionReactions DiscussionReaction[]
+  bookings     InstrumentBooking[]
+  taskAssignments TaskAssignment[]
+  tasks        Task[]
+  clockInLogs  ClockInLog[]
+
+  @@map("lab_member")
+}
+
+model MemberStatus {
+  id          Int       @id @default(autoincrement())
+  contactId   Int
+  memberId    Int
+  status      String
+  isActive    Boolean   @default(true)
+  
+  // Relationships
+  contact     Contact   @relation(fields: [contactId], references: [id])
+  labMember   LabMember @relation(fields: [memberId], references: [id])
+
+  @@map("member_status")
+}
+
+// Inventory Management
+model Item {
+  id           Int                @id @default(autoincrement())
+  name         String
+  description  String?
+  safteyInfo   String?
+  approval     Boolean            @default(false)
+  
+  // Relationships
+  labInventory LabInventoryItem[]
+
+  @@map("item")
+}
+
+model LabInventoryItem {
+  id           Int        @id @default(autoincrement())
+  itemId       Int
+  labId        Int
+  location     String
+  itemUnit     String
+  currentStock Int        @default(0)
+  minStock     Int        @default(0)
+  updatedAt    DateTime   @updatedAt
+  
+  // Relationships
+  item         Item       @relation(fields: [itemId], references: [id])
+  lab          Lab        @relation(fields: [labId], references: [id])
+  itemTags     ItemTag[]
+  inventoryLogs InventoryLog[]
+
+  @@map("lab_inventory_item")
+}
+
+model ItemTag {
+  id               Int              @id @default(autoincrement())
+  inventoryItemId  Int
+  name             String
+  
+  // Relationships
+  inventoryItem    LabInventoryItem @relation(fields: [inventoryItemId], references: [id])
+
+  @@map("item_tag")
+}
+
+model InventoryLog {
+  id               Int              @id @default(autoincrement())
+  inventoryItemId  Int
+  memberId         Int
+  actiontype       String
+  notes            String?
+  timeStamp        DateTime         @default(now())
+  
+  // Relationships
+  inventoryItem    LabInventoryItem @relation(fields: [inventoryItemId], references: [id])
+  labMember        LabMember        @relation(fields: [memberId], references: [id])
+
+  @@map("inventory_log")
+}
+
+// Discussion Board
+model Discussion {
+  id           Int              @id @default(autoincrement())
+  labId        Int
+  name         String
+  description  String?
+  
+  // Relationships
+  lab          Lab              @relation(fields: [labId], references: [id])
+  posts        DiscussionPost[]
+
+  @@map("discussion")
+}
+
+model DiscussionPost {
+  id           Int                  @id @default(autoincrement())
+  discussionId Int
+  memberId     Int
+  title        String
+  content      String               @db.Text
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  isPinned     Boolean              @default(false)
+  isAnnounce   Boolean              @default(false)
+  
+  // Relationships
+  discussion   Discussion           @relation(fields: [discussionId], references: [id])
+  member       LabMember            @relation(fields: [memberId], references: [id])
+  replies      DiscussionReply[]
+  tags         DiscussionPostTag[]
+  reactions    DiscussionReaction[]
+
+  @@map("discussion_post")
+}
+
+model DiscussionReply {
+  id           Int              @id @default(autoincrement())
+  postId       Int
+  memberId     Int
+  content      String           @db.Text
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  
+  // Relationships
+  post         DiscussionPost   @relation(fields: [postId], references: [id])
+  member       LabMember        @relation(fields: [memberId], references: [id])
+
+  @@map("discussion_reply")
+}
+
+model DiscussionPostTag {
+  id          Int             @id @default(autoincrement())
+  postId      Int
+  tag         String
+  
+  // Relationships
+  post        DiscussionPost  @relation(fields: [postId], references: [id])
+
+  @@map("discussion_post_tags")
+}
+
+model DiscussionReaction {
+  id           Int             @id @default(autoincrement())
+  postId       Int
+  memberId     Int
+  reactionType String          @db.Text
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  
+  // Relationships
+  post         DiscussionPost  @relation(fields: [postId], references: [id])
+  member       LabMember       @relation(fields: [memberId], references: [id])
+
+  @@map("discussion_reactions")
+}
+
+// Equipment Management
+model Instrument {
+  id           Int                 @id @default(autoincrement())
+  name         String
+  description  String?
+  labId        Int
+  
+  // Relationships
+  bookings     InstrumentBooking[]
+  issues       InstrumentIssue[]
+  lab          Lab                 @relation(fields: [labId], references: [id])
+
+  @@map("instrument")
+}
+
+model InstrumentBooking {
+  id           Int          @id @default(autoincrement())
+  memberId     Int
+  instrumentId Int
+  startTime    DateTime
+  endTime      DateTime
+  createdAt    DateTime     @default(now())
+  purpose      String?
+  
+  // Relationships
+  member       LabMember    @relation(fields: [memberId], references: [id])
+  instrument   Instrument   @relation(fields: [instrumentId], references: [id])
+
+  @@map("instrument_booking")
+}
+
+model InstrumentIssue {
+  id           Int          @id @default(autoincrement())
+  instrumentId Int
+  status       String
+  
+  // Relationships
+  instrument   Instrument   @relation(fields: [instrumentId], references: [id])
+  posts        IssuePost[]
+
+  @@map("instrument_issue")
+}
+
+model IssuePost {
+  id           Int              @id @default(autoincrement())
+  issueId      Int
+  userId       Int
+  title        String
+  content      String           @db.Text
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  
+  // Relationships
+  issue        InstrumentIssue  @relation(fields: [issueId], references: [id])
+  user         User             @relation(fields: [userId], references: [id])
+
+  @@map("issue_post")
+}
+
+// Task Management
+model Task {
+  id           Int               @id @default(autoincrement())
+  labId        Int
+  memberId     Int
+  title        String
+  description  String?
+  status       String
+  startTime    DateTime
+  endTime      DateTime
+  updatedAt    DateTime          @updatedAt
+  
+  // Relationships
+  lab          Lab               @relation(fields: [labId], references: [id])
+  creator      LabMember         @relation(fields: [memberId], references: [id])
+  assignments  TaskAssignment[]
+
+  @@map("task")
+}
+
+model TaskAssignment {
+  id           Int        @id @default(autoincrement())
+  taskId       Int
+  memberId     Int
+  
+  // Relationships
+  task         Task       @relation(fields: [taskId], references: [id])
+  member       LabMember  @relation(fields: [memberId], references: [id])
+
+  @@map("task_assignment")
+}
+
+// Attendance Tracking
+model ClockInLog {
+  id           Int        @id @default(autoincrement())
+  memberId     Int
+  labId        Int
+  logTime      DateTime   @default(now())
+  logType      String
+  
+  // Relationships
+  member       LabMember  @relation(fields: [memberId], references: [id])
+  lab          Lab        @relation(fields: [labId], references: [id])
+
+  @@map("clock_in_logs")
 }
