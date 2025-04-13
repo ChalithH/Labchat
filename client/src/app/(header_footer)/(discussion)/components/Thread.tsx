@@ -3,9 +3,9 @@
 import React from 'react'
 import Link from 'next/link'
 
-import { USER_DATA } from '../testdata'
+import { USER_DATA } from '@/app/testdata'
 
-import { ThreadType } from '../types/TestTypes'
+import { ThreadType } from '../../../types/TestTypes'
 import ThreadAuthorGroup from './ThreadAuthorGroup'
 
 import { Breadcrumb, useBreadcrumb } from '../context/BreadcrumbContext';

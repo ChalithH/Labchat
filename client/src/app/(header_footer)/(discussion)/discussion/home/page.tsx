@@ -3,7 +3,7 @@ import React from 'react'
 import Thread from '../../components/Thread'
 import Title from '../../components/Title'
 
-import { FIRST_THREAD_DATA, TEST_DATA } from '../../testdata';
+import { FIRST_THREAD_DATA, TEST_DATA } from '@/app/testdata';
 
 
 const THREADS_PER_TOPIC = 3

@@ -3,7 +3,7 @@ import React from 'react'
 import Navigation from '../../../components/Navigation'
 import Title from '../../../components/Title'
 import Thread from '../../../components/Thread'
-import { TEST_DATA } from '../../../testdata';
+import { TEST_DATA } from '@/app/testdata';
 
 
 const DiscussionTopic = async ({ params }:{ params: { id: string } }) => {

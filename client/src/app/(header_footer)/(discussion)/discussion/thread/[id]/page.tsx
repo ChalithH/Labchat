@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { TEST_DATA, USER_DATA } from '../../../testdata'
+import { TEST_DATA, USER_DATA } from '@/app/testdata'
 
 import Navigation from '../../../components/Navigation'
 import ThreadAuthorGroup from '../../../components/ThreadAuthorGroup'

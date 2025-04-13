@@ -1,4 +1,4 @@
-import { TopicType, ThreadType, UserType, ReplyType } from './types/TestTypes'
+import { TopicType, ThreadType, UserType, ReplyType } from '@/app/types/TestTypes'
 
 export const USER_DATA: UserType = {
     id: 1,
