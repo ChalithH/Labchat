@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "discussionId": 1,
+    "memberId": 1,
+    "title": "Lab Safety Training",
+    "content": "Annual lab safety training will be held next Friday at 2 PM in Conference Room A. All lab members must attend.",
+    "isPinned": true,
+    "isAnnounce": true
+  },
+  {
+    "id": 2,
+    "discussionId": 2,
+    "memberId": 3,
+    "title": "HPLC Pressure Issues",
+    "content": "The HPLC #2 is showing high backpressure. I've changed the guard column but the issue persists. Has anyone else experienced this?",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "id": 3,
+    "discussionId": 3,
+    "memberId": 2,
+    "title": "Updated RNA Extraction Protocol",
+    "content": "I've optimized the RNA extraction protocol to improve yield. See attached details and feedback welcome.",
+    "isPinned": true,
+    "isAnnounce": false
+  },
+  {
+    "id": 4,
+    "discussionId": 1,
+    "memberId": 1,
+    "title": "Inventory Reorganization",
+    "content": "We will be reorganizing the chemical storage cabinets this Thursday. Please plan your experiments accordingly as access might be limited.",
+    "isPinned": false,
+    "isAnnounce": true
+  },
+  {
+    "id": 5,
+    "discussionId": 4,
+    "memberId": 7,
+    "title": "Welcome New Lab Members",
+    "content": "Please join me in welcoming Dr. Lisa Wong and graduate student Mark Thompson to our lab team!",
+    "isPinned": true,
+    "isAnnounce": true
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Lab Manager",
+    "description": "Manages lab operations and personnel",
+    "permissionLevel": 90
+  },
+  {
+    "id": 2,
+    "name": "Lab Supervisor",
+    "description": "Supervises experiments and researchers",
+    "permissionLevel": 70
+  },
+  {
+    "id": 3,
+    "name": "Lab Technician",
+    "description": "Responsible for equipment maintenance",
+    "permissionLevel": 50
+  },
+  {
+    "id": 4,
+    "name": "Researcher",
+    "description": "Conducts experiments and research",
+    "permissionLevel": 30
+  },
+  {
+    "id": 5,
+    "name": "Lab Assistant",
+    "description": "Assists with experiments and tasks",
+    "permissionLevel": 20
+  },
+  {
+    "id": 6,
+    "name": "Guest Researcher",
+    "description": "Visiting researcher with limited access",
+    "permissionLevel": 10
+  }
+]

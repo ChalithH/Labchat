@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "name": "HPLC System #1",
+    "description": "High Performance Liquid Chromatography System with UV/VIS detector",
+    "labId": 1
+  },
+  {
+    "id": 2,
+    "name": "HPLC System #2",
+    "description": "High Performance Liquid Chromatography System with Mass Spectrometer",
+    "labId": 1
+  },
+  {
+    "id": 3,
+    "name": "NMR Spectrometer",
+    "description": "400 MHz Nuclear Magnetic Resonance Spectrometer",
+    "labId": 1
+  },
+  {
+    "id": 4,
+    "name": "UV-Vis Spectrophotometer",
+    "description": "Double beam UV-Visible Spectrophotometer",
+    "labId": 1
+  },
+  {
+    "id": 5,
+    "name": "Centrifuge #1",
+    "description": "High-speed refrigerated centrifuge",
+    "labId": 1
+  },
+  {
+    "id": 6,
+    "name": "Rotary Evaporator",
+    "description": "System for solvent removal under vacuum",
+    "labId": 2
+  },
+  {
+    "id": 7,
+    "name": "Thermal Cycler",
+    "description": "PCR machine with gradient capability",
+    "labId": 3
+  }
+]

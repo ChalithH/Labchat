@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "userId": 2,
+    "labId": 1,
+    "labRoleId": 1,
+    "inductionDone": true
+  },
+  {
+    "id": 2,
+    "userId": 3,
+    "labId": 1,
+    "labRoleId": 2,
+    "inductionDone": true
+  },
+  {
+    "id": 3,
+    "userId": 4,
+    "labId": 1,
+    "labRoleId": 3,
+    "inductionDone": true
+  },
+  {
+    "id": 4,
+    "userId": 5,
+    "labId": 1,
+    "labRoleId": 4,
+    "inductionDone": true
+  },
+  {
+    "id": 5,
+    "userId": 6,
+    "labId": 1,
+    "labRoleId": 6,
+    "inductionDone": false
+  },
+  {
+    "id": 6,
+    "userId": 2,
+    "labId": 2,
+    "labRoleId": 2,
+    "inductionDone": true
+  },
+  {
+    "id": 7,
+    "userId": 3,
+    "labId": 2,
+    "labRoleId": 1,
+    "inductionDone": true
+  },
+  {
+    "id": 8,
+    "userId": 4,
+    "labId": 3,
+    "labRoleId": 1,
+    "inductionDone": true
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1,
+    "userId": 2,
+    "type": "email",
+    "info": "jennifer.smith@university.edu",
+    "name": "Work Email"
+  },
+  {
+    "id": 2,
+    "userId": 2,
+    "type": "phone",
+    "info": "+1-555-123-4567",
+    "name": "Work Phone"
+  },
+  {
+    "id": 3,
+    "userId": 3,
+    "type": "email",
+    "info": "wei.chen@university.edu",
+    "name": "Work Email"
+  },
+  {
+    "id": 4,
+    "userId": 4,
+    "type": "email",
+    "info": "alex.johnson@university.edu",
+    "name": "Work Email"
+  },
+  {
+    "id": 5,
+    "userId": 4,
+    "type": "phone",
+    "info": "+1-555-987-6543",
+    "name": "Mobile Phone"
+  },
+  {
+    "id": 6,
+    "userId": 5,
+    "type": "email",
+    "info": "samira.patel@university.edu",
+    "name": "Work Email"
+  },
+  {
+    "id": 7,
+    "userId": 6,
+    "type": "email",
+    "info": "carlos.rodriguez@visiting.edu",
+    "name": "Email"
+  }
+]

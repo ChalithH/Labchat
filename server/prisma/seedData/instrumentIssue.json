@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "instrumentId": 2,
+    "status": "reported"
+  },
+  {
+    "id": 2,
+    "instrumentId": 5,
+    "status": "under repair"
+  },
+  {
+    "id": 3,
+    "instrumentId": 4,
+    "status": "resolved"
+  }
+]

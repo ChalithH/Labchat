@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "itemId": 1,
+    "labId": 1,
+    "location": "Chemical Storage Cabinet A",
+    "itemUnit": "Bottle",
+    "currentStock": 8,
+    "minStock": 3
+  },
+  {
+    "id": 2,
+    "itemId": 2,
+    "labId": 1,
+    "location": "Chemical Storage Cabinet B",
+    "itemUnit": "Container",
+    "currentStock": 2,
+    "minStock": 1
+  },
+  {
+    "id": 3,
+    "itemId": 3,
+    "labId": 1,
+    "location": "Supply Shelf 2",
+    "itemUnit": "Box",
+    "currentStock": 10,
+    "minStock": 5
+  },
+  {
+    "id": 4,
+    "itemId": 4,
+    "labId": 1,
+    "location": "Supply Shelf 1",
+    "itemUnit": "Box",
+    "currentStock": 4,
+    "minStock": 2
+  },
+  {
+    "id": 5,
+    "itemId": 5,
+    "labId": 1,
+    "location": "Acid Storage Cabinet",
+    "itemUnit": "Bottle",
+    "currentStock": 3,
+    "minStock": 1
+  },
+  {
+    "id": 6,
+    "itemId": 1,
+    "labId": 2,
+    "location": "Chemical Storage Cabinet",
+    "itemUnit": "Bottle",
+    "currentStock": 5,
+    "minStock": 2
+  },
+  {
+    "id": 7,
+    "itemId": 3,
+    "labId": 2,
+    "location": "Supply Shelf",
+    "itemUnit": "Box",
+    "currentStock": 15,
+    "minStock": 5
+  }
+]

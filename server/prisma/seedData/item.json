@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name": "Ethanol 99%",
+    "description": "High purity ethanol for laboratory use",
+    "safteyInfo": "Flammable, keep away from heat sources",
+    "approval": true
+  },
+  {
+    "id": 2,
+    "name": "Sodium Hydroxide",
+    "description": "Caustic base used for pH adjustment",
+    "safteyInfo": "Corrosive, handle with proper PPE",
+    "approval": true
+  },
+  {
+    "id": 3,
+    "name": "Nitrile Gloves",
+    "description": "Disposable laboratory gloves",
+    "safteyInfo": null,
+    "approval": true
+  },
+  {
+    "id": 4,
+    "name": "Micropipette Tips",
+    "description": "Sterile tips for precision liquid handling",
+    "safteyInfo": null,
+    "approval": true
+  },
+  {
+    "id": 5,
+    "name": "Hydrochloric Acid",
+    "description": "Strong mineral acid",
+    "safteyInfo": "Corrosive, causes severe burns, use in fume hood",
+    "approval": true
+  }
+]

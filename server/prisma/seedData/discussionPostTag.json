@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "postId": 1,
+    "tag": "training"
+  },
+  {
+    "id": 2,
+    "postId": 1,
+    "tag": "safety"
+  },
+  {
+    "id": 3,
+    "postId": 2,
+    "tag": "equipment"
+  },
+  {
+    "id": 4,
+    "postId": 2,
+    "tag": "maintenance"
+  },
+  {
+    "id": 5,
+    "postId": 3,
+    "tag": "protocol"
+  },
+  {
+    "id": 6,
+    "postId": 4,
+    "tag": "inventory"
+  },
+  {
+    "id": 7,
+    "postId": 5,
+    "tag": "personnel"
+  }
+]

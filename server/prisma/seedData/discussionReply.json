@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "postId": 1,
+    "memberId": 2,
+    "content": "Will the training be recorded for those who can't attend in person?",
+    "createdAt": "2025-04-01T11:30:00.000Z",
+    "updatedAt": "2025-04-01T11:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "postId": 1,
+    "memberId": 1,
+    "content": "Yes, we'll record it and share the link afterward.",
+    "createdAt": "2025-04-01T13:45:00.000Z",
+    "updatedAt": "2025-04-01T13:45:00.000Z"
+  },
+  {
+    "id": 3,
+    "postId": 2,
+    "memberId": 4,
+    "content": "I had the same issue last month. Check the inlet filter, it might be clogged.",
+    "createdAt": "2025-04-02T10:15:00.000Z",
+    "updatedAt": "2025-04-02T10:15:00.000Z"
+  },
+  {
+    "id": 4,
+    "postId": 2,
+    "memberId": 3,
+    "content": "Thanks, I'll check that. The system is also due for a full maintenance cycle.",
+    "createdAt": "2025-04-02T14:20:00.000Z",
+    "updatedAt": "2025-04-02T14:20:00.000Z"
+  },
+  {
+    "id": 5,
+    "postId": 3,
+    "memberId": 4,
+    "content": "Great work! The yield improvement is significant. Have you tested this with degraded samples?",
+    "createdAt": "2025-04-03T09:30:00.000Z",
+    "updatedAt": "2025-04-03T09:30:00.000Z"
+  }
+]

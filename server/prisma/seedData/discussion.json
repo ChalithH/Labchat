@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "labId": 1,
+    "name": "General Announcements",
+    "description": "Lab-wide announcements and important information"
+  },
+  {
+    "id": 2,
+    "labId": 1,
+    "name": "Equipment Issues",
+    "description": "Discussion of equipment problems and maintenance"
+  },
+  {
+    "id": 3,
+    "labId": 1,
+    "name": "Protocol Sharing",
+    "description": "Share and discuss lab protocols"
+  },
+  {
+    "id": 4,
+    "labId": 2,
+    "name": "General Announcements",
+    "description": "Lab-wide announcements and important information"
+  },
+  {
+    "id": 5,
+    "labId": 2,
+    "name": "Research Progress",
+    "description": "Updates on ongoing research projects"
+  }
+]

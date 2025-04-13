@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "memberId": 2,
+    "instrumentId": 1,
+    "startTime": "2025-04-15T09:00:00.000Z",
+    "endTime": "2025-04-15T12:00:00.000Z",
+    "purpose": "Analysis of protein samples"
+  },
+  {
+    "id": 2,
+    "memberId": 3,
+    "instrumentId": 2,
+    "startTime": "2025-04-16T13:00:00.000Z",
+    "endTime": "2025-04-16T17:00:00.000Z",
+    "purpose": "Method development for compound separation"
+  },
+  {
+    "id": 3,
+    "memberId": 4,
+    "instrumentId": 3,
+    "startTime": "2025-04-17T10:00:00.000Z",
+    "endTime": "2025-04-17T14:00:00.000Z",
+    "purpose": "Structure elucidation of synthesized compounds"
+  },
+  {
+    "id": 4,
+    "memberId": 1,
+    "instrumentId": 4,
+    "startTime": "2025-04-18T09:30:00.000Z",
+    "endTime": "2025-04-18T11:30:00.000Z",
+    "purpose": "Measuring absorption spectra of samples"
+  },
+  {
+    "id": 5,
+    "memberId": 4,
+    "instrumentId": 1,
+    "startTime": "2025-04-20T13:00:00.000Z",
+    "endTime": "2025-04-20T16:00:00.000Z",
+    "purpose": "Compound purity analysis"
+  }
+]

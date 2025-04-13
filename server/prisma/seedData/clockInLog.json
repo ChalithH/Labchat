@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "memberId": 1,
+    "labId": 1,
+    "logTime": "2025-04-14T08:45:00.000Z",
+    "logType": "in"
+  },
+  {
+    "id": 2,
+    "memberId": 3,
+    "labId": 1,
+    "logTime": "2025-04-14T09:15:00.000Z",
+    "logType": "in"
+  },
+  {
+    "id": 3,
+    "memberId": 4,
+    "labId": 1,
+    "logTime": "2025-04-14T09:30:00.000Z",
+    "logType": "in"
+  },
+  {
+    "id": 4,
+    "memberId": 3,
+    "labId": 1,
+    "logTime": "2025-04-14T12:30:00.000Z",
+    "logType": "break"
+  },
+  {
+    "id": 5,
+    "memberId": 3,
+    "labId": 1,
+    "logTime": "2025-04-14T13:15:00.000Z",
+    "logType": "in"
+  },
+  {
+    "id": 6,
+    "memberId": 4,
+    "labId": 1,
+    "logTime": "2025-04-14T17:00:00.000Z",
+    "logType": "out"
+  },
+  {
+    "id": 7,
+    "memberId": 3,
+    "labId": 1,
+    "logTime": "2025-04-14T17:30:00.000Z",
+    "logType": "out"
+  },
+  {
+    "id": 8,
+    "memberId": 1,
+    "labId": 1,
+    "logTime": "2025-04-14T18:15:00.000Z",
+    "logType": "out"
+  }
+]

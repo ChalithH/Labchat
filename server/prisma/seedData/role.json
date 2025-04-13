@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Admin",
+    "description": "System administrator with full access",
+    "permissionLevel": 100
+  },
+  {
+    "id": 2,
+    "name": "Principal Investigator",
+    "description": "Lab leader with high-level permissions",
+    "permissionLevel": 80
+  },
+  {
+    "id": 3,
+    "name": "Postdoc",
+    "description": "Postdoctoral researcher",
+    "permissionLevel": 60
+  },
+  {
+    "id": 4,
+    "name": "Senior Researcher",
+    "description": "Experienced lab researcher",
+    "permissionLevel": 50
+  },
+  {
+    "id": 5,
+    "name": "Junior Researcher",
+    "description": "Entry-level researcher",
+    "permissionLevel": 30
+  },
+  {
+    "id": 6,
+    "name": "Visitor",
+    "description": "Guest with limited access",
+    "permissionLevel": 10
+  }
+]

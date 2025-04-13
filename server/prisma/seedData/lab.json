@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Molecular Chemistry Lab",
+    "location": "Science Building - Room 205",
+    "status": "active"
+  },
+  {
+    "id": 2,
+    "name": "Organic Synthesis Lab",
+    "location": "Science Building - Room 312",
+    "status": "active"
+  },
+  {
+    "id": 3,
+    "name": "Analytical Chemistry Lab",
+    "location": "Science Building - Room 116",
+    "status": "active"
+  }
+]

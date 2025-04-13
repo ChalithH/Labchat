@@ -31,30 +31,30 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
 };
 
 /**
- * @swagger
- * /users/{id}:
- *   get:
- *     summary: Get a user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: User ID
- *     responses:
- *       200:
- *         description: A user object
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         description: User not found
- *       500:
- *         description: Server error
- */
+  * @swagger
+  * /users/{id}:
+  *   get:
+  *     summary: Get a user by ID
+  *     tags: [Users]
+  *     parameters:
+  *       - in: path
+  *         name: id
+  *         required: true
+  *         schema:
+  *           type: integer
+  *         description: User ID
+  *     responses:
+  *       200:
+  *         description: A user object
+  *         content:
+  *           application/json:
+  *             schema:
+  *               $ref: '#/components/schemas/User'
+  *       404:
+  *         description: User not found
+  *       500:
+  *         description: Server error
+  */
 export const getUserById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id);
@@ -72,4 +72,3 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: 'Failed to retrieve user' });
   }
 };
-
