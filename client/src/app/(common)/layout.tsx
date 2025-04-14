@@ -9,13 +9,11 @@ import { BreadcrumbProvider } from './(discussion)/context/BreadcrumbContext'
 const CommonLayout = ({ children } : Readonly<{ children: React.ReactNode }>) => {
   return (
     <>
-      <BreadcrumbProvider>
         <Header />
 
         { children }
 
         <Footer />
-      </BreadcrumbProvider>
     </>
   )
 }
