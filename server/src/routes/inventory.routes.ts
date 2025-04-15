@@ -1,14 +1,15 @@
 import { Router } from 'express';
-import { getInventory } from "../controllers/inventory/inventory.controller";
+import { getInventory, takeItem } from "../controllers/inventory/inventory.controller";
 
 /**
  * @swagger
  * tags:
- *   name: Users
- *   description: User management API
+ *   name: Inventory
+ *   description: Inventory management API
  */
 const router = Router();
 
 router.get('/', getInventory);
+router.post('/take', takeItem);
 
 export default router;

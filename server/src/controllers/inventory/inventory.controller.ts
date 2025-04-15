@@ -31,3 +31,49 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
         res.status(500).json({ error: 'Failed to retrieve inventory items' });
     }
 }
+
+/**
+ * @swagger
+ * /inventory:
+ *   get:
+ *     summary: Takes item(s) from the inventory
+ *     tags: [Inventory]
+ *     responses:
+ *       200:
+ *         description: An updated inventory item
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/LabInventoryItem'
+ *       500:
+ *         description: Failed to update inventory item
+ */
+
+export const takeItem = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { itemId, amountTaken } = req.body;
+        const item = await prisma.labInventoryItem.findUnique({
+            where: { id: itemId },
+          });
+
+          if (!item) {
+            res.status(404).json({ error: 'Item not found' });
+            return;
+          }
+
+          const updatedItem = await prisma.labInventoryItem.update({
+            where: { id: itemId },
+            data: {
+              currentStock: item.currentStock - amountTaken,
+            },
+          });
+      
+          res.json(updatedItem);
+
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update item count' });
+    }
+
+}
