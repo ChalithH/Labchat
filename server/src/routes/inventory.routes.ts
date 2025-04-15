@@ -13,6 +13,6 @@ router.get('/', getInventory);
 router.post('/take', takeItem);
 router.get('/low-stock', getAllLowStockItems);
 router.post('/replenish', replenishStock)
-router.get('//local', getInventoryLocal);
+router.get('/local', getInventoryLocal);
 
 export default router;

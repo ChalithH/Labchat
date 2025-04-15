@@ -33,5 +33,21 @@
     "description": "Strong mineral acid",
     "safteyInfo": "Corrosive, causes severe burns, use in fume hood",
     "approval": true
+  },
+
+  {
+    "id": 6,
+    "name": "Hydrochloric Acid 2",
+    "description": "Strong mineral acid",
+    "safteyInfo": "Corrosive, causes severe burns, use in fume hood",
+    "approval": true
+  },
+
+  {
+    "id": 7,
+    "name": "Hydrochloric Acid 3",
+    "description": "Strong mineral acid",
+    "safteyInfo": "Corrosive, causes severe burns, use in fume hood",
+    "approval": true
   }
 ]

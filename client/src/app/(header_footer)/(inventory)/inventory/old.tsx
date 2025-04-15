@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 
 import SearchFilterBar from '../components/SearchFilter'
-import { InventoryItem } from '../components/InventoryItem'
 
 
 const getInventoryItems = async () => {
