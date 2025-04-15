@@ -6,19 +6,23 @@ import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 
 import api from '@/lib/api';
+import { AxiosError } from 'axios';
 
 
 export default function Register() {
-  const [firstName, setFirstName] = useState<string>('');
-  const [lastName, setLastName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('')
+  const [lastName, setLastName] = useState<string>('')
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [confirmPassword, setConfirmPassword] = useState<string>('')
+
+  const [error, setError] = useState<string | undefined>(undefined)
+  const [message, setMessage] = useState<string | undefined>(undefined)
 
   const userData = {
     roleId: 6, /* Vistor */
     universityId: '',
-    username: '',
+    username: `${ firstName } ${ lastName }`,
     loginEmail: email,
     loginPassword: password,
     firstName: firstName,
@@ -34,15 +38,17 @@ export default function Register() {
     e.preventDefault()
     try {
       if (password !== confirmPassword) {
-        alert('Passwords do not match')
+        setMessage(undefined)
+        setError("Passwords do not match")
         return
       }
 
       await api.post('/api/user/', userData)
-      alert('Registration successful')
+      setError(undefined)
+      setMessage('Registration successful')
       
-    } catch (err) {
-      alert('Registration failed')
+    } catch (err: any) {
+      setError(err.response.data.error)
     }
   }
   
@@ -53,8 +59,13 @@ export default function Register() {
           subtitle="Register"
           className="mb-8"
         />
-
         <form onSubmit={ handleFormSubmit } className="space-y-5 p-8">
+          { (error || message) &&
+            <div className={ `${error ? 'bg-red-500' : 'bg-green-500'}` + ' text-white m-auto rounded-sm p-3 mb-6' }>
+              <p>{ error || message }</p>
+            </div>
+          }
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-white">
