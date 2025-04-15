@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getInventory, takeItem, getAllLowStockItems } from "../controllers/inventory/inventory.controller";
+import { requirePermission } from '../middleware/permission.middleware';
 
 /**
  * @swagger
