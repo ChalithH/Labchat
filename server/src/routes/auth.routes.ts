@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAuth, isAuth } from '../controllers/auth/auth.controller';
+import { getAuth, isAuth, clearAuth } from '../controllers/auth/auth.controller';
 
 /**
  * @swagger
@@ -10,6 +10,7 @@ import { getAuth, isAuth } from '../controllers/auth/auth.controller';
 const router = Router();
 
 router.post('/', getAuth);
-router.get('/test', isAuth);
+router.get('/status', isAuth);
+router.get('/logout', clearAuth);
 
 export default router;
