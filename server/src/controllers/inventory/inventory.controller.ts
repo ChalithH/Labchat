@@ -90,6 +90,7 @@ export const takeItem = async (req: Request, res: Response): Promise<void> => {
             where: { id: itemId },
             data: {
               currentStock: item.currentStock - amountTaken,
+              updatedAt: new Date(),
             },
           });
       
