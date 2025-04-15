@@ -31,7 +31,7 @@ router.get('/', (req, res) => {
   });
 });
 
-router.use('/users', userRoutes);
+router.use('/user', userRoutes);
 router.use('/auth', authRoutes);
 router.use('/inventory', inventoryRoutes);
 

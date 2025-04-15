@@ -13,7 +13,6 @@ import computer from '@/../public/computer.svg';
 import aboutStar from '@/../public/aboutStar.svg';
 import chooseStar from '@/../public/chooseStar.svg';
 
-
 export default function Home() {
   return (
     <div className="relative w-full  bg-[#F5F7FA] flex flex-col items-center justify-center">

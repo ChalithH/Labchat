@@ -1,7 +1,32 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { hashPassword } from '../../utils/hashing.util';
 
 const prisma = new PrismaClient();
+
+
+export const createUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id, ...user_data  } = req.body
+
+    if (user_data.loginEmail && await prisma.user.findUnique({ where: { loginEmail: user_data.loginEmail } })) {
+      res.status(409).json({ error: 'Email already registered' })
+      return
+    }
+
+    const hashed_password = await hashPassword(user_data.loginPassword)
+
+    const user = await prisma.user.create({ data: { ...user_data, loginPassword: hashed_password } })
+    
+    res.status(201).json(user)
+    return
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Failed to create user' })
+    return
+  }
+}
 
 /**
  * @swagger

@@ -1,8 +1,11 @@
 import { Application, Request, Response, NextFunction } from 'express';
 import { swaggerDocs } from './middleware/swaggerDocs.middleware';
+import { PrismaSessionStore } from '@quixo3/prisma-session-store';
+import { PrismaClient } from '@prisma/client';
 
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import passport from 'passport';
 
 import routes from './routes';
 
@@ -20,14 +23,27 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET))
 
 // Express Session middleware
-app.use(session({
-  secret: process.env.SESSION_SECRET!,
-  saveUninitialized: false,
-  resave: false,
-  cookie: {
-    maxAge: 60000 * 60 * 24 /* 1day */
-  }
-}))
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET!,
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+      maxAge: 60000 * 60 * 24 /* 1day */
+    },
+    store: new PrismaSessionStore(
+      new PrismaClient(), {
+        checkPeriod: 2 * 60 * 1000, /* 2seconds */
+        dbRecordIdIsSessionId: true,
+        dbRecordIdFunction: undefined
+      }
+    )
+  })
+)
+
+// Initialise passportjs
+app.use(passport.initialize())
+app.use(passport.session())
 
 // CORS for front end server
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));

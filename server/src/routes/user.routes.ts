@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getUsers, getUserById } from '../controllers/user/user.controller';
+import { getUsers, getUserById, createUser } from '../controllers/user/user.controller';
 
 /**
  * @swagger
@@ -9,7 +9,9 @@ import { getUsers, getUserById } from '../controllers/user/user.controller';
  */
 const router = Router();
 
-router.get('/', getUsers);
-router.get('/:id', getUserById);
+
+router.post('/', createUser);
+router.get('/get', getUsers);
+router.get('/get/:id', getUserById);
 
 export default router;
