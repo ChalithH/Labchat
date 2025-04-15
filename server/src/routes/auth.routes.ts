@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { getAuth, isAuth, clearAuth } from '../controllers/auth/auth.controller';
+import { getAuth, isAuth, clearAuth, protectedPoint } from '../controllers/auth/auth.controller';
+import { requirePermission } from '../middleware/permission.middleware';
 
 /**
  * @swagger
@@ -12,5 +13,6 @@ const router = Router();
 router.post('/', getAuth);
 router.get('/status', isAuth);
 router.get('/logout', clearAuth);
+router.get('/protected', requirePermission(80), protectedPoint);
 
 export default router;

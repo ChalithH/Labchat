@@ -65,3 +65,8 @@ export const isAuth = async (req: Request, res: Response): Promise<void> => {
   res.status(401).send({ msg: 'No session stored' })
   return
 }
+
+export const protectedPoint = (req: Request, res: Response): void => {
+  res.status(200).send({ msg: 'Message' })
+  return
+}
