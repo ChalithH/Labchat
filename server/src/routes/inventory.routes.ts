@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getInventory, takeItem, getAllLowStockItems } from "../controllers/inventory/inventory.controller";
+import { getInventory, takeItem, getAllLowStockItems, replenishStock } from "../controllers/inventory/inventory.controller";
 
 /**
  * @swagger
@@ -12,5 +12,6 @@ const router = Router();
 router.get('/', getInventory);
 router.post('/take', takeItem);
 router.get('/low-stock', getAllLowStockItems);
+router.post('/replenish', replenishStock)
 
 export default router;

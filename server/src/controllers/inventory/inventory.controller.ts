@@ -101,6 +101,7 @@ export const takeItem = async (req: Request, res: Response): Promise<void> => {
 
 }
 
+
 /**
  * @swagger
  * /inventory/low-stock:
@@ -127,3 +128,69 @@ export const getAllLowStockItems = async (req: Request, res: Response): Promise<
         res.status(500).json({ error: 'Failed to retrieve low stock items' });
     }
 }
+
+/**
+ * @swagger
+ * /inventory/replenish:
+ *   post:
+ *     summary: Replenishes stock for an item from the inventory
+ *     tags: [Inventory]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               itemId:
+ *                 type: integer
+ *                 description: The ID of the inventory item
+ *               amountAdded:
+ *                 type: integer
+ *                 description: The amount of the item to add
+ *             required:
+ *               - itemId
+ *               - amountAdded
+ *     responses:
+ *       200:
+ *         description: An updated inventory item
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LabInventoryItem'
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Failed to update inventory item
+ */
+
+export const replenishStock = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const amountAdded = Math.abs(req.body.amountAdded);
+        const itemId = req.body.itemId;
+        const item = await prisma.labInventoryItem.findUnique({
+            where: {id:itemId}
+    });
+
+    if (!item) {
+        res.status(404).json({ error: "Item not found"})
+        return;
+    }
+
+    const updatedItem = await prisma.labInventoryItem.update({
+        where: {
+            id: itemId
+        },
+        data: {
+            currentStock: item.currentStock + amountAdded,
+            updatedAt: new Date(),
+        },
+    });
+
+    res.json(updatedItem)
+
+    }
+    catch (error) {
+        res.status(500).json({error: "Failed to update item count"})
+    }
+};
