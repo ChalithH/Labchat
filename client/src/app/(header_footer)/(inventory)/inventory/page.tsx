@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 import SearchFilterBar from '../components/SearchFilter';
-import { InventoryItem as InventoryItemComponent } from '../components/InventoryItem';
+import InventoryItem from'../components/InventoryItem';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -76,7 +76,13 @@ const Inventory = (): React.ReactNode => {
   const toggleButtons = (id: number) => {
     setActiveItem(activeItem === id ? null : id);
   };
+  const handleTake = (id: number) => {
+    console.log(`Take item ${id}`);
+  };
 
+  const handleRestock = (id: number) => {
+    console.log(`Restock item ${id}`);
+  };
   return (
     <>
       <h1 className="flex justify-center items-center font-play font-extrabold text-black text-[clamp(1.5rem,4vw,2rem)]">
@@ -85,12 +91,14 @@ const Inventory = (): React.ReactNode => {
       <SearchFilterBar />
       <div className="mt-8 space-y-4 w-full max-w-2xl mx-auto">
         {combinedItems.map((item) => (
-          <InventoryItemComponent
+          <InventoryItem
             key={item.id}
             name={item.name}
             description={item.description}
             current_stock={item.current_stock}
             unit={item.item_unit}
+            onTake={() => handleTake(item.id)}
+            onRestock={() => handleRestock(item.id)}
           />
         ))}
       </div>
