@@ -100,3 +100,30 @@ export const takeItem = async (req: Request, res: Response): Promise<void> => {
     }
 
 }
+
+/**
+ * @swagger
+ * /inventory/low-stock:
+ *   get:
+ *     summary: Returns a list of all low stock items
+ *     tags: [Inventory]
+ *     responses:
+ *       200:
+ *         description: A list of low stock items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LabInventoryItem'
+ *       500:
+ *         description: Failed to retrieve low stock items
+ */
+
+export const getAllLowStockItems = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const allItems = await prisma.labInventoryItem.findMany();
+        const lowStockItems = allItems.filter(item => item.currentStock <= item.minStock);
+        res.json(lowStockItems);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve low stock items' });
+    }
+}
