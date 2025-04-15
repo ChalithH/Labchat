@@ -14,6 +14,19 @@ type InventoryItem = {
   approval: boolean;
 };
 
+type InventoryItemLocal = {
+  inventory_item_id: number;
+  item_id: number;
+  lab_id: number;
+  location: string;
+  item_unit: string;
+  current_stock: number;
+  min_stock: number;
+  updated_at: Date;
+};
+
+type CombinedInventoryItem = InventoryItem & InventoryItemLocal;
+
 const getInventoryItems = async (): Promise<InventoryItem[]> => {
   const response = await fetch(`${BASE_URL}/api/inventory`);
   if (!response.ok) {
@@ -22,17 +35,38 @@ const getInventoryItems = async (): Promise<InventoryItem[]> => {
   return response.json();
 };
 
+const getInventoryItemsLocal = async (): Promise<InventoryItemLocal[]> => {
+  const response = await fetch(`${BASE_URL}/api/inventory/local`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch local inventory items');
+  }
+  return response.json();
+};
+
 const Inventory = (): React.ReactNode => {
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [combinedItems, setCombinedItems] = useState<CombinedInventoryItem[]>([]);
   const [activeItem, setActiveItem] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const items = await getInventoryItems();
-        setInventoryItems(items);
+        const [items, localItems] = await Promise.all([
+          getInventoryItems(),
+          getInventoryItemsLocal(),
+        ]);
+
+        const mergedItems: CombinedInventoryItem[] = localItems.map((local) => {
+          const item = items.find((i) => i.id === local.item_id);
+          if (!item) return null;
+          return {
+            ...item,
+            ...local,
+          };
+        }).filter(Boolean) as CombinedInventoryItem[];
+
+        setCombinedItems(mergedItems);
       } catch (error) {
-        console.error('Error fetching inventory items:', error);
+        console.error('Error fetching or merging inventory items:', error);
       }
     };
 
@@ -50,14 +84,13 @@ const Inventory = (): React.ReactNode => {
       </h1>
       <SearchFilterBar />
       <div className="mt-8 space-y-4 w-full max-w-2xl mx-auto">
-        {inventoryItems.map((item) => (
+        {combinedItems.map((item) => (
           <InventoryItemComponent
             key={item.id}
             name={item.name}
             description={item.description}
-            safetyInfo={item.safteyInfo}
-            approval={item.approval}
-            quantity={1} // Placeholder quantity
+            current_stock={item.current_stock}
+            unit={item.item_unit}
           />
         ))}
       </div>
