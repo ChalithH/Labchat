@@ -34,7 +34,7 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
 
 /**
  * @swagger
- * /take:
+ * /inventory/take:
  *   post:
  *     summary: Takes item(s) from the inventory
  *     tags: [Inventory]
@@ -72,10 +72,8 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
 export const takeItem = async (req: Request, res: Response): Promise<void> => {
     try {
         const { itemId, amountTaken } = req.body;
-        const itemIdInt = parseInt(itemId);
-        const amountTakenInt = parseInt(amountTaken);
         const item = await prisma.labInventoryItem.findUnique({
-            where: { id: itemIdInt },
+            where: { id: itemId },
           });
 
           if (!item) {
@@ -83,15 +81,15 @@ export const takeItem = async (req: Request, res: Response): Promise<void> => {
             return;
           }
 
-          if (item.currentStock < amountTakenInt) {
+          if (item.currentStock < amountTaken) {
             res.status(400).json({ error: 'Not enough stock available' });
             return;
           }
 
           const updatedItem = await prisma.labInventoryItem.update({
-            where: { id: itemIdInt },
+            where: { id: itemId },
             data: {
-              currentStock: item.currentStock - amountTakenInt,
+              currentStock: item.currentStock - amountTaken,
             },
           });
       
