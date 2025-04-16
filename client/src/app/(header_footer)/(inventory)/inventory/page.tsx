@@ -8,10 +8,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 type InventoryItem = {
   id: number;
-  name: string;
-  description: string;
-  safteyInfo: string | null;
-  approval: boolean;
+  itemId: number;
+  labId: number;
+  location: string;
+  itemUnit: string;
+  currentStock: number;
+  minStock: number;
+  updatedAt: string;
+  item: {
+    id: number;
+    name: string;
+    approval: boolean;
+    description: string;
+    safetyInfo: string;
+  };
+  itemTags: unknown[]; //change
+  inventoryLogs: unknown[]; //change
 };
 
 const getInventoryItems = async (): Promise<InventoryItem[]> => {
@@ -39,16 +51,58 @@ const Inventory = (): React.ReactNode => {
     fetchItems();
   }, []);
 
+
   const toggleButtons = (id: number) => {
     setActiveItem(activeItem === id ? null : id);
   };
 
-  const handleTake = (id: number) => {
+  const takeInventoryItem = async (id:number, amount:number): Promise<InventoryItem[]> => {
+    const response = await fetch(`${BASE_URL}/api/inventory/take`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({itemId: id, amountTaken: amount})
+    });
+    if (!response.ok) {
+      throw new Error('Failed to take inventory item');
+    }
+    return response.json();
+  };
+  
+
+  const handleTake = async(id: number) => {
     console.log(`Take item ${id}`);
+    try {
+      await takeInventoryItem(id, 1);
+    } catch (error) {
+      console.error('Failed to take inventory item', error) //out of stock or invalid id
+    }
   };
 
-  const handleRestock = (id: number) => {
+  const replenishInventoryItem = async (id:number, amount:number): Promise<InventoryItem[]> => {
+    const response = await fetch(`${BASE_URL}/api/inventory/replenish`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({itemId: id, amountAdded: amount})
+    });
+    if (!response.ok) {
+      throw new Error('Failed to replenish inventory item');
+    }
+    return response.json();
+  };
+
+  const handleRestock = async(id: number) => {
     console.log(`Restock item ${id}`);
+    try {
+      await replenishInventoryItem(id, 1);
+    } catch (error) {
+      console.error('Failed to replenish inventory item', error) //invalid id
+    }
   };
 
   return (
@@ -61,10 +115,10 @@ const Inventory = (): React.ReactNode => {
         {inventoryItems.map((item) => (
           <InventoryItem
           key={item.id}
-          name={item.name}
-          description={item.description}
-          current_stock={1}
-          unit={"Gram"}
+          name={item.item.name}
+          description={item.item.description}
+          current_stock={item.currentStock}
+          unit={item.itemUnit}
           onTake={() => handleTake(item.id)}
           onRestock={() => handleRestock(item.id)}
           />
