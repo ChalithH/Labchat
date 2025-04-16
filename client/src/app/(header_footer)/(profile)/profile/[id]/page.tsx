@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import ProfileClient from '../../components/ProfileClient'
 import getUserFromSessionServer from '@/utils/getUserFromSessionServer'
+import api from '@/utils/api'
 
 export default async function ProfilePage({ params }:{ params: { id: number }}) {
   const { id } = await params
@@ -14,13 +15,16 @@ export default async function ProfilePage({ params }:{ params: { id: number }}) 
   const user = await getUserFromSessionServer()
 
   const user_id: number = parseInt(user.id, 10)
+  const role_id: number = parseInt(user.roleId, 10)
   
-  if (!user || user_id != id) {
+  if (!user || user_id != id && role_id != 1) {
     redirect('/home')
   }
 
+  const userData = await api.get(`/api/user/get/${ id }`)
+
   return (
     // Real profile page
-    <ProfileClient userData={user} />
+    <ProfileClient userData={userData.data} />
   )
 }

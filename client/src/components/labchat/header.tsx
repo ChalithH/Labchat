@@ -38,6 +38,13 @@ export default function Header() {
     }
   }
 
+  const handleProfile = async () => {
+    if (isLoggedIn) {
+      const user = await getUserFromSession()
+      redirect(`/profile/${ user.id }`)
+    }
+  }
+
   return (
     <header className="flex flex-col justify-center items-center shadow-md border-b border-gray-300 bg-[#F5F7FA] py-4">
       <div className="flex justify-between items-center">
@@ -59,12 +66,16 @@ export default function Header() {
       </div>
       
       { isLoggedIn && 
-        <div className="flex items-center justify-between gap-16">
-          <p>{ userData.displayName }</p>
+        <div className="flex items-center justify-between gap-16 mt-2">
+          <button 
+            className="cursor-pointer bg-sky-500 text-white p-2 rounded-sm"
+            onClick={ handleProfile }>
+              <strong>CLICK ME</strong><br />{ userData.displayName }</button> 
+
           <p>{ userData.id }</p>
 
           <button 
-            className="bg-blue-300 p-2 rounded-sm"
+            className="cursor-pointer bg-sky-500 text-white p-2 rounded-sm"
             onClick={ handleLogout }>
               Log out</button> 
         </div>

@@ -20,7 +20,7 @@ export const requirePermission = (minimum_level: number) => {
       return
     }
 
-    console.log("ROLE PERM LEVEL:", role.permissionLevel)
+    console.log("SESSION USER PERM LEVEL:", role.permissionLevel)
 
     if (role.permissionLevel < minimum_level) {
       res.status(403).send({ msg: 'Insufficient permission' })
