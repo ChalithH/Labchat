@@ -3,6 +3,8 @@ import { swaggerDocs } from './middleware/swaggerDocs.middleware';
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 import { PrismaClient } from '@prisma/client';
 
+import './middleware/local_strategy.middleware'
+
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import passport from 'passport';

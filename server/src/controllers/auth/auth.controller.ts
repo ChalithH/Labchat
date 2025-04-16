@@ -1,42 +1,39 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { NextFunction, Request, Response } from 'express';
+import { PrismaClient, User } from '@prisma/client';
+import passport from 'passport';
+
+import '../../middleware/local_strategy.middleware'
 
 const prisma = new PrismaClient();
 
 
-/* Requires loginEmail and loginPassword to attempt to sign the current session
-   to a user stored in the database. */
-export const getAuth = async (req: Request, res: Response): Promise<void> => {
-  res.status(200).send({ msg: 'Ya entad'})
+// Parameters: { loginEmail, loginPassword }
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  passport.authenticate('local', async (err: { message: any; }, id: number) => {
 
-  // Handled by passport middleware 
-  // const {
-  //   body: { loginEmail, loginPassword }
-  // } = req;
+    /* If execution reaches this point we have already verified that our response
+       email and password match some user stored in the database. */
+       
+    if (err) {
+      console.error('Authentication error -', err.message || err)
+      return res.status(401).json({ error: err.message || 'Authentication failed' })
+    }
 
-  // const user = await prisma.user.findUnique({
-  //   where: { loginEmail },
-  // })
+    // Grab the user from the provided ID
+    const user: User | null = await prisma.user.findUnique({ where: { id }})
 
-  // if (!user) {
-  //   res.status(401).send({ msg: 'User not found' })
-  //   return
-  // }
+    req.logIn(user!, (err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Login failed' });
+      }
 
-  // if (user.loginPassword !== loginPassword) {
-  //   res.status(401).send({ msg: 'Invalid credentials' })
-  //   return
-  // }
-
-  // Create and map user to this session cookie object
-
-  // Don't put entire user object in, will change to relevant attributes
-  // (req.session as any).user = user
-  // res.status(200).send(user)
+      return res.status(200).json({ message: 'Login successful', id })
+    })
+  }) (req, res, next)
 }
 
-// If session has stored auth, clear it
-export const clearAuth = (req: Request, res: Response): void => {
+
+export const logout = (req: Request, res: Response): void => {
   if (!req.user) {
     res.status(401).send({ msg: 'Cannot find a user session' })
     return 
@@ -51,49 +48,23 @@ export const clearAuth = (req: Request, res: Response): void => {
     
     res.status(200).send({ msg: 'Successfully logged out' })
   })
-
-  // const session_user = (req.session as any).user
-  // if ( !session_user ) {
-  //   res.status(401).send({ msg: 'No session stored' })
-  //   return
-  // }
-
-  // req.session.destroy((err) => {
-  //   if (err) {
-  //     res.status(500).send({ msg: 'Failed to log out' })
-  //     return
-  //   }
-  //   res.clearCookie('connect.sid')
-  //   res.status(200).send({ msg: 'Logged out successfully' })
-  // })
-  // return
 }
 
-// Will return user object stored in the database that associates to user in session
-export const isAuth = async (req: Request, res: Response): Promise<void> => {
+
+export const status = async (req: Request, res: Response): Promise<void> => {
   if (req.user) {
+    // console.log(req.session)
+
     res.status(200).send(req.user)
-    console.log(req.session)
     return
   }
 
   res.status(401).send({ msg: 'Cannot find a user session' })
   return
-  
-  // req.sessionStore.get(req.session.id, (err, session) => {
-  //   session && console.log(session)
-  // })
-
-  // const session_user = (req.session as any).user
-  // if ( session_user ) {
-  //   res.status(200).send(session_user)
-  //   return
-  // }
-  // res.status(401).send({ msg: 'No session stored' })
-  // return
 }
 
-export const protectedPoint = (req: Request, res: Response): void => {
-  res.status(200).send({ msg: 'Message' })
+
+export const locked = (req: Request, res: Response): void => {
+  res.status(200).send({ msg: 'A very secret message' })
   return
 }

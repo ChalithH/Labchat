@@ -6,14 +6,14 @@ import { useRouter } from 'next/navigation'
 import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 
-import api from '@/lib/api';
+import api from '@/utils/api';
 
 
 export default function Login() {
   const router = useRouter()
 
-  const [email, setEmail] = useState<string>()
-  const [password, setPassword] = useState<string>()
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
   const [error, setError] = useState<string | undefined>('')
   const [message, setMessage] = useState<string | undefined>('')
 
@@ -22,6 +22,7 @@ export default function Login() {
     
     try {
       await api.post("/api/auth/login", { loginEmail: email, loginPassword: password })
+
       setError(undefined)
       setMessage('Login successful')
       
@@ -58,7 +59,6 @@ export default function Login() {
                 type="email"
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm bg-[#739CEA] focus:border-white focus:ring-white bg-opacity-90 placeholder:text-gray-400"
-                placeholder="Enter your email"
                 value={ email }
                 onChange={ e => setEmail(e.target.value) }
               />

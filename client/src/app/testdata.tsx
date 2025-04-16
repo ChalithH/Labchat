@@ -1,7 +1,7 @@
 import { TopicType, ThreadType, UserType, ReplyType } from '@/types/TestTypes'
 
 export const FIRST_USER_DATA: UserType = {
-    id: 1,
+    id: 11,
     name: 'Cole Howard',
     title: 'User',
     job_title: 'Student',
@@ -15,7 +15,7 @@ export const FIRST_USER_DATA: UserType = {
 }
 
 export const SECOND_USER_DATA: UserType = {
-    id: 1,
+    id: 2,
     name: 'Chalith Hewage',
     title: 'Lab Manager',
     job_title: 'Researcher',

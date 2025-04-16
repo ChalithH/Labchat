@@ -1,28 +1,40 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import { hashPassword } from '../../utils/hashing.util';
 
 const prisma = new PrismaClient();
 
-
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id, ...user_data  } = req.body
+    const user_data = req.body;
 
-    if (user_data.loginEmail && await prisma.user.findUnique({ where: { loginEmail: user_data.loginEmail } })) {
+    if (user_data.loginEmail && await prisma.user.findUnique({ where: { loginEmail: user_data.loginEmail } })){
       res.status(409).json({ error: 'Email already registered' })
       return
     }
 
-    const hashed_password = await hashPassword(user_data.loginPassword)
+    const hashed_password: string = await hashPassword(user_data.loginPassword)
+    const { id: number, ...data } = user_data;
 
-    const user = await prisma.user.create({ data: { ...user_data, loginPassword: hashed_password } })
-    
+    const user: User = await prisma.user.create({
+      data: {
+        ...data,
+        loginPassword: hashed_password 
+      }
+    })
+
     res.status(201).json(user)
     return
 
   } catch (error) {
-    console.error(error)
+    const user_data = req.body;
+
+    const found_user: boolean = await prisma.user.findUnique({ where: { username: user_data.username }}) ? true : false
+    if (found_user) {
+      res.status(409).json({ error: 'Username already exists' })
+      return
+    }
+
     res.status(500).json({ error: 'Failed to create user' })
     return
   }
