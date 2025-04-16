@@ -25,12 +25,120 @@ const prisma = new PrismaClient();
 
 export const getInventory = async (req: Request, res: Response): Promise<void> => {
     try {
-        const inventoryItems = await prisma.item.findMany();
+        const inventoryItems = await prisma.labInventoryItem.findMany({
+            include: {
+                item: true, 
+                itemTags: true,  
+                inventoryLogs: true
+            }
+        });
+        
         res.json(inventoryItems);
     } catch (error) {
+        console.error("Error retrieving inventory items:", error);
         res.status(500).json({ error: 'Failed to retrieve inventory items' });
     }
 }
+
+export const getInventoryItem = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const inventoryItems = await prisma.labInventoryItem.findMany({
+            include: {
+                item: true, 
+                itemTags: true,  
+                inventoryLogs: true
+            }
+        });
+        
+        res.json(inventoryItems);
+    } catch (error) {
+        console.error("Error retrieving inventory items:", error);
+        res.status(500).json({ error: 'Failed to retrieve inventory items' });
+    }
+}
+
+/**
+ * @swagger
+ * /inventory/name/{name}:
+ *   get:
+ *     summary: Get inventory item by item name
+ *     tags: [Inventory]
+ *     parameters:
+ *       - in: path
+ *         name: name
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Name of the item to find
+ *     responses:
+ *       200:
+ *         description: Inventory item with detailed information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 itemId:
+ *                   type: integer
+ *                 labId:
+ *                   type: integer
+ *                 location:
+ *                   type: string
+ *                 itemUnit:
+ *                   type: string
+ *                 currentStock:
+ *                   type: integer
+ *                 minStock:
+ *                   type: integer
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                 item:
+ *                   $ref: '#/components/schemas/Item'
+ *                 itemTags:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/ItemTag'
+ *       404:
+ *         description: Inventory item not found
+ *       500:
+ *         description: Failed to retrieve inventory item
+ */
+
+export const getInventoryItemByName = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { name } = req.params;
+        
+        // Find the inventory item where the related item's name matches
+        const inventoryItem = await prisma.labInventoryItem.findFirst({
+            where: {
+                item: {
+                    name: {
+                        equals: name,
+                        mode: 'insensitive' // Case-insensitive search
+                    }
+                }
+            },
+            include: {
+                item: true,      // Include the related item data
+                itemTags: true   // Include any item tags
+            }
+        });
+        
+        if (!inventoryItem) {
+            res.status(404).json({ error: 'Inventory item not found' });
+            return;
+        }
+        
+        res.json(inventoryItem);
+    } catch (error) {
+        console.error("Error retrieving inventory item:", error);
+        res.status(500).json({ error: 'Failed to retrieve inventory item' });
+    }
+}
+
 
 /**
  * @swagger
