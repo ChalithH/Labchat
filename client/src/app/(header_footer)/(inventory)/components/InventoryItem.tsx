@@ -39,30 +39,35 @@ const InventoryItem = ({
           <span className="font-medium">{current_stock}</span> {unit}
           {current_stock !== 1 ? 's' : ''} remaining
         </p>
-        <p className="text-sm text-gray-500 mt-1">Description: {description}</p>
       </CardContent>
 
       {isOpen && (
-        <CardFooter className="flex justify-center gap-4">
-          <Button
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              onTake();
-            }}
-          >
-            Take
-          </Button>
-          <Button
-            variant="default"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRestock();
-            }}
-          >
-            Restock
-          </Button>
-        </CardFooter>
+        <>
+          <hr className="border-t border-gray-300 mx-4" />
+          <CardFooter className="flex flex-col items-start gap-4">
+            <p className="text-sm text-gray-600">Description: {description}</p>
+            <div className="flex justify-center gap-4 self-center">
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTake();
+                }}
+              >
+                Take
+              </Button>
+              <Button
+                variant="default"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRestock();
+                }}
+              >
+                Restock
+              </Button>
+            </div>
+          </CardFooter>
+        </>
       )}
     </Card>
   );
