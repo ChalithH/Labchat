@@ -1,8 +1,6 @@
 import { PrismaClient, User } from '@prisma/client'
 import { Request, Response, NextFunction } from 'express'
-import { session } from 'passport';
-
-const prisma = new PrismaClient();
+import { prisma } from '..'
 
 
 export const requirePermission = (minimum_level: number) => {

@@ -8,18 +8,18 @@ import { requirePermission } from '../middleware/permission.middleware';
  * @swagger
  * tags:
  *   name: Auth
- *   description: Auth management API
+ *   description: Authentication and authorisation management API
  */
 const router = Router();
 
 
 // /api/auth/
-router.get('/status', status);
+router.get('/locked', requirePermission(20), locked);
 
+router.get('/status', status);
 router.get('/logout', logout);
 
 router.post('/login', login);
 
-router.get('/locked', requirePermission(20), locked);
 
 export default router;
