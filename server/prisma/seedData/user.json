@@ -5,7 +5,7 @@
     "universityId": "admin001",
     "username": "admin_user",
     "loginEmail": "admin@labchat.com",
-    "loginPassword": "$2a$10$BQK9nLRAvpY0C0Rv5XQFb.UYZqnvS9zVz6Tv..mPmNIQZ/KYXwPHC",
+    "loginPassword": "admin",
     "firstName": "System",
     "lastName": "Admin",
     "displayName": "System Admin",

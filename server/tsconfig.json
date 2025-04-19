@@ -9,7 +9,9 @@
     "outDir": "./dist",
     "rootDir": "./",
     "resolveJsonModule": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node", "express"]
   },
-  "include": ["src/**/*", "prisma/**/*"]
+  "include": ["src", "src/**/*", "prisma/**/*", "src/types/*"]
 }

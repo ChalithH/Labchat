@@ -12,9 +12,11 @@ import car from '@/../public/car.svg';
 import computer from '@/../public/computer.svg';
 import aboutStar from '@/../public/aboutStar.svg';
 import chooseStar from '@/../public/chooseStar.svg';
-
+import setUsersLastViewed from '@/utils/setUsersLastViewed.utils';
 
 export default function Home() {
+  setUsersLastViewed(`/home`)
+  
   return (
     <div className="relative w-full  bg-[#F5F7FA] flex flex-col items-center justify-center">
       <img className="mt-5 ml-4" src={headerImage.src} alt="header image" />

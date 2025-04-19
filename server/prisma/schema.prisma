@@ -13,6 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Session Management
+model Session {
+  id            String   @id
+  sid           String   @unique
+  data          String
+  expiresAt     DateTime @map("expires_at")
+
+  @@map("session")
+}
+
 // User Management
 model User {
   id             Int            @id @default(autoincrement())
@@ -28,6 +38,7 @@ model User {
   office         String?
   bio            String?        @db.VarChar(256)
   dateJoined     DateTime       @default(now())
+  lastViewed     String?
   
   // Relationships
   role           Role           @relation(fields: [roleId], references: [id])

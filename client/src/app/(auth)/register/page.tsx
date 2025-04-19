@@ -1,8 +1,62 @@
+'use client'
+
+import { useState } from 'react';
+
 import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 
+import api from '@/utils/api';
+import { useRouter } from 'next/navigation';
+import { UserType } from '@/types/User.type';
+
 
 export default function Register() {
+  const router = useRouter()
+
+  const [firstName, setFirstName] = useState<string>('')
+  const [lastName, setLastName] = useState<string>('')
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [confirmPassword, setConfirmPassword] = useState<string>('')
+
+  const [error, setError] = useState<string | undefined>(undefined)
+  const [message, setMessage] = useState<string | undefined>(undefined)
+
+  const new_user: UserType = {
+    roleId: 6, /* Vistor */
+    universityId: '',
+    username: `${ firstName }_${ lastName }`,
+    loginEmail: email,
+    loginPassword: password,
+    firstName: firstName,
+    lastName: lastName,
+    displayName: `${ firstName } ${ lastName }`,
+    jobTitle: '',
+    office: '',
+    bio: '',
+    dateJoined: new Date().toISOString()
+  }
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      if (password !== confirmPassword) {
+        setMessage(undefined)
+        setError("Passwords do not match")
+        return
+      }
+
+      await api.post('/api/user/', new_user)
+      setError(undefined)
+      setMessage('Registration successful')
+      
+      router.push('/login')
+      
+    } catch (err: any) {
+      setError(err.response.data.error)
+    }
+  }
+  
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#739CEA]">
       <div className="w-full max-w-md space-y-6 rounded-xl">
@@ -10,8 +64,13 @@ export default function Register() {
           subtitle="Register"
           className="mb-8"
         />
+        <form onSubmit={ handleFormSubmit } className="space-y-5 p-8">
+          { (error || message) &&
+            <div className={ `${error ? 'bg-red-500' : 'bg-green-500'}` + ' text-white m-auto rounded-sm p-3 mb-6' }>
+              <p>{ error || message }</p>
+            </div>
+          }
 
-        <form className="space-y-5 p-8">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-white">
@@ -24,6 +83,8 @@ export default function Register() {
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
                 placeholder="First name"
+                value={ firstName }
+                onChange={ e => setFirstName(e.target.value) }
               />
             </div>
             <div>
@@ -37,6 +98,8 @@ export default function Register() {
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
                 placeholder="Last name"
+                value={ lastName }
+                onChange={ e => setLastName(e.target.value) }
               />
             </div>
           </div>
@@ -52,6 +115,8 @@ export default function Register() {
               required
               className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
               placeholder="Enter your email"
+              value={ email }
+              onChange={ e => setEmail(e.target.value) }
             />
           </div>
 
@@ -67,6 +132,8 @@ export default function Register() {
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
                 placeholder="Password"
+                value={ password }
+                onChange={ e => setPassword(e.target.value) }
               />
             </div>
             <div>
@@ -80,6 +147,8 @@ export default function Register() {
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
                 placeholder="Confirm password"
+                value={ confirmPassword }
+                onChange={ e => setConfirmPassword(e.target.value) }
               />
             </div>
           </div>

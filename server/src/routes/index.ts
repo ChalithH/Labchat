@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import userRoutes from './user.routes';
+import userRoutes from './models/user.routes';
+import authRoutes from './auth.routes';
+import inventoryRoutes from './inventory.routes';
+import roleRoutes from './models/role.routes';
 
 const router = Router();
 
@@ -29,6 +32,13 @@ router.get('/', (req, res) => {
   });
 });
 
-router.use('/users', userRoutes);
+
+router.use('/auth', authRoutes);
+router.use('/inventory', inventoryRoutes);
+
+// Models
+router.use('/user', userRoutes);
+router.use('/role', roleRoutes);
+
 
 export default router;

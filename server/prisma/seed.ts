@@ -48,7 +48,6 @@ async function main() {
     "instrumentBooking.json",
     "instrumentIssue.json",
     "issuePost.json",
-    "instrumentLog.json",
     "task.json",
     "taskAssignment.json",
     "clockInLog.json",
