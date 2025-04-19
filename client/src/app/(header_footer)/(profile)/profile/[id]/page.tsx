@@ -4,6 +4,7 @@ import ProfileClient from '../../components/ProfileClient'
 import getUserFromSessionServer from '@/utils/getUserFromSessionServer'
 import api from '@/utils/api'
 import setUsersLastViewed from '@/utils/setUsersLastViewed.utils'
+import ResolveRoleName from '../../utils/resolveRoleName.util'
 
 export default async function ProfilePage({ params }:{ params: { id: number }}) {
   const { id } = await params
@@ -25,6 +26,10 @@ export default async function ProfilePage({ params }:{ params: { id: number }}) 
   }
 
   const userData = await api.get(`/api/user/get/${ id }`)
+
+  // Add data requried for Profile page
+  userData.data.role = await ResolveRoleName(role_id)
+
 
   return (
     // Real profile page

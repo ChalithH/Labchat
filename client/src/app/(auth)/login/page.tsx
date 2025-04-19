@@ -9,6 +9,7 @@ import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 import api from '@/utils/api';
 import getUserFromSession from '@/utils/getUserFromSession';
 
+const DEFAULT_REDIRECT_ROUTE = 'home'
 
 export default function Login() {
   const router = useRouter()
@@ -29,7 +30,7 @@ export default function Login() {
       
       const user = await getUserFromSession()
 
-      router.push(`http://localhost:3000/${ user.lastViewed || 'home' }`)
+      router.push(`http://localhost:3000/${ user.lastViewed || DEFAULT_REDIRECT_ROUTE }`)
     } catch (err: any) {
       setMessage(undefined)
       setError(err.response.data.error)

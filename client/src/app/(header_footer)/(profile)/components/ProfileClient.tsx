@@ -24,11 +24,11 @@ export default function ProfileClient({ userData }: { userData: any }) {
       </button>
 
       <div className='bg-green-500 text-center text-sm text-white tracking-tight py-2 rounded-md mb-4'>
-        <p>Currently { userData.status || '' }</p>
+        <p>Status</p>
       </div>
 
       <div className='flex justify-center'>
-        <ThreadAuthorGroup name={ `${ userData.firstName } ${ userData.lastName }` } role={ userData.roleId } job_title={ userData.jobTitle } size={ 64 } />
+        <ThreadAuthorGroup name={ `${ userData.firstName } ${ userData.lastName }` } role={ userData.role } job_title={ userData.jobTitle } size={ 64 } />
       </div>
 
       <div className='my-2 mb-6'>
