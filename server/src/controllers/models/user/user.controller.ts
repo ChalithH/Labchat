@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { User } from '@prisma/client';
-import { hashPassword } from '../../utils/hashing.util';
-import { prisma } from '../..';
+import { hashPassword } from '../../../utils/hashing.util';
+import { prisma } from '../../..';
 
 
 export const createUser = async (req: Request, res: Response): Promise<void> => {
