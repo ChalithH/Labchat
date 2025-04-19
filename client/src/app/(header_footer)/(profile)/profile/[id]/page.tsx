@@ -29,6 +29,9 @@ export default async function ProfilePage({ params }:{ params: { id: number }}) 
 
   // Add data requried for Profile page
   userData.data.role = await ResolveRoleName(role_id)
+  
+  const contact_response = await api.get(`/api/contact/get/${ id }`)
+  userData.data.contacts = contact_response.data
 
 
   return (

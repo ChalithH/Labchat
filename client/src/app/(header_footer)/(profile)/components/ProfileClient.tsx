@@ -2,6 +2,8 @@
 
 import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 import api from '@/utils/api'
+import { ContactType } from '../types/contact.type'
+import ContactGroup from './ContactGroup'
 
 export default function ProfileClient({ userData }: { userData: any }) {
   const handleButtonClick = async () => {
@@ -13,6 +15,8 @@ export default function ProfileClient({ userData }: { userData: any }) {
       alert(`${ err.message} - ${ err.request.statusText }`);
     }
   }
+
+  const contacts: ContactType[] = userData.contacts 
 
   return (
     <main className="barlow-font w-[90dvw] m-auto mt-4">
@@ -33,12 +37,25 @@ export default function ProfileClient({ userData }: { userData: any }) {
 
       <div className='my-2 mb-6'>
         <h1 className='text-3xl font-semibold barlow-font'>Bio</h1>
-        <p className='text-sm'>{ userData.bio }</p>
+        <p className='text-sm'>{ userData.bio || 'Nothing displayed' }</p>
       </div>
 
-      <section className='flex flex-col gap-2'>
+      <section>
         <h1 className='text-3xl font-semibold barlow-font'>Contacts</h1>
 
+        {
+          contacts.length > 0 ?
+            <div className='mt-2 flex flex-col gap-4'>
+              { contacts.map( contact =>
+                <ContactGroup key={ contact.id } contact={ contact } />
+              ) }
+            </div>
+          :
+            <p className='text-sm'>
+              { userData.firstName } has no contacts
+            </p>
+        }
+        
       </section>
     </main>
   )

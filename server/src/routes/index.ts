@@ -3,6 +3,7 @@ import userRoutes from './models/user.routes';
 import authRoutes from './auth.routes';
 import inventoryRoutes from './inventory.routes';
 import roleRoutes from './models/role.routes';
+import contactRoutes from './models/contact.routes';
 
 const router = Router();
 
@@ -39,6 +40,7 @@ router.use('/inventory', inventoryRoutes);
 // Models
 router.use('/user', userRoutes);
 router.use('/role', roleRoutes);
+router.use('/contact', contactRoutes);
 
 
 export default router;
