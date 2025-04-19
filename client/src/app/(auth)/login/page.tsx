@@ -29,7 +29,7 @@ export default function Login() {
       
       const user = await getUserFromSession()
 
-      router.push(`http://localhost:3000/${ user.lastViewed }`)
+      router.push(`http://localhost:3000/${ user.lastViewed || 'home' }`)
     } catch (err: any) {
       setMessage(undefined)
       setError(err.response.data.error)
