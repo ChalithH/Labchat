@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { hashPassword } from '../../utils/hashing.util';
+import { prisma } from '../..';
 
-const prisma = new PrismaClient();
 
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -14,7 +14,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     }
 
     const hashed_password: string = await hashPassword(user_data.loginPassword)
-    const { id: number, ...data } = user_data;
+    const { id, ...data } = user_data;
 
     const user: User = await prisma.user.create({
       data: {
@@ -35,6 +35,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       return
     }
 
+    console.log(error)
     res.status(500).json({ error: 'Failed to create user' })
     return
   }
@@ -107,5 +108,27 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve user' });
+  }
+};
+
+
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+    const user_data = req.body;
+
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid user ID" });
+      return;
+    }
+    
+    const user = await prisma.user.update({
+      where: { id },
+      data: { ...user_data },
+    });
+    res.json(user);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Failed to update user' });
   }
 };

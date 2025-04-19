@@ -3,10 +3,13 @@ import { redirect } from 'next/navigation'
 import ProfileClient from '../../components/ProfileClient'
 import getUserFromSessionServer from '@/utils/getUserFromSessionServer'
 import api from '@/utils/api'
+import setUsersLastViewed from '@/utils/setUsersLastViewed.utils'
 
 export default async function ProfilePage({ params }:{ params: { id: number }}) {
   const { id } = await params
-  
+  setUsersLastViewed(`/profile/${ id }`)
+
+
   // We want this information now since the result of it
   // depends on whether the content should be visible.
 

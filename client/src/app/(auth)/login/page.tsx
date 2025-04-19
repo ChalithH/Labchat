@@ -7,6 +7,7 @@ import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 
 import api from '@/utils/api';
+import getUserFromSession from '@/utils/getUserFromSession';
 
 
 export default function Login() {
@@ -21,12 +22,14 @@ export default function Login() {
     e.preventDefault()
     
     try {
-      await api.post("/api/auth/login", { loginEmail: email, loginPassword: password })
+      const response = await api.post("/api/auth/login", { loginEmail: email, loginPassword: password })
 
       setError(undefined)
       setMessage('Login successful')
       
-      router.push('/home')
+      const user = await getUserFromSession()
+
+      router.push(`http://localhost:3000/${ user.lastViewed }`)
     } catch (err: any) {
       setMessage(undefined)
       setError(err.response.data.error)
