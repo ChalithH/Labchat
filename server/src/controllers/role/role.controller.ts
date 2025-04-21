@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../../..';
+import { prisma } from '../..';
 
 
 export const getRoles = async (_: Request, res: Response): Promise<void> => {

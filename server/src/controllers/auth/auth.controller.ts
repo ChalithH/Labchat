@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import passport from 'passport';
 
 import '../../middleware/local_strategy.middleware'

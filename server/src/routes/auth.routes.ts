@@ -1,4 +1,4 @@
-import { NextFunction, Router } from 'express';
+import { Router } from 'express';
 
 import { login, logout, locked, status } from '../controllers/auth/auth.controller';
 import { requirePermission } from '../middleware/permission.middleware';

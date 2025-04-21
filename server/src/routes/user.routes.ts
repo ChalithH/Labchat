@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getUsers, getUserById, createUser, updateUser } from '../../controllers/models/user/user.controller';
+import { getUsers, getUserById, createUser, updateUser } from '../controllers/user/user.controller';
 
 /**
  * @swagger

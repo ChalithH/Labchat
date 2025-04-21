@@ -1,15 +1,16 @@
 import { Router } from 'express';
-import { getContactsByUserId, getContacts } from '../../controllers/models/contact/contact.controller';
+import { getContactsByUserId, getContacts } from '../controllers/profile/profile.controller';
 
 /**
  * @swagger
  * tags:
- *   name: Contact
- *   description: Contact management API
+ *   name: Profile
+ *   description: Profile management API
  */
 const router = Router();
 
 
+// Contacts
 router.get('/get', getContacts);
 router.get('/get/:id', getContactsByUserId);
 
