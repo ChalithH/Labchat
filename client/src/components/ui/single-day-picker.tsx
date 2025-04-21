@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 
 import type { ButtonHTMLAttributes } from "react";
 
-// ================================== //
 
 type TProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect" | "value"> & {
   onSelect: (value: Date | undefined) => void;
