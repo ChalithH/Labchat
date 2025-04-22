@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 //Helper functions to validate event input
 type BaseEventInput = {
+    id?: number;
     labId: number;
     memberId: number;
     title: string;
@@ -120,22 +121,85 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
     }
 }
 
-export const updateEvent = async (req: Request, res: Response): Promise<void> => {
+export const updateEvent = async (req: Request<{}, {}, EventRequestBody>, res: Response): Promise<void> => {
     try {
-        const eventType = req.body.eventType;
+        const eventId = req.body.id;
+
+        const eventtoUpdate = await prisma.event.findUnique({
+            where: { id: eventId },
+        });
+        if (!eventtoUpdate) {
+            res.status(404).json({ error: 'Event not found' });
+            return;
+        }
+
+        const eventType = req.body.type;
+
+        let errors: string[] = [];
 
         if (eventType === 'rostering') {
-            const { id, start, end, title, description } = req.body;
+          errors = validateRosteringEvent(req.body);
         } else if (eventType === 'equipment') {
-            const { id, start, end, title, description } = req.body;
+          errors = validateEquipmentEvent(req.body);
         } else {
-            res.status(400).json({ error: 'Invalid event type' });
+          res.status(400).json({ error: 'Invalid event type' });
+          return;
+        }
+    
+        if (errors.length > 0) {
+          res.status(400).json({ error: errors });
+          return;
+        }
+
+        if (eventType === 'rostering') {
+            const { labId, memberId, title, description, status, startTime, endTime } = req.body;
+
+            const updatedEvent = await prisma.event.update({
+                where: {
+                    id: eventId,
+                  },
+                data: {
+                    labId,
+                    memberId,
+                    title,
+                    description,
+                    status,
+                    startTime: startTime,
+                    endTime: endTime,
+                    type: 'rostering',
+                }
+            });
+
+            res.status(201).json(updatedEvent);
+
+        } else if (eventType === 'equipment') {
+            const { labId, memberId, instrumentId, title, description, status, startTime, endTime } = req.body;
+
+            const updatedEvent = await prisma.event.update({
+                where: {
+                    id: eventId,
+                  },
+                data: {
+                    labId,
+                    memberId,
+                    instrumentId,
+                    title,
+                    description,
+                    status,
+                    startTime: startTime,
+                    endTime: endTime,
+                    type: 'equipment',
+                }
+            });
+
+            res.status(201).json(updatedEvent);
+
         }
 
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Failed to update event' });
     }
-
 }
 
 export const assignMember = async (req: Request, res: Response): Promise<void> => {
@@ -155,6 +219,4 @@ export const changeMembers = async (req: Request, res: Response): Promise<void> 
     }
 
 }
-
-
 
