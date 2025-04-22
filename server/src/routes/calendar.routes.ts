@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { } from "../controllers/calendar/calendar.controller";
+import { assignMember, createEvent, updateEvent, changeMembers }  from '../controllers/calendar/calendar.controller';
 
 /**
  * @swagger
@@ -8,5 +8,10 @@ import { } from "../controllers/calendar/calendar.controller";
  *   description: Calendar API
  */
 const router = Router();
+
+router.post('/create-event', createEvent);
+router.put('/update-event', updateEvent);
+router.post('/assign-member', assignMember);
+router.put('/change-members', changeMembers);
 
 export default router;
