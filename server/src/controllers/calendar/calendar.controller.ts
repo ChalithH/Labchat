@@ -70,17 +70,13 @@ type BaseEventInput = {
  *           schema:
  *             type: object
  *             required:
- *               - type
  *               - labId
  *               - memberId
  *               - title
  *               - startTime
  *               - endTime
+ *               - type
  *             properties:
- *               type:
- *                 type: string
- *                 enum: [rostering, equipment]
- *                 description: Type of the event
  *               labId:
  *                 type: integer
  *                 description: ID of the lab where the event is scheduled
@@ -109,6 +105,10 @@ type BaseEventInput = {
  *                 type: string
  *                 format: date-time
  *                 description: End time of the event
+ *               type:
+ *                 type: string
+ *                 enum: [rostering, equipment]
+ *                 description: Type of the event
  *     responses:
  *       201:
  *         description: Event successfully created
@@ -199,20 +199,16 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
  *             type: object
  *             required:
  *               - id
- *               - type
  *               - labId
  *               - memberId
  *               - title
  *               - startTime
  *               - endTime
+ *               - type
  *             properties:
  *               id:
  *                 type: integer
  *                 description: ID of the event to update
- *               type:
- *                 type: string
- *                 enum: [rostering, equipment]
- *                 description: Type of the event
  *               labId:
  *                 type: integer
  *                 description: ID of the lab where the event is scheduled
@@ -241,6 +237,10 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
  *                 type: string
  *                 format: date-time
  *                 description: End time of the event
+ *               type:
+ *                 type: string
+ *                 enum: [rostering, equipment]
+ *                 description: Type of the event
  *     responses:
  *       201:
  *         description: Event successfully updated
@@ -334,6 +334,85 @@ export const updateEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to update event' });
+    }
+}
+
+/**
+ * @swagger
+ * /calendar/delete-event:
+ *   delete:
+ *     summary: Deletes an event by ID
+ *     tags: [Calendar]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: ID of the event to delete
+ *     responses:
+ *       200:
+ *         description: Event deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Event deleted successfully
+ *       404:
+ *         description: Event not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Event not found
+ *       500:
+ *         description: Failed to delete event
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to delete event
+ */
+
+export const deleteEvent = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const eventId: number = req.body.id;
+
+        // Check if the event exists
+        const event = await prisma.event.findUnique({
+            where: { id: eventId },
+        });
+
+        if (!event) {
+            res.status(404).json({ error: 'Event not found' });
+            return;
+        }
+
+        // Delete the event
+        await prisma.event.delete({
+            where: { id: eventId },
+        });
+
+        res.status(200).json({event,  message: 'Event deleted successfully' });
+
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to delete event' });
     }
 }
 /**

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { assignMember, createEvent, updateEvent, removeMember }  from '../controllers/calendar/calendar.controller';
+import { assignMember, createEvent, updateEvent, removeMember, deleteEvent }  from '../controllers/calendar/calendar.controller';
 
 /**
  * @swagger
@@ -11,6 +11,7 @@ const router = Router();
 
 router.post('/create-event', createEvent);
 router.put('/update-event', updateEvent);
+router.delete('/delete-event', deleteEvent);
 router.post('/assign-member', assignMember);
 router.delete('/remove-member', removeMember);
 
