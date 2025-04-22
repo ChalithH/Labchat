@@ -1,5 +1,5 @@
-import api from "@/utils/api";
-import getUserFromSessionServer from "./getUserFromSessionServer";
+import api from "@/lib/api";
+import getUserFromSessionServer from "./get_user_server";
 
 const setUsersLastViewed = async (page: string) => {
   try {
