@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "memberId": 2,
+    "eventId": 1
+  },
+  {
+    "id": 2,
+    "memberId": 4,
+    "eventId": 2
+  },
+  {
+    "id": 3,
+    "memberId": 4,
+    "eventId": 3
+  },
+  {
+    "id": 4,
+    "memberId": 5,
+    "eventId": 3
+  },
+  {
+    "id": 5,
+    "memberId": 2,
+    "eventId": 4
+  },
+  {
+    "id": 6,
+    "memberId": 3,
+    "eventId": 4
+  },
+  {
+    "id": 7,
+    "memberId": 7,
+    "eventId": 5
+  },
+  {
+    "id": 8,
+    "memberId": 6,
+    "eventId": 6
+  },
+  {
+    "id": 9,
+    "memberId": 1,
+    "eventId": 7
+  },
+  {
+    "id": 10,
+    "memberId": 2,
+    "eventId": 7
+  },
+  {
+    "id": 11,
+    "memberId": 3,
+    "eventId": 7
+  },
+  {
+    "id": 12,
+    "memberId": 4,
+    "eventId": 7
+  }
+]
