@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "labId": 1,
+    "memberId": 1,
+    "instrumentId": 1,
+    "title": "HPLC Analysis Session",
+    "description": "Analysis of protein samples using HPLC System #1",
+    "status": "scheduled",
+    "startTime": "2025-04-15T09:00:00.000Z",
+    "endTime": "2025-04-15T12:00:00.000Z",
+    "type": "instrument_booking"
+  },
+  {
+    "id": 2,
+    "labId": 1,
+    "memberId": 2,
+    "instrumentId": 3,
+    "title": "NMR Spectroscopy Run",
+    "description": "Structure elucidation of synthesized compounds",
+    "status": "scheduled",
+    "startTime": "2025-04-17T10:00:00.000Z",
+    "endTime": "2025-04-17T14:00:00.000Z",
+    "type": "instrument_booking"
+  },
+  {
+    "id": 3,
+    "labId": 1,
+    "memberId": 1,
+    "instrumentId": null,
+    "title": "Weekly Lab Cleaning",
+    "description": "General cleaning of lab benches, equipment, and common areas",
+    "status": "pending",
+    "startTime": "2025-04-18T15:00:00.000Z",
+    "endTime": "2025-04-18T17:00:00.000Z",
+    "type": "task"
+  },
+  {
+    "id": 4,
+    "labId": 1,
+    "memberId": 1,
+    "instrumentId": null,
+    "title": "Chemical Inventory Audit",
+    "description": "Complete audit of all chemicals in storage, update inventory records",
+    "status": "assigned",
+    "startTime": "2025-04-20T09:00:00.000Z",
+    "endTime": "2025-04-20T13:00:00.000Z",
+    "type": "task"
+  },
+  {
+    "id": 5,
+    "labId": 2,
+    "memberId": 7,
+    "instrumentId": 6,
+    "title": "Rotary Evaporator Use",
+    "description": "Solvent removal for compound purification",
+    "status": "scheduled",
+    "startTime": "2025-04-19T13:00:00.000Z",
+    "endTime": "2025-04-19T15:00:00.000Z",
+    "type": "instrument_booking"
+  },
+  {
+    "id": 6,
+    "labId": 2,
+    "memberId": 7,
+    "instrumentId": null,
+    "title": "Waste Disposal",
+    "description": "Collection and proper disposal of chemical waste",
+    "status": "completed",
+    "startTime": "2025-04-14T13:00:00.000Z",
+    "endTime": "2025-04-14T15:00:00.000Z",
+    "type": "task"
+  },
+  {
+    "id": 7,
+    "labId": 1,
+    "memberId": 1,
+    "instrumentId": null,
+    "title": "Lab Safety Training",
+    "description": "Mandatory safety training for all lab members",
+    "status": "scheduled",
+    "startTime": "2025-04-22T14:00:00.000Z",
+    "endTime": "2025-04-22T16:00:00.000Z",
+    "type": "meeting"
+  }
+]
