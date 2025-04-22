@@ -56,6 +56,72 @@ type BaseEventInput = {
     return errors;
   }
 
+
+/**
+ * @swagger
+ * /calendar/create-event:
+ *   post:
+ *     summary: Creates a new rostering or equipment event
+ *     tags: [Calendar]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - labId
+ *               - memberId
+ *               - title
+ *               - startTime
+ *               - endTime
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [rostering, equipment]
+ *                 description: Type of the event
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab where the event is scheduled
+ *               memberId:
+ *                 type: integer
+ *                 description: ID of the lab member associated with the event
+ *               instrumentId:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: ID of the instrument (required for equipment events)
+ *               title:
+ *                 type: string
+ *                 description: Title of the event
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional description of the event
+ *               status:
+ *                 type: string
+ *                 description: Status of the event (e.g., scheduled, cancelled)
+ *               startTime:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Start time of the event
+ *               endTime:
+ *                 type: string
+ *                 format: date-time
+ *                 description: End time of the event
+ *     responses:
+ *       201:
+ *         description: Event successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Validation error or invalid event type
+ *       500:
+ *         description: Failed to create event
+ */
+
 export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: Response): Promise<void> => {
     try {
         const eventType = req.body.type;
@@ -120,6 +186,76 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
         res.status(500).json({ error: 'Failed to create event' });
     }
 }
+/**
+ * @swagger
+ * /calendar/update-event:
+ *   put:
+ *     summary: Updates an existing event (rostering or equipment)
+ *     tags: [Calendar]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - type
+ *               - labId
+ *               - memberId
+ *               - title
+ *               - startTime
+ *               - endTime
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: ID of the event to update
+ *               type:
+ *                 type: string
+ *                 enum: [rostering, equipment]
+ *                 description: Type of the event
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab where the event is scheduled
+ *               memberId:
+ *                 type: integer
+ *                 description: ID of the lab member associated with the event
+ *               instrumentId:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: ID of the instrument (required for equipment events)
+ *               title:
+ *                 type: string
+ *                 description: Title of the event
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional description of the event
+ *               status:
+ *                 type: string
+ *                 description: Status of the event (e.g., scheduled, cancelled)
+ *               startTime:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Start time of the event
+ *               endTime:
+ *                 type: string
+ *                 format: date-time
+ *                 description: End time of the event
+ *     responses:
+ *       201:
+ *         description: Event successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Validation error or invalid event type
+ *       404:
+ *         description: Event not found
+ *       500:
+ *         description: Failed to update event
+ */
 
 export const updateEvent = async (req: Request<{}, {}, EventRequestBody>, res: Response): Promise<void> => {
     try {
@@ -201,6 +337,40 @@ export const updateEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
         res.status(500).json({ error: 'Failed to update event' });
     }
 }
+/**
+ * @swagger
+ * /calendar/assign-member:
+ *   post:
+ *     summary: Assigns a lab member to an event
+ *     tags: [Calendar]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - memberId
+ *               - eventId
+ *             properties:
+ *               memberId:
+ *                 type: integer
+ *                 description: ID of the lab member to assign
+ *               eventId:
+ *                 type: integer
+ *                 description: ID of the event to assign the member to
+ *     responses:
+ *       201:
+ *         description: Member successfully assigned to the event
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EventAssignment'
+ *       404:
+ *         description: Event or Member not found
+ *       500:
+ *         description: Failed to assign a member to the event
+ */
 
 export const assignMember = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -243,18 +413,50 @@ export const assignMember = async (req: Request, res: Response): Promise<void> =
 
 }
 
-model EventAssignment {
-    id        Int        @id @default(autoincrement())
-    memberId  Int
-    eventId   Int
-    
-    // Relations
-    member    LabMember  @relation(fields: [memberId], references: [id])
-    event     Event      @relation(fields: [eventId], references: [id])
-    
-    @@map("event_assignment")
-  }
-  
+/**
+ * @swagger
+ * /calendar/remove-member:
+ *   delete:
+ *     summary: Removes a member from an event
+ *     tags: [Calendar]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - memberId
+ *               - eventId
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: The ID of the event assignment to delete
+ *               memberId:
+ *                 type: integer
+ *                 description: The ID of the lab member
+ *               eventId:
+ *                 type: integer
+ *                 description: The ID of the event
+ *     responses:
+ *       200:
+ *         description: Member removed from event successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Member removed from event successfully
+ *       400:
+ *         description: Cannot remove the last member assigned to the event
+ *       404:
+ *         description: Event, Member, or Assignment not found
+ *       500:
+ *         description: Failed to change member(s) assigned to this event
+ */
 
 export const removeMember = async (req: Request, res: Response): Promise<void> => {
     try {
