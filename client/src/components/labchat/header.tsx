@@ -8,8 +8,8 @@ import Image from "next/image";
 import frank from '../../../public/frank.svg';
 import squaremenu from '../../../public/square-menu.svg';
 
-import getUserFromSession from "@/utils/getUserFromSession";
-import api from '@/utils/api';
+import getUserFromSession from "@/lib/get_user";
+import api from '@/lib/api';
 
 
 export default function Header() {

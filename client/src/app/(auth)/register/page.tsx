@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 
-import api from '@/utils/api';
+import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { UserType } from '@/types/User.type';
 
@@ -31,8 +31,8 @@ export default function Register() {
     firstName: firstName,
     lastName: lastName,
     displayName: `${ firstName } ${ lastName }`,
-    jobTitle: '',
-    office: '',
+    jobTitle: 'None',
+    office: 'None',
     bio: '',
     dateJoined: new Date().toISOString()
   }
