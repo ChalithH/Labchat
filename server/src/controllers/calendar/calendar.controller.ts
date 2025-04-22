@@ -144,7 +144,6 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
 
         if (eventType === 'rostering') {
             const { labId, memberId, title, description, status, startTime, endTime } = req.body;
-
             const newEvent = await prisma.event.create({
                 data: {
                     labId,
@@ -374,7 +373,6 @@ export const updateEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
 
 export const assignMember = async (req: Request, res: Response): Promise<void> => {
     try {
-
         const { memberId, eventId } = req.body;
 
         // Check if the event exists
@@ -384,7 +382,6 @@ export const assignMember = async (req: Request, res: Response): Promise<void> =
 
         if (!event) {
             res.status(404).json({ error: 'Event not found' });
-            return;
         }
 
         // Check if the member exists
@@ -394,7 +391,6 @@ export const assignMember = async (req: Request, res: Response): Promise<void> =
 
         if (!member) {
             res.status(404).json({ error: 'Member not found' });
-            return;
         }
 
         // Check if the member is already assigned to the event
@@ -404,12 +400,11 @@ export const assignMember = async (req: Request, res: Response): Promise<void> =
                 eventId,
             },
         });
+
         if (existingAssignment) {
             res.status(400).json({ error: 'Member is already assigned to this event' });
-            return;
         }
 
-        // Create the assignment
         const assignment = await prisma.eventAssignment.create({
             data: {
                 memberId,
@@ -417,13 +412,13 @@ export const assignMember = async (req: Request, res: Response): Promise<void> =
             },
         });
 
-        res.status(201).json(assignment);
+         res.status(201).json(assignment);
 
     } catch (error) {
-        res.status(500).json({ error: 'Failed to assign a member to this event' });
+        res.status(500).json({ error: 'Failed to assign a member to this event'});
     }
+};
 
-}
 
 /**
  * @swagger
@@ -472,7 +467,7 @@ export const assignMember = async (req: Request, res: Response): Promise<void> =
 
 export const removeMember = async (req: Request, res: Response): Promise<void> => {
     try {
-        const {id,  memberId, eventId } = req.body;
+        const {memberId, eventId } = req.body;
 
         // Check if the event exists
         const event = await prisma.event.findUnique({
@@ -490,22 +485,26 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
             res.status(404).json({ error: 'Member not found' });
             return;
         }
-        // Check if the assignment exists
-        const assignment = await prisma.eventAssignment.findUnique({
-            where: { id },
-        });
-        if (!assignment) {
-            res.status(404).json({ error: 'Assignment not found' });
-            return;
-        }
-        // Ensure there is at least one other member assigned to the event
+
         const assignments = await prisma.eventAssignment.findMany({
             where: { eventId },
         });
+
+        // Ensure there is at least one other member assigned to the event
         if (assignments.length <= 1) {
             res.status(400).json({ error: 'Cannot remove the last member assigned to this event' });
             return;
         }
+
+        // Check member's assignment exists
+
+        const assignment = assignments.find((assignment) => assignment.memberId === memberId);
+        if (!assignment) {
+            res.status(404).json({ error: 'Assignment not found' });
+            return;
+        }
+
+        const id = assignment.id;
         // Remove the assignment
         await prisma.eventAssignment.delete({
             where: { id },
