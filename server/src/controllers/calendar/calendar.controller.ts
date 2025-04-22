@@ -397,6 +397,18 @@ export const assignMember = async (req: Request, res: Response): Promise<void> =
             return;
         }
 
+        // Check if the member is already assigned to the event
+        const existingAssignment = await prisma.eventAssignment.findFirst({
+            where: {
+                memberId,
+                eventId,
+            },
+        });
+        if (existingAssignment) {
+            res.status(400).json({ error: 'Member is already assigned to this event' });
+            return;
+        }
+
         // Create the assignment
         const assignment = await prisma.eventAssignment.create({
             data: {

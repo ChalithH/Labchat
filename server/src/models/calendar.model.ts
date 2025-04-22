@@ -70,4 +70,37 @@
  *           $ref: '#/components/schemas/LabMember'
  *         event:
  *           $ref: '#/components/schemas/Event'
+
+ *     LabMember:
+ *       type: object
+ *       required:
+ *         - id
+ *         - name
+ *       properties:
+ *         id:
+ *           type: integer
+ *         name:
+ *           type: string
+
+ *     Instrument:
+ *       type: object
+ *       required:
+ *         - id
+ *         - name
+ *       properties:
+ *         id:
+ *           type: integer
+ *         name:
+ *           type: string
+
+ *     Lab:
+ *       type: object
+ *       required:
+ *         - id
+ *         - name
+ *       properties:
+ *         id:
+ *           type: integer
+ *         name:
+ *           type: string
  */
