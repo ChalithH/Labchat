@@ -433,13 +433,9 @@ export const assignMember = async (req: Request, res: Response): Promise<void> =
  *           schema:
  *             type: object
  *             required:
- *               - id
  *               - memberId
  *               - eventId
  *             properties:
- *               id:
- *                 type: integer
- *                 description: The ID of the event assignment to delete
  *               memberId:
  *                 type: integer
  *                 description: The ID of the lab member
