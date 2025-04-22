@@ -2,6 +2,7 @@ import { Router } from 'express';
 import userRoutes from './user.routes';
 import authRoutes from './auth.routes';
 import inventoryRoutes from './inventory.routes';
+import calendarRoutes from './calendar.routes';
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.get('/', (req, res) => {
 router.use('/user', userRoutes);
 router.use('/auth', authRoutes);
 router.use('/inventory', inventoryRoutes);
+router.use('/calendar', calendarRoutes);
 
 export default router;
