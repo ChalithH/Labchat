@@ -45,8 +45,6 @@ const EditProfile = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [pendingFields, setPendingFields] = useState<Record<string, string>>({})
 
-  const [error, setError] = useState<string>('')
-  
 
   const handleUpdateUser = async (new_fields: Record<string, string>) => {
     setPendingFields(new_fields)

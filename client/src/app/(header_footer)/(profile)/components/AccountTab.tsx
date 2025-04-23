@@ -48,7 +48,6 @@ const AccountTab = ({ values, setters, onSubmit }: AccountTabProps) => {
       return
     }
     
-
     if (!isValidEmail(values.email)){
       setError('Enter a valid email address')
       return
