@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { } from '../controllers/discussion/discussion.controller';
+import { getPostById } from '../controllers/discussion/discussion.controller';
 
 
 /**
@@ -13,6 +13,6 @@ const router = Router();
 
 
 // /api/discussion/
-
+router.get('/post/:id', getPostById);
 
 export default router;
