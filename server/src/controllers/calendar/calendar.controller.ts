@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Event, Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -61,6 +61,79 @@ type BaseEventInput = {
     return Number.isInteger(num) && num > 0 && val === String(num);
   }
 
+
+  type EventWithRelations = Prisma.EventGetPayload<{
+    include: {
+      lab: {
+        select: {
+          id: true;
+          name: true;
+        }
+      };
+      assigner: {
+        select: {
+          id: true;
+          user: {
+            select: {
+              displayName: true;
+            }
+          }
+        }
+      };
+      instrument: {
+        select: {
+          id: true;
+          name: true;
+        }
+      };
+      eventAssignments: {
+        select: {
+          id: true;
+          member: {
+            select: {
+              user: {
+                select: {
+                  displayName: true;
+                }
+              }
+            }
+          }
+        }
+      };
+    }
+  }>;
+  
+  interface TransformedEvent extends Omit<EventWithRelations, 'assigner' | 'eventAssignments'> {
+    assigner: {
+      id: number;
+      name: string;
+    };
+    eventAssignments: Array<{
+      id: number;
+      name: string;
+    }>;
+  }
+  
+  /**
+   * Helper function to transform event data by flattening nested structures
+   * @param events The events retrieved from the database with their relations
+   * @returns Transformed events with flattened structure
+   */
+  const transformEvents = (events: EventWithRelations[]): TransformedEvent[] => {
+    return events.map(event => {
+      return {
+        ...event,
+        assigner: {
+          id: event.assigner.id,
+          name: event.assigner.user.displayName
+        },
+        eventAssignments: event.eventAssignments.map(assignment => ({
+          id: assignment.id,
+          name: assignment.member.user.displayName
+        }))
+      };
+    });
+  };
 
 /**
  * @swagger
@@ -597,11 +670,13 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
 
 }
 
+
+
 /**
  * @swagger
- * /calendar/get-tasks/{labId}:
+ * /calendar/events/{labId}:
  *   get:
- *     summary: Get all rostering events for a lab
+ *     summary: Get all events for a lab
  *     tags: [Calendar]
  *     parameters:
  *       - in: path
@@ -610,10 +685,10 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
  *         schema:
  *           type: integer
  *           minimum: 1
- *         description: Positive integer Id of the lab to retrieve all task events from
+ *         description: Positive integer Id of the lab to retrieve events from
  *     responses:
  *       200:
- *         description: A list of events
+ *         description: A list of all events for the specified lab
  *         content:
  *           application/json:
  *             schema:
@@ -622,46 +697,84 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
  *                 $ref: '#/components/schemas/Event'
  *       400:
  *         description: labId is missing or invalid (must be a positive integer)
- * 
  *       500:
- *         description: Failed to retrieve lab events
+ *         description: Failed to retrieve events
  */
 
-export const getTasks = async (req: Request, res: Response): Promise<void> => {
+export const getLabEvents = async (req: Request, res: Response): Promise<void> => {
     const { labId } = req.params;
 
     if (!labId) {
         res.status(400).json({error: 'labId cannot be empty'});
         return;
     }
+    
     if(!isValidLabId(labId)) {
         res.status(400).json({error: 'labId must be a positive integer'});
         return;
     }
 
     try {
-        const tasks = await prisma.event.findMany({
+        const events = await prisma.event.findMany({
             where: {
-                type: {
-                    equals: 'task',
-                },
-                labId: {
-                    equals: Number(labId),
-                },
+                labId: Number(labId)
             },
-        })
-        //if lab doesn't exist/has no task events return empty table
-        res.json(tasks)
+            include: {
+                lab: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                assigner: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                displayName: true
+                            }
+                        }
+                    }
+                },
+                instrument: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                eventAssignments: {
+                    select: {
+                        id: true,
+                        member: {
+                            select: {
+                                user: {
+                                    select: {
+                                        displayName: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Use the global transformation function
+        const transformedEvents = transformEvents(events);
+        
+        res.json(transformedEvents);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to retrieve roster events'});
+        res.status(500).json({ error: 'Failed to retrieve events'});
     }
 }
 
 /**
  * @swagger
- * /calendar/get-member-tasks/{labId}/{memberId}:
+ * /calendar/member-events/{labId}/{memberId}:
  *   get:
- *     summary: Get all rostering events within a lab created by or assigned to a specific lab member
+ *     summary: Get all events within a lab where the member is assigned
  *     tags: [Calendar]
  *     parameters:
  *       - in: path
@@ -670,17 +783,17 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
  *         schema:
  *           type: integer
  *           minimum: 1
- *         description: Positive integer Id of the lab to retrieve task events from
+ *         description: Positive integer Id of the lab to retrieve events from
  *       - in: path
  *         name: memberId
  *         required: true
  *         schema:
  *           type: integer
  *           minimum: 1
- *         description: Positive integer Id of the lab member (either creator of or assigned to the tasks)
+ *         description: Positive integer Id of the lab member assigned to the events
  *     responses:
  *       200:
- *         description: A list of task events where the lab member is either the creator or assignee
+ *         description: A list of events where the lab member is assigned
  *         content:
  *           application/json:
  *             schema:
@@ -689,205 +802,87 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
  *                 $ref: '#/components/schemas/Event'
  *       400:
  *         description: labId/memberId is missing or invalid (must be positive integers)
- * 
  *       500:
- *         description: Failed to retrieve lab events
+ *         description: Failed to retrieve events
  */
 
-export const getMemberTasks = async (req: Request, res: Response): Promise<void> => {
+export const getMemberEvents = async (req: Request, res: Response): Promise<void> => {
     const { labId, memberId } = req.params;
 
     if (!labId || !memberId) {
         res.status(400).json({error: 'Both labId and memberId are required'});
         return;
     }
+    
     if(!isValidLabId(labId)) { 
         res.status(400).json({error: 'labId must be a positive integer'});
         return;
     }
+    
     if(!isValidLabId(memberId)) { 
         res.status(400).json({error: 'memberId must be a positive integer'});
         return;
     }
 
     try {
-        const labIdNum = Number(labId)
-        const memberIdNum = Number(memberId)
+        const labIdNum = Number(labId);
+        const memberIdNum = Number(memberId);
 
-        const tasks = await prisma.event.findMany({
+        // Get events where the member is assigned (in eventAssignments)
+        const events = await prisma.event.findMany({
             where: {
               labId: labIdNum,
-              type: 'task',
-              OR: [
-                { memberId: memberIdNum},
-                {
-                  eventAssignments: {
-                    some: {
-                      memberId: memberIdNum,
-                    },
-                  },
+              eventAssignments: {
+                some: {
+                  memberId: memberIdNum,
                 },
-              ],
+              },
             },
-            // // uncomment to check eventAssignments/debug
-            // include: {
-            //   eventAssignments: true,
-            // },
-            // //
-          });
-
+            include: {
+                lab: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                assigner: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                displayName: true
+                            }
+                        }
+                    }
+                },
+                instrument: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                eventAssignments: {
+                    select: {
+                        id: true,
+                        member: {
+                            select: {
+                                user: {
+                                    select: {
+                                        displayName: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
         
-        res.json(tasks)
-    } catch (error) {
-        //console.error('Error retrieving rostering tasks:', error)
-        res.status(500).json({ error: 'Failed to retrieve roster events'});
-    }
-}
-
-/**
- * @swagger
- * /calendar/get-instrument-events/{labId}:
- *   get:
- *     summary: Get all instrument booking events for a lab
- *     tags: [Calendar]
- *     parameters:
- *       - in: path
- *         name: labId
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Positive integer Id of the lab
- *     responses:
- *       200:
- *         description: A list of instrument booking events for the specified lab
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Event'
- *       400:
- *         description: labId is missing or invalid (must be a positive integer)
- * 
- *       500:
- *         description: Failed to retrieve instrument events
- */
-
-export const getInstrumentBookings = async (req: Request, res: Response): Promise<void> => {
-    const { labId } = req.params;
-
-    if (!labId) {
-        res.status(400).json({error: 'labId cannot be empty'});
-        return;
-    }
-
-    if(!isValidLabId(labId)) {
-        res.status(400).json({error: 'labId must be a positive integer'});
-        return;
-    }
-
-    try {
-        const bookings = await prisma.event.findMany({
-            where: {
-                type: {
-                    equals: 'instrument_booking',
-                },
-                labId: {
-                    equals: Number(labId),
-                },
-            },
-        })
-        res.json(bookings)
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to retrieve instrument events'});
-    }
-}
-
-/**
- * @swagger
- * /calendar/get-member-instrument-events/{labId}/{memberId}:
- *   get:
- *     summary: Get all instrument bookings within a lab created by or assigned to a specific lab member
- *     tags: [Calendar]
- *     parameters:
- *       - in: path
- *         name: labId
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Positive integer Id of the lab to retrieve instrument events from
- *       - in: path
- *         name: memberId
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Positive integer Id of the lab member (either creator of or assigned to the instrument events)
- *     responses:
- *       200:
- *         description: A list of instrument booking events where the lab member is either the creator or assignee
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Event'
- *       400:
- *         description: labId/memberId is missing or invalid (must be positive integers)
- * 
- *       500:
- *         description: Failed to instrument events
- */
-
-export const getMemberBookings = async (req: Request, res: Response): Promise<void> => {
-    const { labId, memberId } = req.params;
-
-    if (!labId || !memberId) {
-        res.status(400).json({error: 'Both labId and memberId are required'});
-        return;
-    }
-
-    if(!isValidLabId(labId)) { 
-        res.status(400).json({error: 'labId must be a positive integer'});
-        return;
-    }
-
-    if(!isValidLabId(memberId)) { 
-        res.status(400).json({error: 'memberId must be a positive integer'});
-        return;
-    }
-
-    try {
-        const labIdNum = Number(labId)
-        const memberIdNum = Number(memberId)
-
-        const bookings = await prisma.event.findMany({
-            where: {
-              labId: labIdNum,
-              type: 'instrument_booking',
-              OR: [
-                { memberId: memberIdNum},
-                {
-                  eventAssignments: {
-                    some: {
-                      memberId: memberIdNum,
-                    },
-                  },
-                },
-              ],
-            },
-            // // uncomment to check event assignments
-            // include: {
-            //   eventAssignments: true,
-            // },
-            // //
-          });
-
+        // Use the imported transformation function
+        const transformedEvents = transformEvents(events);
         
-        res.json(bookings)
+        res.json(transformedEvents);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to retrieve instrument events'});
+        res.status(500).json({ error: 'Failed to retrieve events'});
     }
 }
