@@ -3,6 +3,7 @@ import userRoutes from './models/user.routes';
 import authRoutes from './auth.routes';
 import inventoryRoutes from './inventory.routes';
 import roleRoutes from './models/role.routes';
+import calendarRoutes from './calendar.routes';
 
 const router = Router();
 
@@ -35,6 +36,7 @@ router.get('/', (req, res) => {
 
 router.use('/auth', authRoutes);
 router.use('/inventory', inventoryRoutes);
+router.use('/calendar', calendarRoutes);
 
 // Models
 router.use('/user', userRoutes);
