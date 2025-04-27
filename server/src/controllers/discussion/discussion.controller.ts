@@ -4,17 +4,32 @@ import { DiscussionPost, LabMember, User } from '@prisma/client';
 
 
 /*
- *      Get Categories
+ *      Category endpoints
  */ 
 
 export const getAllCategories = async (req: Request, res: Response): Promise<void> => {
 
 }
 
+export const getCategoryById = async (req: Request, res: Response): Promise<void> => {
+  
+}
+
+export const createCategory = async (req: Request, res: Response): Promise<void> => {
+  
+}
+
+export const editCategory = async (req: Request, res: Response): Promise<void> => {
+  
+}
+
+export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
+  
+}
 
 
 /*
- *      Create, Edit and Delete Posts
+ *      Posts endpoints
  */ 
 
 export const createPost = async (req: Request, res: Response): Promise<void> => {
@@ -115,6 +130,32 @@ export const getPostsByTitle = async (req: Request, res: Response): Promise<void
 }
 
 export const getPostsByCategory = async (req: Request, res: Response): Promise<void> => {
+    
+}
+
+
+
+/*
+ *      Reply Endpoints
+ */
+
+export const getReplyById = async (req: Request, res: Response): Promise<void> => {
+  
+}
+
+export const getRepliesByPost = async (req: Request, res: Response): Promise<void> => {
+  
+}
+
+export const createReply = async (req: Request, res: Response): Promise<void> => {
+    
+}
+
+export const editReply = async (req: Request, res: Response): Promise<void> => {
+    
+}
+
+export const deleteReply = async (req: Request, res: Response): Promise<void> => {
     
 }
 
