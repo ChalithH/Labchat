@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../..';
-import { Discussion, DiscussionPost, LabMember, User } from '@prisma/client';
+import { DiscussionPost, LabMember } from '@prisma/client';
 
 
 /*
@@ -125,8 +125,44 @@ export const getPostsByMember = async (req: Request, res: Response): Promise<voi
   }  
 }
 
+/*
+ *      Get Posts By Title
+ *
+ *    Parameter:
+ *      title: string
+ * 
+ *    200:
+ *      - Successfully found and sent the posts
+ *    400:
+ *      - Failed to obtain the post title from request body parameters
+ *      - No posts found with the title supplied
+ *    500:
+ *      - Internal server error, unable to retrieve the posts     
+ */
 export const getPostsByTitle = async (req: Request, res: Response): Promise<void> => {
-    
+  try {
+    const { title } = req.body
+    if (!title) {
+      res.status(400).json({ error: 'Failed to obtain a title from request' })
+      return
+    }
+
+    // Case insensitive partial search for the term supplied
+    const posts: DiscussionPost[] = await prisma.discussionPost.findMany({ 
+      where: { 
+        title: {
+          contains: title,
+          mode: 'insensitive'
+        }
+      }
+    })
+    res.status(200).send(posts)
+    return
+
+  } catch(err: unknown) {
+    res.status(500).json({ error: 'Failed to retrieve post' })
+    return
+  }   
 }
 
 
