@@ -28,6 +28,7 @@ export const LoginRegisterHeader = ({
           width={150}
           height={150}
           className="object-contain"
+          style={{ height: 'auto', width: 'auto' }}
         />
       </div>
 
@@ -55,8 +56,8 @@ export const LoginRegisterHeader = ({
           alt="Labchat Logo"
           width={logoWidth}
           height={logoHeight}
-          priority
           className="object-contain"
+          style={{ height: 'auto', width: 'auto' }}
         />
       </div>
       

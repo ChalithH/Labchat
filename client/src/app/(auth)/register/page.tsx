@@ -5,11 +5,14 @@ import { useState } from 'react';
 import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 
-import api from '@/lib/api';
-import { AxiosError } from 'axios';
+import api from '@/utils/api';
+import { useRouter } from 'next/navigation';
+import { UserType } from '@/types/User.type';
 
 
 export default function Register() {
+  const router = useRouter()
+
   const [firstName, setFirstName] = useState<string>('')
   const [lastName, setLastName] = useState<string>('')
   const [email, setEmail] = useState<string>('')
@@ -19,10 +22,10 @@ export default function Register() {
   const [error, setError] = useState<string | undefined>(undefined)
   const [message, setMessage] = useState<string | undefined>(undefined)
 
-  const userData = {
+  const new_user: UserType = {
     roleId: 6, /* Vistor */
     universityId: '',
-    username: `${ firstName } ${ lastName }`,
+    username: `${ firstName }_${ lastName }`,
     loginEmail: email,
     loginPassword: password,
     firstName: firstName,
@@ -43,9 +46,11 @@ export default function Register() {
         return
       }
 
-      await api.post('/api/user/', userData)
+      await api.post('/api/user/', new_user)
       setError(undefined)
       setMessage('Registration successful')
+      
+      router.push('/login')
       
     } catch (err: any) {
       setError(err.response.data.error)
