@@ -38,6 +38,7 @@ model User {
   office         String?
   bio            String?        @db.VarChar(256)
   dateJoined     DateTime       @default(now())
+  lastViewed     String?
   
   // Relationships
   role           Role           @relation(fields: [roleId], references: [id])
