@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { getPostById, getPostsByMember } from '../controllers/discussion/discussion.controller';
+import { getPostById, getPostsByCategory, getPostsByMember } from '../controllers/discussion/discussion.controller';
 
 
 /**
@@ -15,5 +15,6 @@ const router = Router();
 // /api/discussion/
 router.get('/post/:id', getPostById);
 router.get('/member-posts/:id', getPostsByMember);
+router.get('/category-posts/:id', getPostsByCategory)
 
 export default router;

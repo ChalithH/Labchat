@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../..';
-import { DiscussionPost, LabMember, User } from '@prisma/client';
+import { Discussion, DiscussionPost, LabMember, User } from '@prisma/client';
 
 
 /*
@@ -89,7 +89,7 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
  *      Get Posts By Member
  *
  *    Parameters:
- *      user_id: number
+ *      member_id: number
  * 
  *    200:
  *      - Successfully found the post
@@ -129,8 +129,39 @@ export const getPostsByTitle = async (req: Request, res: Response): Promise<void
     
 }
 
+
+/*
+ *      Get Posts By Category
+ *
+ *    Parameters:
+ *      category_id: number
+ * 
+ *    200:
+ *      - Successfully found the category and sent posts
+ *    400:
+ *      - Failed to parse a category ID from request body parameters
+ *      - No category found with the ID supplied
+ *    500:
+ *      - Internal server error, unable to retrieve the posts     
+ */ 
 export const getPostsByCategory = async (req: Request, res: Response): Promise<void> => {
-    
+  try {
+    const category_id: number = parseInt(req.params.id)
+    if (!category_id) {
+      res.status(400).json({ error: 'Failed to parse a category ID from supplied paramter'})
+      return
+    }
+
+    const posts: DiscussionPost[] | null = await prisma.discussionPost.findMany({ 
+      where: { discussionId: category_id }
+    })
+    res.status(200).send(posts)
+    return
+
+  } catch(err: unknown) {
+    res.status(500).json({ error: 'Failed to retrieve posts' })
+    return
+  }  
 }
 
 
