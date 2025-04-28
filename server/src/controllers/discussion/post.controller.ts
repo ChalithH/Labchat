@@ -1,21 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../..';
-import { DiscussionPost, LabMember, User } from '@prisma/client';
+import { DiscussionPost, LabMember } from '@prisma/client';
 
-
-/*
- *      Get Categories
- */ 
-
-export const getAllCategories = async (req: Request, res: Response): Promise<void> => {
-
-}
-
-
-
-/*
- *      Create, Edit and Delete Posts
- */ 
 
 export const createPost = async (req: Request, res: Response): Promise<void> => {
     
@@ -74,7 +60,7 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
  *      Get Posts By Member
  *
  *    Parameters:
- *      user_id: number
+ *      member_id: number
  * 
  *    200:
  *      - Successfully found the post
@@ -110,28 +96,77 @@ export const getPostsByMember = async (req: Request, res: Response): Promise<voi
   }  
 }
 
+/*
+ *      Get Posts By Title
+ *
+ *    Parameter:
+ *      title: string
+ * 
+ *    200:
+ *      - Successfully found and sent the posts
+ *    400:
+ *      - Failed to obtain the post title from request body parameters
+ *      - No posts found with the title supplied
+ *    500:
+ *      - Internal server error, unable to retrieve the posts     
+ */
 export const getPostsByTitle = async (req: Request, res: Response): Promise<void> => {
-    
-}
+  try {
+    const { title } = req.body
+    if (!title) {
+      res.status(400).json({ error: 'Failed to obtain a title from request' })
+      return
+    }
 
-export const getPostsByCategory = async (req: Request, res: Response): Promise<void> => {
-    
-}
+    // Case insensitive partial search for the term supplied
+    const posts: DiscussionPost[] = await prisma.discussionPost.findMany({ 
+      where: { 
+        title: {
+          contains: title,
+          mode: 'insensitive'
+        }
+      }
+    })
+    res.status(200).send(posts)
+    return
 
+  } catch(err: unknown) {
+    res.status(500).json({ error: 'Failed to retrieve post' })
+    return
+  }   
+}
 
 
 /*
- *      Unique Cases
+ *      Get Posts By Category
+ *
+ *    Parameters:
+ *      category_id: number
+ * 
+ *    200:
+ *      - Successfully found the category and sent posts
+ *    400:
+ *      - Failed to parse a category ID from request body parameters
+ *      - No category found with the ID supplied
+ *    500:
+ *      - Internal server error, unable to retrieve the posts     
  */ 
+export const getPostsByCategory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const category_id: number = parseInt(req.params.id)
+    if (!category_id) {
+      res.status(400).json({ error: 'Failed to parse a category ID from supplied paramter'})
+      return
+    }
 
-export const getRecentPosts = async (req: Request, res: Response): Promise<void> => {
-    
-}
+    const posts: DiscussionPost[] | null = await prisma.discussionPost.findMany({ 
+      where: { discussionId: category_id }
+    })
+    res.status(200).send(posts)
+    return
 
-export const getPopularPosts = async (req: Request, res: Response): Promise<void> => {
-    
-}
-
-export const getMixedPosts = async (req: Request, res: Response): Promise<void> => {
-    
+  } catch(err: unknown) {
+    res.status(500).json({ error: 'Failed to retrieve posts' })
+    return
+  }  
 }
