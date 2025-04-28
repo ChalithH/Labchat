@@ -1,7 +1,5 @@
 import { Router } from 'express';
-
-import { getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/discussion.controller';
-
+import { getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller';
 
 /**
  * @swagger

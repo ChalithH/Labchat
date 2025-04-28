@@ -3,35 +3,6 @@ import { prisma } from '../..';
 import { DiscussionPost, LabMember } from '@prisma/client';
 
 
-/*
- *      Category endpoints
- */ 
-
-export const getAllCategories = async (req: Request, res: Response): Promise<void> => {
-
-}
-
-export const getCategoryById = async (req: Request, res: Response): Promise<void> => {
-  
-}
-
-export const createCategory = async (req: Request, res: Response): Promise<void> => {
-  
-}
-
-export const editCategory = async (req: Request, res: Response): Promise<void> => {
-  
-}
-
-export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
-  
-}
-
-
-/*
- *      Posts endpoints
- */ 
-
 export const createPost = async (req: Request, res: Response): Promise<void> => {
     
 }
@@ -198,48 +169,4 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
     res.status(500).json({ error: 'Failed to retrieve posts' })
     return
   }  
-}
-
-
-
-/*
- *      Reply Endpoints
- */
-
-export const getReplyById = async (req: Request, res: Response): Promise<void> => {
-  
-}
-
-export const getRepliesByPost = async (req: Request, res: Response): Promise<void> => {
-  
-}
-
-export const createReply = async (req: Request, res: Response): Promise<void> => {
-    
-}
-
-export const editReply = async (req: Request, res: Response): Promise<void> => {
-    
-}
-
-export const deleteReply = async (req: Request, res: Response): Promise<void> => {
-    
-}
-
-
-
-/*
- *      Unique Cases
- */ 
-
-export const getRecentPosts = async (req: Request, res: Response): Promise<void> => {
-    
-}
-
-export const getPopularPosts = async (req: Request, res: Response): Promise<void> => {
-    
-}
-
-export const getMixedPosts = async (req: Request, res: Response): Promise<void> => {
-    
 }
