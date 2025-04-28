@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller';
+import { Router } from 'express'
+import { createPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller'
 
 /**
  * @swagger
@@ -7,14 +7,16 @@ import { getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } fr
  *   name: Discussion Board
  *   description: Discussion Board management API
  */
-const router = Router();
+const router = Router()
 
 
 // /api/discussion/
-router.get('/post/:id', getPostById);
-router.get('/member-posts/:id', getPostsByMember);
+router.get('/post/:id', getPostById)
+router.post('/post', createPost)
+
 router.get('/category-posts/:id', getPostsByCategory)
+router.get('/member-posts/:id', getPostsByMember)
 router.post('/title-posts', getPostsByTitle)
 
 
-export default router;
+export default router

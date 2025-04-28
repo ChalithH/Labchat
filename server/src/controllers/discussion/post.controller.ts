@@ -3,8 +3,60 @@ import { prisma } from '../..';
 import { DiscussionPost, LabMember } from '@prisma/client';
 
 
+/*
+ *      Create Post
+ *
+ *    Parameters:
+ *      discussionId: number
+ *      memberId: number
+ *      title: string
+ *      content: string
+ *      createdAt?: string
+ *      updatedAt?: string
+ *      isPinned?: boolean
+ *      isAnnounce?: boolean
+ * 
+ *    200:
+ *      - Successfully created the post
+ *    400:
+ *      - Missing fields to create post in request body
+ *    500:
+ *      - Internal server error, unable to create post     
+ */ 
 export const createPost = async (req: Request, res: Response): Promise<void> => {
-    
+  try {
+    const { discussionId, memberId, title, content, createdAt, updatedAt, isPinned, isAnnounce } = req.body
+    const now = new Date()
+
+    // GO AWAYYYYYYYYY
+    delete req.body.id
+
+    if (!discussionId || !memberId || !title || !content) {
+      res.status(400).send({ error: 'Missing fields in request body' })
+      return
+    }
+
+    const post = await prisma.discussionPost.create({
+      data: {
+        discussionId,
+        memberId,
+        title,
+        content,
+        createdAt: createdAt ? new Date(createdAt) : now,
+        updatedAt: updatedAt ? new Date(updatedAt) : now,
+        isPinned: isPinned ?? false,
+        isAnnounce: isAnnounce ?? false
+      }
+    })
+
+    res.status(200).json(post)
+    return
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Failed to create post' })
+    return
+  }
 }
 
 export const editPost = async (req: Request, res: Response): Promise<void> => {
@@ -14,8 +66,6 @@ export const editPost = async (req: Request, res: Response): Promise<void> => {
 export const deletePost = async (req: Request, res: Response): Promise<void> => {
     
 }
-
-
 
 /*
  *      Get Post By Id
@@ -135,7 +185,6 @@ export const getPostsByTitle = async (req: Request, res: Response): Promise<void
     return
   }   
 }
-
 
 /*
  *      Get Posts By Category
