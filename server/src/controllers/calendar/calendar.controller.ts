@@ -61,6 +61,50 @@ type BaseEventInput = {
     return Number.isInteger(num) && num > 0 && val === String(num);
   }
 
+  function validateStartEndDates(start: any, end: any): {errors: string[]; startDate?: Date; endDate?: Date} {
+    const errors: string[] = [];
+
+    if (!start || !end) {
+        errors.push('Missing start and/or end query parameters');
+        return { errors };
+    }
+
+    if (typeof start !== 'string' || typeof end !== 'string') {
+        errors.push('start and end must be string query parameters');
+        return { errors };
+      }
+
+    const fixedStart = forceUtcString(start);
+    const fixedEnd = forceUtcString(end);
+
+    if (!isValidDate(fixedStart)) {
+        errors.push('Invalid start date');
+    }
+    if (!isValidDate(fixedEnd)) {
+        errors.push('Invalid end date');
+    }
+
+    const startDate = new Date(fixedStart);
+    const endDate = new Date(fixedEnd);
+
+    if (errors.length === 0 && startDate > endDate) {
+        errors.push('Start date must be before or equal to end date');
+    }
+
+    if (errors.length > 0) {
+        return { errors };
+    }
+
+    return {errors: [], startDate, endDate};
+  }
+
+  function forceUtcString(input: string): string {
+    if (input.includes('Z') || input.includes('+') || input.includes('-')) {
+        return input; // input string is unchanged if a timezone is already present
+    }
+    return input + 'Z'; //convert to UTC otherwise
+  }
+
 
   type EventWithRelations = Prisma.EventGetPayload<{
     include: {
@@ -345,6 +389,11 @@ export const updateEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
         });
         if (!eventtoUpdate) {
             res.status(404).json({ error: 'Event not found' });
+            return;
+        }
+
+        if (req.body.labId !== eventtoUpdate.labId) {
+            res.status(400).json({ error: 'Cannot change labId of an existing event'});
             return;
         }
 
@@ -692,6 +741,20 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
  *           type: integer
  *           minimum: 1
  *         description: Positive integer Id of the lab to retrieve events from
+ *       - in: query
+ *         name: start
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Start boundary (inclusive) for events (ISO 8601 UTC date-time string; if missing timezone, UTC is assumed) 
+ *       - in: query
+ *         name: end
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: End boundary (inclusive) for events (ISO 8601 UTC date-time string; if missing timezone, UTC is assumed) 
  *     responses:
  *       200:
  *         description: A list of all events for the specified lab
@@ -709,21 +772,33 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
 
 export const getLabEvents = async (req: Request, res: Response): Promise<void> => {
     const { labId } = req.params;
+    const { start,end } = req.query;
 
     if (!labId) {
         res.status(400).json({error: 'labId cannot be empty'});
         return;
     }
     
-    if(!isValidLabId(labId)) {
+    if (!isValidLabId(labId)) {
         res.status(400).json({error: 'labId must be a positive integer'});
         return;
     }
 
+    const { errors, startDate, endDate } = validateStartEndDates(start, end);
+
+    if (errors.length > 0) {
+        res.status(400).json({ error: errors });
+        return;
+    }
+
     try {
+
+        //event overlaps start/end if event start date is <= end and event end date >= start   
         const events = await prisma.event.findMany({
             where: {
-                labId: Number(labId)
+                labId: Number(labId),
+                startTime: { lte: endDate },
+                endTime: { gte: startDate },
             },
             include: {
                 lab: {
@@ -798,6 +873,20 @@ export const getLabEvents = async (req: Request, res: Response): Promise<void> =
  *           type: integer
  *           minimum: 1
  *         description: Positive integer Id of the lab member assigned to the events
+ *       - in: query
+ *         name: start
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Start boundary (inclusive) for events (ISO 8601 UTC date-time string; if missing timezone, UTC is assumed) 
+ *       - in: query
+ *         name: end
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: End boundary (inclusive) for events (ISO 8601 UTC date-time string; if missing timezone, UTC is assumed) 
  *     responses:
  *       200:
  *         description: A list of events where the lab member is assigned
@@ -815,6 +904,7 @@ export const getLabEvents = async (req: Request, res: Response): Promise<void> =
 
 export const getMemberEvents = async (req: Request, res: Response): Promise<void> => {
     const { labId, memberId } = req.params;
+    const { start, end } = req.query;
 
     if (!labId || !memberId) {
         res.status(400).json({error: 'Both labId and memberId are required'});
@@ -831,6 +921,13 @@ export const getMemberEvents = async (req: Request, res: Response): Promise<void
         return;
     }
 
+    const { errors, startDate, endDate } = validateStartEndDates(start, end);
+
+    if (errors.length > 0) {
+        res.status(400).json({ error: errors });
+        return;
+    }
+
     try {
         const labIdNum = Number(labId);
         const memberIdNum = Number(memberId);
@@ -839,6 +936,8 @@ export const getMemberEvents = async (req: Request, res: Response): Promise<void
         const events = await prisma.event.findMany({
             where: {
               labId: labIdNum,
+              startTime: { lte: endDate },
+              endTime: { gte: startDate },
               eventAssignments: {
                 some: {
                   memberId: memberIdNum,
