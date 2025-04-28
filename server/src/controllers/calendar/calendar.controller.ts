@@ -88,7 +88,7 @@ type BaseEventInput = {
       };
       eventAssignments: {
         select: {
-          id: true;
+          id: true; memberId: true;
           member: {
             select: {
               user: {
@@ -110,6 +110,7 @@ type BaseEventInput = {
     };
     eventAssignments: Array<{
       id: number;
+      memberId: number;
       name: string;
     }>;
   }
@@ -129,6 +130,7 @@ type BaseEventInput = {
         },
         eventAssignments: event.eventAssignments.map(assignment => ({
           id: assignment.id,
+          memberId: assignment.memberId,
           name: assignment.member.user.displayName
         }))
       };
@@ -508,6 +510,7 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
  *             required:
  *               - memberId
  *               - eventId
+ *               - labId
  *             properties:
  *               memberId:
  *                 type: integer
@@ -515,6 +518,9 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
  *               eventId:
  *                 type: integer
  *                 description: ID of the event to assign the member to
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab the event and member belong to
  *     responses:
  *       201:
  *         description: Member successfully assigned to the event
@@ -530,20 +536,20 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
 
 export const assignMember = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { memberId, eventId } = req.body;
+        const { memberId, eventId, labId } = req.body;
 
-        // Check if the event exists
+        // Check if the event exists & assigned to same lab as input
         const event = await prisma.event.findUnique({
-            where: { id: eventId },
+            where: { id: eventId, labId: labId },
         });
 
         if (!event) {
             res.status(404).json({ error: 'Event not found' });
         }
 
-        // Check if the member exists
+        // Check if the member exists & assigned to same lab as input, event
         const member = await prisma.labMember.findUnique({
-            where: { id: memberId },
+            where: { id: memberId, labId: labId },
         });
 
         if (!member) {
@@ -747,6 +753,7 @@ export const getLabEvents = async (req: Request, res: Response): Promise<void> =
                 eventAssignments: {
                     select: {
                         id: true,
+                        memberId: true,
                         member: {
                             select: {
                                 user: {
@@ -864,6 +871,7 @@ export const getMemberEvents = async (req: Request, res: Response): Promise<void
                 eventAssignments: {
                     select: {
                         id: true,
+                        memberId: true,
                         member: {
                             select: {
                                 user: {
