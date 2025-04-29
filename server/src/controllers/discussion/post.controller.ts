@@ -62,6 +62,20 @@ export const editPost = async (req: Request, res: Response): Promise<void> => {
     
 }
 
+/*
+ *      Delete Post
+ *
+ *    Parameters:
+ *      id: number
+ * 
+ *    200:
+ *      - Successfully deleted the post
+ *    400:
+ *      - Failed to parse an ID from request body parameters
+ *      - No post found with the ID supplied
+ *    500:
+ *      - Internal server error, unable to delete post     
+ */ 
 export const deletePost = async (req: Request, res: Response): Promise<void> => {
   try {
     const id: number = parseInt(req.params.id)
