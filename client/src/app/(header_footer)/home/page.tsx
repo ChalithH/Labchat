@@ -12,6 +12,7 @@ import chooseStar from '@/../public/chooseStar.svg';
 import setUsersLastViewed from '@/utils/setUsersLastViewed.utils';
 import star1 from '@/../public/star1.svg';
 import star2 from '@/../public/star2.svg';
+import uoa from '@/../public/uoa.jpg';
 
 export default function Home() {
   setUsersLastViewed(`/home`)
@@ -19,7 +20,7 @@ export default function Home() {
   return (
     <div className="relative w-full flex flex-col items-center justify-center">
       {/* Hero Section */}
-      <section id='home' className="flex flex-col lg:flex-row items-center w-full max-w-7xl px-0 lg:px-8 pt-8 lg:pt-12 gap-8 lg:gap-12">
+      <section id='home' className="flex flex-col lg:flex-row items-center w-full max-w-7xl px-0 lg:px-8 pt-8 lg:pt-12 gap-8 lg:gap-12 min-h-s">
         <div id='hero-image' className="w-full lg:w-1/2 flex justify-center px-8 lg:pr-32 lg:pl-0">
           <Image 
             src={headerImage} 
@@ -62,21 +63,30 @@ export default function Home() {
           </div>
         </div>
       </section>
-    
+
+      <section id='partnership' className="flex flex-col items-center justify-center mt-4 w-full max-w-6xl px-4">
+      <Image src={chooseStar} alt="Star" className="mb-4" />
+        <h2 className="text-black font-bold text-4xl lg:text-5xl play-font">Partnerships</h2>
+        <h3 className="text-neutral-500 font-bold text-l lg:text-xl mb-5 play-font text-center">We are proud to partner with leading universities and research institutions.</h3>
+        <div className="flex flex-row items-center justify-center gap-8 ">
+          <Image src={uoa} alt="car" className='w-36 h-20'/>
+          
+          </div>
+        </section>
       {/* About Section */}
       <section id='about' className="flex flex-col items-center justify-center mt-16 w-full max-w-6xl px-4">
         <Image src={aboutStar} alt="Star" className="mb-4" />
         <h2 className="text-black font-bold text-4xl lg:text-5xl play-font">About Labchat</h2>
         <h3 className="text-neutral-500 font-bold text-l lg:text-xl mb-5 play-font text-center">Reclaiming time, empowering science.</h3>
-        <p className="text-neutral-800 font-barlow text-xs md:text-sm lg:text-base text-left lg:text-center max-w-xs sm:max-w-md lg:max-w-3xl mx-auto">
+        <p className="text-neutral-800 font-barlow text-xs md:text-sm lg:text-base lg max-w-xs sm:max-w-md lg:max-w-3xl mx-auto text-justify">
           At LabChat, we believe labs should be hubs of innovation—not bogged down by inefficiencies. Our platform centralises lab flows into one seamless hub, eliminating the chaos of scattered communications, inventory mishaps, and scheduling conflicts. With LabChat, researchers reclaim valuable hours lost to outdated processes, enabling them to focus on groundbreaking discoveries.
           <br /><br />
           Built with input from real lab users, LabChat transforms lab management by integrating discussion boards, inventory tracking, and an automated scheduling system. It&apos;s the smart, user-centric solution designed to bring clarity and efficiency to every lab.
         </p>
       </section>
-
+    
       {/* Stats Section */}
-      <section id='stats' className="mt-16 w-full max-w-6xl px-4">
+      <section id='stats' className="mt-8 w-full max-w-6xl px-4">
         <div className="bg-[#1C1E26] rounded-lg w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto py-6 px-4 shadow-lg">
           <div className="flex flex-row items-center justify-center text-white gap-x-12 md:gap-x-24 lg:gap-x-32">
             <h2 className="font-bold text-2xl md:text-3xl lg:text-4xl barlow-font">#</h2>
@@ -97,7 +107,7 @@ export default function Home() {
           <Image src={chooseStar} alt="Star" className="mb-4" />
           <h2 className="play-font font-bold text-4xl lg:text-5xl mb-8">Why choose us?</h2>
           
-          <div className="flex flex-col md:flex-row gap-8 w-full justify-center">
+          <div className="flex flex-col md:flex-row gap-8 w-full justify-center items-center">
             <div className="bg-white border border-gray-300 rounded-lg w-full md:w-1/2 max-w-xs shadow-md p-6 flex flex-col items-center justify-center">
               <Image src={car} alt="car" className="mb-4 w-16 h-16" />
               <h3 className="text-blue-800 font-play text-xl font-bold">Efficient</h3>
