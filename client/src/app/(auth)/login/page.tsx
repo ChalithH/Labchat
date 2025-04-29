@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'
 
+import Link from 'next/link';
 import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 
@@ -62,7 +63,8 @@ export default function Login() {
                 name="email"
                 type="email"
                 required
-                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm bg-[#739CEA] focus:border-white focus:ring-white bg-opacity-90 placeholder:text-gray-400"
+                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm bg-[#739CEA] focus:border-white focus:ring-white bg-opacity-90 placeholder:text-gray-500"
+                placeholder='Enter your email address'
                 value={ email }
                 onChange={ e => setEmail(e.target.value) }
               />
@@ -77,11 +79,14 @@ export default function Login() {
                 name="password"
                 type="password"
                 required
-                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm bg-[#739CEA] focus:border-white focus:ring-white bg-opacity-90 placeholder:text-gray-400"
+                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm bg-[#739CEA] focus:border-white focus:ring-white bg-opacity-90 placeholder:text-gray-500"
                 placeholder="Enter your password"
                 value={ password }
                 onChange={ e => setPassword(e.target.value) }
               />
+              <Link href="/forgot-password" className="text-[#C13E70] hover:text-[#A83762]">
+                Forgot password?
+              </Link>
             </div>
           </div>
 

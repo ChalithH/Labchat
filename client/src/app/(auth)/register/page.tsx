@@ -81,7 +81,7 @@ export default function Register() {
                 name="firstName"
                 type="text"
                 required
-                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
+                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
                 placeholder="First name"
                 value={ firstName }
                 onChange={ e => setFirstName(e.target.value) }
@@ -96,7 +96,7 @@ export default function Register() {
                 name="lastName"
                 type="text"
                 required
-                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
+                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
                 placeholder="Last name"
                 value={ lastName }
                 onChange={ e => setLastName(e.target.value) }
@@ -113,7 +113,7 @@ export default function Register() {
               name="email"
               type="email"
               required
-              className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
+              className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
               placeholder="Enter your email"
               value={ email }
               onChange={ e => setEmail(e.target.value) }
@@ -130,7 +130,7 @@ export default function Register() {
                 name="password"
                 type="password"
                 required
-                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
+                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
                 placeholder="Password"
                 value={ password }
                 onChange={ e => setPassword(e.target.value) }
@@ -145,7 +145,7 @@ export default function Register() {
                 name="confirmPassword"
                 type="password"
                 required
-                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-400"
+                className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
                 placeholder="Confirm password"
                 value={ confirmPassword }
                 onChange={ e => setConfirmPassword(e.target.value) }
