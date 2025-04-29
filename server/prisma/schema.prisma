@@ -250,7 +250,7 @@ model DiscussionReply {
   updatedAt    DateTime         @updatedAt
   
   // Relationships
-  post         DiscussionPost   @relation(fields: [postId], references: [id])
+  post         DiscussionPost   @relation(fields: [postId], references: [id], onDelete: Cascade)
   member       LabMember        @relation(fields: [memberId], references: [id])
 
   @@map("discussion_reply")

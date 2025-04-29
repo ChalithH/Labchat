@@ -63,7 +63,32 @@ export const editPost = async (req: Request, res: Response): Promise<void> => {
 }
 
 export const deletePost = async (req: Request, res: Response): Promise<void> => {
-    
+  try {
+    const id: number = parseInt(req.params.id)
+
+    if (!id) {
+      res.status(400).send({ error: 'Failed to parse an ID from request' })
+      return
+    }
+
+    const post = await prisma.discussionPost.findUnique({ where: { id }})
+    if (!post) {
+      res.status(400).send({ error: 'No post found with ID specified' })
+      return
+    }
+
+    await prisma.discussionPost.delete({
+      where: { id }
+    })
+
+    res.status(200).json({ msg: 'Successfully deleted post'})
+    return
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Failed to delete post' })
+    return
+  }
 }
 
 /*
