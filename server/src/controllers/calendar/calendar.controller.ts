@@ -166,6 +166,7 @@ type BaseEventInput = {
    */
   const transformEvents = (events: EventWithRelations[]): TransformedEvent[] => {
     return events.map(event => {
+        console.log(event.startTime, event.endTime);
       return {
         ...event,
         assigner: {
@@ -773,7 +774,7 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
 export const getLabEvents = async (req: Request, res: Response): Promise<void> => {
     const { labId } = req.params;
     const { start,end } = req.query;
-
+    
     if (!labId) {
         res.status(400).json({error: 'labId cannot be empty'});
         return;

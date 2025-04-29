@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { useAddEvent } from "@/calendar/hooks/use-add-event";
+
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,7 @@ interface IProps {
 
 export function AddEventDialog({ children, startDate, startTime }: IProps) {
   const { users } = useCalendar();
+  const { addEvent } = useAddEvent();
 
   const { isOpen, onClose, onToggle } = useDisclosure();
 
@@ -43,7 +46,25 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
   });
 
   const onSubmit = (_values: TEventFormData) => {
-    // TO DO: Create use-add-event hook
+    const user = users.find(user => user.id === _values.user);
+
+      if (!user) throw new Error("User not found");
+
+      const startDateTime = new Date(_values.startDate);
+      startDateTime.setHours(_values.startTime.hour, _values.startTime.minute);
+
+      const endDateTime = new Date(_values.endDate);
+      endDateTime.setHours(_values.endTime.hour, _values.endTime.minute);
+
+      addEvent({
+        user,
+        title: _values.title,
+        color: _values.color,
+        description: _values.description,
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
+      });
+
     onClose();
     form.reset();
   };
