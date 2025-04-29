@@ -5,6 +5,9 @@ import { getInventoryItems, replenishInventoryItem, takeInventoryItem } from '@/
 import InventoryItem from '../components/InventoryItem';
 import SearchFilterBar from '../components/SearchFilter';
 
+// This component is used to display the inventory items and provide options to search and filter them.
+// It fetches the inventory items from the server and manages the state of the inventory items, search query, and filter category.
+
 type InventoryItemData = {
   id: number;
   item: {
@@ -23,7 +26,18 @@ const Inventory: React.FC = () => {
 
   const fetchItems = async (): Promise<void> => {
     try {
-      const items: InventoryItemData[] = await getInventoryItems();
+      const itemsRaw = await getInventoryItems();
+      const items: InventoryItemData[] = itemsRaw.map((item) => ({
+        id: item.id,
+        item: {
+          name: item.item.name,
+          description: item.item.description,
+          category: (item.itemTags[0] as any)?.name || '',
+        },
+        currentStock: item.currentStock,
+        itemUnit: item.itemUnit,
+      }));
+
       const sortedItems = [...items].sort((a, b) =>
         a.item.name.localeCompare(b.item.name)
       );
@@ -32,10 +46,6 @@ const Inventory: React.FC = () => {
       console.error('Error fetching inventory items:', error);
     }
   };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
 
   const refreshStockData = async (): Promise<void> => {
     await fetchItems();
@@ -57,6 +67,10 @@ const Inventory: React.FC = () => {
       !filterCategory || item.item.category?.toLowerCase() === filterCategory.toLowerCase();
     return matchesSearch && matchesFilter;
   });
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   return (
     <>

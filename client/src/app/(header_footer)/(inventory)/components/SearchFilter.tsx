@@ -3,6 +3,9 @@
 import React from 'react';
 import { Filter, Search, X } from 'lucide-react';
 
+// This component is used to filter and search through inventory items.
+
+// Props for the SearchFilterBar component
 type Props = {
   searchQuery: string;
   setSearchQuery: (val: string) => void;
@@ -10,6 +13,16 @@ type Props = {
   setFilterCategory: (val: string) => void;
 };
 
+// Options for the category filter dropdown
+const categoryOptions = [
+  { label: "All Items", value: "" },
+  { label: "Consumables", value: "consumable" },
+  { label: "Chemicals", value: "chemical" },
+  { label: "Solvents", value: "solvent" },
+  { label: "Other", value: "other" },
+];
+
+// This component renders a search bar and a category filter dropdown.
 const SearchFilterBar: React.FC<Props> = ({
   searchQuery,
   setSearchQuery,
@@ -23,6 +36,7 @@ const SearchFilterBar: React.FC<Props> = ({
   return (
     <div className="w-[90dvw] m-auto top-4">
       <div className="flex flex-row items-stretch gap-2 w-full">
+        {/* This is the search bar */}
         <div className="flex-1 flex items-center bg-gray-50 py-2 px-4 rounded-3xl shadow-xl border-2 border-sky-500 min-w-[150px]">
           <input 
             type="text"
@@ -51,6 +65,7 @@ const SearchFilterBar: React.FC<Props> = ({
           </button>
         </div>
 
+        {/* This is the category filter dropdown */}
         <div className="flex items-center bg-gray-50 py-2 px-4 rounded-3xl shadow-xl border-2 border-sky-500 w-[180px] flex-shrink-0">
           <Filter className="text-sky-600 mr-2 flex-shrink-0" />
           <select
@@ -60,12 +75,13 @@ const SearchFilterBar: React.FC<Props> = ({
             }
             className="bg-transparent outline-none appearance-none w-full"
           >
-            <option value="">All Items</option>
-            <option value="consumables">Consumables</option>
-            <option value="chemicals">Chemicals</option>
-            <option value="solvents">Solvents</option>
-            <option value="other">Other</option>
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
+
         </div>
       </div>
     </div>

@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import InventoryItemDialog from './InventoryItemDialog';
 
+// This component is used to display an inventory item with its details and provide options to take or restock the item.
+// It also handles the dialog for taking or restocking the item.
+
 type InventoryItemProps = {
   name: string;
   description: string;
@@ -13,6 +16,7 @@ type InventoryItemProps = {
   onRestock: (amount: number) => Promise<void>;
   refreshStockData: () => void; 
 };
+
 
 const InventoryItem = ({
   name,

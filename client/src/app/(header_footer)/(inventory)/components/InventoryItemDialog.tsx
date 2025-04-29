@@ -39,7 +39,6 @@ const InventoryItemDialog = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.target.value)}
           placeholder="Enter amount"
         />
-        {feedback && <p className="text-sm text-red-500">{feedback}</p>}
       </div>
 
       <DialogFooter className="mt-6 flex justify-end gap-4">
@@ -58,10 +57,15 @@ const InventoryItemDialog = ({
       </DialogFooter>
 
       {feedback && (
-        <div className="mt-4">
-          <p className="text-sm text-center text-gray-700">{feedback}</p>
-        </div>
+        <p
+          className={`text-sm text-center ${
+            feedback.toLowerCase().includes('success') ? 'text-green-600' : 'text-red-600'
+          }`}
+        >
+          {feedback.toLowerCase().includes('success') ? '✅' : '❌'} {feedback}
+        </p>
       )}
+
     </DialogContent>
   );
 };
