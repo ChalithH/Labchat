@@ -13,7 +13,7 @@ const DiscussionTopic = async ({ params }:{ params: { id: string } }) => {
     const matching_topic = TEST_DATA.find(topic => topic.id === topic_id)
 
     if (!matching_topic){
-        return 'Bruh'
+        return 'No topic found'
     }
 
     return (
@@ -24,8 +24,10 @@ const DiscussionTopic = async ({ params }:{ params: { id: string } }) => {
 
             <Title b_categories={ true } b_view_all={ false } perm_to_add='*' topic={ matching_topic }/>
 
-            { matching_topic?.threads.map( (thread, idx) => (
-                <Thread key={ idx } thread={ thread } b_show_blurb={ true }/>
+            { matching_topic?.threads.map( (thread, idx, arr) => (
+                <div key={ idx } className={ idx !== arr.length - 1 ? "mb-4" : "" }>
+                    <Thread key={ idx } thread={ thread } b_show_blurb={ true }/>
+                </div>
             ))}
         </main>
     )
