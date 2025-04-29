@@ -4,6 +4,7 @@ import { TEST_DATA, FIRST_USER_DATA } from '@/app/testdata'
 
 import Navigation from '../../../components/Navigation'
 import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
+import { Button } from '@/components/ui/button'
 
 
 const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
@@ -22,9 +23,9 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
             <h1 className="text-3xl font-bold play-font">{ matching_thread.title }</h1>
 
             <div className="flex justify-between items-center">
-                <ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 64 } />
+                <ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 48 } />
                 
-                <div className="text-right">
+                <div className="text-right text-sm">
                     <p>Posted { matching_thread.post_date }</p>
                     <p>Last activity { matching_thread.last_activity }</p>
                 </div>
@@ -44,7 +45,8 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
                         <ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 42 } />
                     </div>
 
-                    <button className="rounded-xl bg-sky-600 p-2 px-4 text-white">Post Reply</button>
+                    {/* <button className="rounded-xl bg-sky-600 p-2 px-4 text-white">Post Reply</button> */}
+                    <Button variant="outline">Post Reply</Button>
                 </div>
             </div>
 
@@ -60,9 +62,9 @@ const DiscussionThread = async ({ params }:{ params: { id: string } }) => {
                 <div key={ reply.id }
                     className="p-4 barlow-font rounded-3xl bg-blue-50 flex flex-col gap-4">
                     
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-start">
                         <ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 42 } />
-                        <p>Posted { reply.post_Date }</p>
+                        <p className="text-sm">Posted { reply.post_Date }</p>
                     </div>
 
                     <p>{ reply.content }</p>

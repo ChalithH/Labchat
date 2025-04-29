@@ -28,7 +28,6 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
     const { discussionId, memberId, title, content, createdAt, updatedAt, isPinned, isAnnounce } = req.body
     const now = new Date()
 
-    // GO AWAYYYYYYYYY
     delete req.body.id
 
     if (!discussionId || !memberId || !title || !content) {
@@ -59,12 +58,108 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
   }
 }
 
+/*
+ *      Edit Post
+ *
+ *    Parameters:
+ *      id: number
+ *      title?: string
+ *      content?: string
+ *      updatedAt?: string
+ *      isPinned?: boolean
+ *      isAnnounce?: boolean
+ * 
+ *    200:
+ *      - Successfully updated the post
+ *    400:
+ *      - Failed to parse an ID from request
+ *      - No post found with ID specified
+ *      - Missing request body parameters
+ *    500:
+ *      - Internal server error, unable to update post     
+ */ 
 export const editPost = async (req: Request, res: Response): Promise<void> => {
-    
+  try {
+    const id: number = parseInt(req.params.id)
+    if (!id) {
+      res.status(400).json({ error: 'Failed to parse an ID from request' })
+      return
+    }
+
+    const found_post: DiscussionPost | null = await prisma.discussionPost.findUnique({ where: { id } })
+    if (!found_post) {
+      res.status(400).json({ error: `No post found with ID ${id}` })
+      return
+    }
+
+    if (!req.body) {
+      res.status(400).json({ error: 'Missing request body parameters' })
+      return
+    }
+
+    const { title, content, updatedAt, isPinned, isAnnounce } = req.body
+
+    const updatedPost = await prisma.discussionPost.update({
+      where: { id },
+      data: {
+        title: title ?? found_post.title,
+        content: content ?? found_post.content,
+        updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
+        isPinned: isPinned ?? found_post.isPinned,
+        isAnnounce: isAnnounce ?? found_post.isAnnounce
+      }
+    })
+
+    res.status(200).json(updatedPost)
+    return
+
+  } catch (err: unknown) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to update post' })
+    return
+  }
 }
 
+/*
+ *      Delete Post
+ *
+ *    Parameters:
+ *      id: number
+ * 
+ *    200:
+ *      - Successfully deleted the post
+ *    400:
+ *      - Failed to parse an ID from request body parameters
+ *      - No post found with the ID supplied
+ *    500:
+ *      - Internal server error, unable to delete post     
+ */ 
 export const deletePost = async (req: Request, res: Response): Promise<void> => {
-    
+  try {
+    const id: number = parseInt(req.params.id)
+    if (!id) {
+      res.status(400).send({ error: 'Failed to parse an ID from request' })
+      return
+    }
+
+    const post = await prisma.discussionPost.findUnique({ where: { id }})
+    if (!post) {
+      res.status(400).send({ error: `No post found with ID ${id}` })
+      return
+    }
+
+    await prisma.discussionPost.delete({
+      where: { id }
+    })
+
+    res.status(200).json({ msg: 'Successfully deleted post'})
+    return
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Failed to delete post' })
+    return
+  }
 }
 
 /*
