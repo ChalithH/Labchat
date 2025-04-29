@@ -45,6 +45,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
             width={100}
             height={100}
             className="object-contain"
+            style={{ height: 'auto', width: 'auto' }}
           />
         </div>
 
@@ -55,6 +56,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
             width={300}
             height={300}
             className="object-contain"
+            style={{ height: 'auto', width: 'auto' }}
           />
         </div>
       </div>
