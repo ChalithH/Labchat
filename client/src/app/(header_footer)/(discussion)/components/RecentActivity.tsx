@@ -33,12 +33,12 @@ const RecentActivity = () => {
   }, [api])
 
   return (
-    <div className="mx-auto max-w-xs mb-8">
-      <Carousel setApi={setApi} className="w-full max-w-xs">
+    <div className="w-[90dvw] m-auto mb-8">
+      <Carousel className="overflow-hidden" setApi={ setApi }>
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (
             <CarouselItem key={index}>
-                <CardContent className="rounded-xl flex items-center justify-center p-6">
+                <CardContent className="m-auto rounded-xl p-6">
                     <Thread thread={ FIRST_THREAD_DATA } b_show_blurb={ false } />
                 </CardContent>
             </CarouselItem>

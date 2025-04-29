@@ -22,10 +22,12 @@ const DiscussionTopic = async ({ params }:{ params: { id: string } }) => {
                 <Navigation />
             </div>
 
-            <Title b_categories={ true } b_view_all={ false } perm_to_add='*' topic={ matching_topic }/>
+            <div className="mb-8">
+                <Title b_categories={ true } b_view_all={ false } perm_to_add='*' topic={ matching_topic }/>
+            </div>
 
             { matching_topic?.threads.map( (thread, idx, arr) => (
-                <div key={ idx } className={ idx !== arr.length - 1 ? "mb-4" : "" }>
+                <div key={ idx } className={ idx !== arr.length - 1 ? "mb-6" : "" }>
                     <Thread key={ idx } thread={ thread } b_show_blurb={ true }/>
                 </div>
             ))}
