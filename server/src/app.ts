@@ -1,12 +1,6 @@
 import { Application, Request, Response, NextFunction } from 'express';
 
-import { swaggerDocs } from './middleware/swaggerDocs.middleware';
-import { PrismaSessionStore } from '@quixo3/prisma-session-store';
-import { PrismaClient } from '@prisma/client';
-
 import './middleware/local_strategy.middleware'
-
-=======
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
