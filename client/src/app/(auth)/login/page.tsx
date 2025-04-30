@@ -7,8 +7,8 @@ import Link from 'next/link';
 import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 
-import api from '@/utils/api';
-import getUserFromSession from '@/utils/getUserFromSession';
+import api from '@/lib/api';
+import getUserFromSession from '@/lib/get_user';
 
 const DEFAULT_REDIRECT_ROUTE = 'home'
 

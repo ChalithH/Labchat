@@ -1,44 +1,81 @@
-'use client'
 
+import { Separator } from '@/components/ui/separator'
 import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
-import api from '@/utils/api'
+import { ContactType, ProfileDataType } from '../types/profile.types'
 
-export default function ProfileClient({ userData }: { userData: any }) {
-  const handleButtonClick = async () => {
-    try {
-      const response = await api.get('/api/auth/locked')
-      alert(response.data.msg);
+import ContactGroup from './ContactGroup'
+import EditProfile from './EditProfile'
+import AddContact from './AddContact'
 
-    } catch (err: any) {
-      alert(`${ err.message} - ${ err.request.statusText }`);
-    }
-  }
+
+export default function ProfileClient({ data, is_users_profile }: { data: ProfileDataType, is_users_profile: boolean }) {
+  const contacts: ContactType[] = data.contacts 
 
   return (
     <main className="barlow-font w-[90dvw] m-auto mt-4">
-      <button 
-        onClick={ handleButtonClick }
-        className="bg-orange-500 text-white p-4 rounded-2xl mb-4">
-        Click to test a protected end point, requires 20 or higher permLevel
-        Manually set your role in database to a roleId less than 6 to access 
-      </button>
+      <section className='flex flex-col justify-between'>
+        <div className='bg-green-500 text-center text-sm text-white tracking-tight py-2 rounded-md mb-8 w-[100%]'>
+          <p>Currently In Lab</p>
+        </div>
 
-      <div className='bg-green-500 text-center text-sm text-white tracking-tight py-2 rounded-md mb-4'>
-        <p>Status</p>
+        <div className={ `flex items-center w-[100%] ${ is_users_profile ? 'justify-between' : 'justify-center' }` }>
+          <ThreadAuthorGroup name={ `${ data.firstName } ${ data.lastName }` } role={ data.role } size={ 60 } />
+
+          { is_users_profile && 
+            <EditProfile /> }
+        </div>
+
+      <Separator className='my-6' />
+
+        <div className="flex items-center gap-8">
+          <div className="mb-2 ">
+            <h3 className="barlow-font font-semibold text-sm">Display Name</h3>
+            <p className="text-sm italic text-gray-600 font-medium tracking-tighter leading-[14px]">
+              {data.displayName}
+            </p>
+          </div>
+
+          <div className="mb-2">
+            <h3 className="barlow-font font-semibold text-sm">Job Title</h3>
+            <p className="text-sm italic text-gray-600 font-medium tracking-tighter leading-[14px]">
+              {data.jobTitle}
+            </p>
+          </div>
+
+          <div className="mb-2">
+            <h3 className="barlow-font font-semibold text-sm">Preferred Location</h3>
+            <p className="text-sm italic text-gray-600 font-medium tracking-tighter leading-[14px]">
+              {data.office}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <Separator className='my-6' />
+
+      <div className='mb-6'>
+        <h1 className='text-3xl mb-1 font-semibold barlow-font'>Bio</h1>
+        <p className='text-sm'>{ data.bio || 'Nothing displayed' }</p>
       </div>
 
-      <div className='flex justify-center'>
-        <ThreadAuthorGroup name={ `${ userData.firstName } ${ userData.lastName }` } role={ userData.role } job_title={ userData.jobTitle } size={ 64 } />
-      </div>
+      <section>
+        <div className='flex justify-between'>
+          <h1 className='text-3xl mb-1 font-semibold barlow-font'>Contacts</h1>
+          { is_users_profile && 
+            <AddContact />
+          }
+        </div>
 
-      <div className='my-2 mb-6'>
-        <h1 className='text-3xl font-semibold barlow-font'>Bio</h1>
-        <p className='text-sm'>{ userData.bio }</p>
-      </div>
-
-      <section className='flex flex-col gap-2'>
-        <h1 className='text-3xl font-semibold barlow-font'>Contacts</h1>
-
+        { contacts.length > 0 ?
+            <div className='mt-2 flex flex-col gap-4'>
+              { contacts.map( contact =>
+                <ContactGroup key={ contact.id } contact={ contact } is_users_profile={ is_users_profile } />
+              ) }
+            </div>
+          :
+            <p className='text-sm'>
+              { data.firstName } has no contacts
+            </p> }
       </section>
     </main>
   )

@@ -1,4 +1,5 @@
 import { Application, Request, Response, NextFunction } from 'express';
+
 import './middleware/local_strategy.middleware'
 import express from 'express';
 import cors from 'cors';

@@ -9,9 +9,9 @@ import frank from '/public/FrankIcon.svg';
 
 import { MenuIcon } from "lucide-react";
 
-import getUserFromSession from "@/utils/getUserFromSession";
-import api from '@/utils/api';
 import { loggedInsiteConfig, loggedOutsiteConfig } from "@/config/site";
+import getUserFromSession from "@/lib/get_user";
+import api from '@/lib/api';
 
 
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetHeader, SheetDescription, SheetClose } from "@/components/ui/sheet"

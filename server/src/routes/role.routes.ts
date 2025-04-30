@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getRoleById, getRoles } from '../../controllers/models/role/role.controller';
+import { getRoleById, getRoles } from '../controllers/role/role.controller';
 
 /**
  * @swagger

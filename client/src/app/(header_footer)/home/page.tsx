@@ -9,10 +9,10 @@ import car from '@/../public/car.svg';
 import computer from '@/../public/computer.svg';
 import aboutStar from '@/../public/aboutStar.svg';
 import chooseStar from '@/../public/chooseStar.svg';
-import setUsersLastViewed from '@/utils/setUsersLastViewed.utils';
 import star1 from '@/../public/star1.svg';
 import star2 from '@/../public/star2.svg';
 import uoa from '@/../public/uoa.jpg';
+import setUsersLastViewed from '@/lib/set_last_viewed';
 
 export default function Home() {
   setUsersLastViewed(`/home`)
