@@ -45,11 +45,10 @@ async function main() {
     "discussionPostTag.json",
     "discussionReaction.json",
     "instrument.json",
-    "instrumentBooking.json",
     "instrumentIssue.json",
     "issuePost.json",
-    "task.json",
-    "taskAssignment.json",
+    "event.json",
+    "eventAssignment.json",
     "clockInLog.json",
   ];
 
