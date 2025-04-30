@@ -32,7 +32,7 @@ const Thread = ({ thread, b_show_blurb }:{ thread : ThreadType, b_show_blurb : b
 	}
 
 	return (
-		<div className="discussion-thread barlow-font cursor-pointer">
+		<div className="discussion-thread barlow-font cursor-pointer mb-6">
 			<Link href={ `/discussion/thread/${ thread.id }` }>
 				<h1 className="text-lg font-semibold leading-5"
 					onClick={ () => 

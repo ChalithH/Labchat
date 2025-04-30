@@ -2,9 +2,9 @@ import React from 'react'
 
 import Thread from '@/components/discussion/Thread'
 import Title from '@/app/(header_footer)/(discussion)/components/Title'
-import RecentActivity from '@/app/(header_footer)/(discussion)/components/RecentActivity';
 
 import { TEST_DATA } from '@/app/testdata';
+import RecentActivity from '@/app/(header_footer)/(discussion)/components/RecentActivity';
 
 
 const THREADS_PER_TOPIC = 3
