@@ -1,57 +1,38 @@
-import React from 'react'
+import { redirect } from 'next/navigation'
 
-import { FIRST_USER_DATA, SECOND_USER_DATA } from '@/app/testdata'
-import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
-import { UserType } from '@/types/TestTypes'
-import ContactGroup from '../../components/ContactGroup'
+import ProfileClient from '../../components/ProfileClient'
+import getUserFromSessionServer from '@/utils/getUserFromSessionServer'
+import api from '@/utils/api'
+import setUsersLastViewed from '@/utils/setUsersLastViewed.utils'
+import ResolveRoleName from '../../utils/resolveRoleName.util'
 
-const Profile = async ({ params }:{ params: { id: string } }) => {
+export default async function ProfilePage({ params }:{ params: { id: number }}) {
   const { id } = await params
-  const thread_id = parseInt(id, 10)
+  setUsersLastViewed(`/profile/${ id }`)
+
+
+  // We want this information now since the result of it
+  // depends on whether the content should be visible.
+
+  // So we have to use a server side component wrapper
+  // if needed to provide this value
+  const user = await getUserFromSessionServer()
+
+  const user_id: number = parseInt(user.id, 10)
+  const role_id: number = parseInt(user.roleId, 10)
   
-  const USER_DATA_MAP: Record<number, UserType> = {
-    1: FIRST_USER_DATA,
-    2: SECOND_USER_DATA,
+  if (!user || user_id != id && role_id != 1) {
+    redirect('/home')
   }
 
-  const USER_DATA: UserType = USER_DATA_MAP[thread_id] ?? FIRST_USER_DATA
+  const userData = await api.get(`/api/user/get/${ id }`)
+
+  // Add data requried for Profile page
+  userData.data.role = await ResolveRoleName(role_id)
+
 
   return (
-    <main className="barlow-font w-[90dvw] m-auto mt-4">
-      <header>
-        {/* Status section */}
-        <div className='bg-green-500 text-center text-sm text-white tracking-tight py-2 rounded-md mb-4'>
-          <p>Currently { USER_DATA.status }</p>
-        </div>
-
-        {/* User image, name and job title displayed */}
-        <div className='flex justify-center'>
-          <ThreadAuthorGroup name={ USER_DATA.name } role={ USER_DATA.title } job_title={ USER_DATA.job_title } size={ 64 }/>
-        </div>
-
-        {/* Bio div */}
-        <div className='my-2 mb-6'>
-          <h1 className='text-3xl font-semibold barlow-font'>Bio</h1>
-          <p className='text-sm'>{ USER_DATA.bio }</p>
-        </div>
-
-        {/* Contact section */}
-        <section className='flex flex-col gap-2'>
-          <h1 className='text-3xl font-semibold barlow-font'>Contacts</h1>
-          { USER_DATA.contacts
-            .slice()
-            .sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0))
-            .map(contact => (
-              <ContactGroup key={contact.id} contact={contact} />))
-          }
-        </section>
-      </header>
-
-      <section>
-
-      </section>
-    </main>
+    // Real profile page
+    <ProfileClient userData={userData.data} />
   )
 }
-
-export default Profile

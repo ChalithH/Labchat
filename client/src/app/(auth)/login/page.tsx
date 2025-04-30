@@ -6,14 +6,16 @@ import { useRouter } from 'next/navigation'
 import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 import { LoginRegisterHeader } from '@/components/ui/LoginRegisterHeader';
 
-import api from '@/lib/api';
+import api from '@/utils/api';
+import getUserFromSession from '@/utils/getUserFromSession';
 
+const DEFAULT_REDIRECT_ROUTE = 'home'
 
 export default function Login() {
   const router = useRouter()
 
-  const [email, setEmail] = useState<string>()
-  const [password, setPassword] = useState<string>()
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
   const [error, setError] = useState<string | undefined>('')
   const [message, setMessage] = useState<string | undefined>('')
 
@@ -21,11 +23,14 @@ export default function Login() {
     e.preventDefault()
     
     try {
-      await api.post("/api/auth/login", { loginEmail: email, loginPassword: password })
+      const response = await api.post("/api/auth/login", { loginEmail: email, loginPassword: password })
+
       setError(undefined)
       setMessage('Login successful')
       
-      router.push('/home')
+      const user = await getUserFromSession()
+
+      router.push(`http://localhost:3000/${ user.lastViewed || DEFAULT_REDIRECT_ROUTE }`)
     } catch (err: any) {
       setMessage(undefined)
       setError(err.response.data.error)
@@ -58,7 +63,6 @@ export default function Login() {
                 type="email"
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm bg-[#739CEA] focus:border-white focus:ring-white bg-opacity-90 placeholder:text-gray-400"
-                placeholder="Enter your email"
                 value={ email }
                 onChange={ e => setEmail(e.target.value) }
               />

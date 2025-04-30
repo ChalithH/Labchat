@@ -20,7 +20,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
                 Forgot password?
               </Link>
               <div className="text-right">
-                <span className="text-gray-600">Don't have an account? </span>
+                <span className="text-gray-600">Don&apos;t have an account? </span>
                 <Link href="/register" className="font-bold text-[#C13E70] hover:text-[#A83762]">
                   Sign up
                 </Link>
@@ -45,6 +45,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
             width={100}
             height={100}
             className="object-contain"
+            style={{ height: 'auto', width: 'auto' }}
           />
         </div>
 
@@ -55,6 +56,7 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
             width={300}
             height={300}
             className="object-contain"
+            style={{ height: 'auto', width: 'auto' }}
           />
         </div>
       </div>
