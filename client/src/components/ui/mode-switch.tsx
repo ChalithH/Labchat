@@ -18,8 +18,7 @@ export function ModeSwitch() {
 
   if (!mounted) {
     return (
-      <Button variant={"outline"}>
-        <span className="w-2"></span>
+      <Button variant={"outline"} className="w-12 h-12">
       </Button>
     );
   }
@@ -28,8 +27,9 @@ export function ModeSwitch() {
     <Button 
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
       variant={"outline"}
+      className="w-12 h-12 bg-zinc-50 dark:bg-zinc-950"
     >
-      {theme === 'dark' ? <Moon /> : <Sun />}
+      {theme === 'dark' ? <Moon className="h-12 w-12" /> : <Sun className="h-12 w-12" />}
     </Button>
   );
 }

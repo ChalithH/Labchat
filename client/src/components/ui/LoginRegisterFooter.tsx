@@ -16,8 +16,11 @@ export const LoginRegisterFooter = ({ pageType }: LoginRegisterFooterProps) => {
         <div className="flex justify-between items-center text-sm px-4">
           {pageType === 'login' ? (
             <>
-              <div className="w-full text-right">
-                <span className="text-gray-600">Don't have an account? </span>
+              <Link href="/forgot-password" className="text-[#C13E70] hover:text-[#A83762]">
+                Forgot password?
+              </Link>
+              <div className="text-right">
+                <span className="text-gray-600">Don&apos;t have an account? </span>
                 <Link href="/register" className="font-bold text-[#C13E70] hover:text-[#A83762]">
                   Sign up
                 </Link>
