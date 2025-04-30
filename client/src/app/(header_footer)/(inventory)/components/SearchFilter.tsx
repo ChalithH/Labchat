@@ -16,6 +16,7 @@ type Props = {
 // Options for the category filter dropdown
 const categoryOptions = [
   { label: "All Items", value: "" },
+  { label: "Low Stock", value: "low-stock" },
   { label: "Consumables", value: "consumable" },
   { label: "Chemicals", value: "chemical" },
   { label: "Solvents", value: "solvent" },

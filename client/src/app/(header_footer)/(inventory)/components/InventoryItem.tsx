@@ -11,10 +11,11 @@ type InventoryItemProps = {
   name: string;
   description: string;
   current_stock: number;
+  min_stock: number;
   unit: string;
   onTake: (amount: number) => Promise<void>;
   onRestock: (amount: number) => Promise<void>;
-  refreshStockData: () => void; 
+  refreshStockData: () => void;
 };
 
 
@@ -22,6 +23,7 @@ const InventoryItem = ({
   name,
   description,
   current_stock,
+  min_stock,
   unit,
   onTake,
   onRestock,
@@ -50,7 +52,7 @@ const InventoryItem = ({
       setFeedback('Please enter a valid positive amount.');
       return;
     }
-  
+
     try {
       if (dialogType === 'take') {
         await onTake(numericAmount);
@@ -59,8 +61,8 @@ const InventoryItem = ({
         await onRestock(numericAmount);
         setFeedback('Item successfully restocked!');
       }
-      refreshStockData();  
-      setTimeout(() => setDialogType(null), 3000); 
+      refreshStockData();
+      setTimeout(() => setDialogType(null), 3000);
     } catch (error) {
       setFeedback('Something went wrong. Please try again.');
     }
@@ -69,8 +71,16 @@ const InventoryItem = ({
   return (
     <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={toggleOpen}>
       <CardHeader>
-        <h3 className="font-semibold text-lg">{name}</h3>
+        <div className="flex items-center justify-between w-full">
+          <h3 className="font-semibold text-lg">{name}</h3>
+          {current_stock <= min_stock && (
+            <span className="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+              Low Stock
+            </span>
+          )}
+        </div>
       </CardHeader>
+
 
       <CardContent>
         <p className="text-gray-600">
@@ -83,7 +93,11 @@ const InventoryItem = ({
         <>
           <hr className="border-t border-gray-300 mx-4" />
           <CardFooter className="flex flex-col items-start gap-4">
-            <p className="text-sm text-gray-600">Description: {description}</p>
+            <p className="text-sm text-gray-600">Description: {description}<br />
+              <span className="text-sm text-gray-600 font-semibold">Minimum Stock: {min_stock} {unit}
+                {min_stock !== 1 ? 's' : ''} required</span>
+            </p>
+
             <div className="flex justify-center gap-4 self-center">
               <Button variant="outline" onClick={(e) => openDialog('take', e)}>
                 Take

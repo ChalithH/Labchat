@@ -5,6 +5,15 @@ import { getInventoryItems, replenishInventoryItem, takeInventoryItem } from '@/
 import InventoryItem from '../components/InventoryItem';
 import SearchFilterBar from '../components/SearchFilter';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+
 // This component is used to display the inventory items and provide options to search and filter them.
 // It fetches the inventory items from the server and manages the state of the inventory items, search query, and filter category.
 
@@ -16,6 +25,7 @@ type InventoryItemData = {
     category?: string;
   };
   currentStock: number;
+  minStock: number;
   itemUnit: string;
 };
 
@@ -23,6 +33,8 @@ const Inventory: React.FC = () => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItemData[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<string>('');
+  const [sortOption, setSortOption] = useState<string>('name-asc');
+
 
   const fetchItems = async (): Promise<void> => {
     try {
@@ -35,6 +47,7 @@ const Inventory: React.FC = () => {
           category: (item.itemTags[0] as any)?.name || '',
         },
         currentStock: item.currentStock,
+        minStock: item.minStock,
         itemUnit: item.itemUnit,
       }));
 
@@ -61,12 +74,39 @@ const Inventory: React.FC = () => {
     refreshStockData();
   };
 
-  const filteredItems = inventoryItems.filter((item) => {
-    const matchesSearch = item.item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter =
-      !filterCategory || item.item.category?.toLowerCase() === filterCategory.toLowerCase();
-    return matchesSearch && matchesFilter;
-  });
+  const filteredItems = [...inventoryItems]
+    .filter((item) => {
+      const matchesSearch = item.item.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter =
+        filterCategory === ''
+          ? true
+          : filterCategory === 'low-stock'
+            ? item.currentStock <= item.minStock
+            : item.item.category?.toLowerCase() === filterCategory.toLowerCase();
+
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      switch (sortOption) {
+        case 'name-asc':
+          return a.item.name.localeCompare(b.item.name);
+        case 'name-desc':
+          return b.item.name.localeCompare(a.item.name);
+        case 'stock-high':
+          return (
+            (b.currentStock / Math.max(b.minStock, 1)) -
+            (a.currentStock / Math.max(a.minStock, 1))
+          );
+        case 'stock-low':
+          return (
+            (a.currentStock / Math.max(a.minStock, 1)) -
+            (b.currentStock / Math.max(b.minStock, 1))
+          );
+        default:
+          return 0;
+      }
+    });
+
 
   useEffect(() => {
     fetchItems();
@@ -83,6 +123,22 @@ const Inventory: React.FC = () => {
         filterCategory={filterCategory}
         setFilterCategory={setFilterCategory}
       />
+      <div className="w-full max-w-2xl mx-auto mt-4 px-4 flex justify-center">
+        <div className="flex items-center space-x-2">
+          <label htmlFor="sort" className="text-sm font-semibold text-gray-700">Sort By:</label>
+          <Select value={sortOption} onValueChange={setSortOption}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select sort option" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+              <SelectItem value="stock-high">High Stock %</SelectItem>
+              <SelectItem value="stock-low">Low Stock %</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       <div className="mt-8 space-y-4 w-full max-w-2xl mx-auto">
         {filteredItems.map((item) => (
           <InventoryItem
@@ -90,6 +146,7 @@ const Inventory: React.FC = () => {
             name={item.item.name}
             description={item.item.description}
             current_stock={item.currentStock}
+            min_stock={item.minStock}
             unit={item.itemUnit}
             onTake={(amount: number) => handleTake(item.id, amount)}
             onRestock={(amount: number) => handleRestock(item.id, amount)}
