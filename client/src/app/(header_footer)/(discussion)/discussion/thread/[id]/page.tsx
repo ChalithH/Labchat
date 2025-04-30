@@ -4,6 +4,7 @@ import ThreadClient from './ThreadClient'
 import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
+import api from '@/lib/api'
 
 
 const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
@@ -15,8 +16,10 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
         redirect('/home')
     }
 
+    const post = await api.get(`/api/discussion/post/${ id }`)
+
     return (
-      <ThreadClient params={ {id: `${ id }`} } />
+      <ThreadClient post={ post } params={ {id: `${ id }`} } />
     )
   }
 

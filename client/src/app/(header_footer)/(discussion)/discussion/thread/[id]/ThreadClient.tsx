@@ -7,7 +7,7 @@ import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 import { Button } from '@/components/ui/button'
 
 
-const ThreadClient = async ({ params }:{ params: { id: string } }) => {
+const ThreadClient = async ({ post, params }:{ post: any, params: { id: string } }) => {
     const { id } = await params
     const thread_id = parseInt(id, 10)
 
