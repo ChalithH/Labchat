@@ -44,7 +44,7 @@ export default function Home() {
                 </Link>
                 <div className="flex items-start mt-2 sm:mt-4">
                   <Image src={star1} alt="Star" width={16} height={16} className="mr-1 sm:mr-2 flex-shrink-0 mt-1" />
-                  <p className="text-labchat-magenta-500 text-xs sm:text-sm font-medium">Stop wasting time with outdated processes and use Labchat today!</p>
+                  <p className="text-labchat-magenta-500 text-xs sm:text-sm font-medium">Already part of a Labchat? Login now to continue saving time!</p>
                 </div>
               </div>
               
@@ -56,7 +56,7 @@ export default function Home() {
                 </Link>
                 <div className="flex items-start mt-2 sm:mt-4">
                   <Image src={star2} alt="Star" width={16} height={16} className="mr-1 sm:mr-2 flex-shrink-0 mt-1" />
-                  <p className="text-labchat-blue-500 text-xs sm:text-sm font-medium">Already part of a lab? Signup today and start saving time!</p>
+                  <p className="text-labchat-blue-500 text-xs sm:text-sm font-medium">Not a member yet? Stop wasting time with outdated processes and signup today!</p>
                 </div>
               </div>
             </div>

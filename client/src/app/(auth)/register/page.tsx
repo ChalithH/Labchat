@@ -16,6 +16,7 @@ export default function Register() {
   const [firstName, setFirstName] = useState<string>('')
   const [lastName, setLastName] = useState<string>('')
   const [email, setEmail] = useState<string>('')
+  const [upi, setUpi] = useState<string>('') // Not connected to payload or backend yet
   const [password, setPassword] = useState<string>('')
   const [confirmPassword, setConfirmPassword] = useState<string>('')
 
@@ -25,12 +26,12 @@ export default function Register() {
   const new_user: UserType = {
     roleId: 6, /* Vistor */
     universityId: '',
-    username: `${ firstName }_${ lastName }`,
+    username: `${firstName}_${lastName}`,
     loginEmail: email,
     loginPassword: password,
     firstName: firstName,
     lastName: lastName,
-    displayName: `${ firstName } ${ lastName }`,
+    displayName: `${firstName} ${lastName}`,
     jobTitle: '',
     office: '',
     bio: '',
@@ -49,25 +50,25 @@ export default function Register() {
       await api.post('/api/user/', new_user)
       setError(undefined)
       setMessage('Registration successful')
-      
+
       router.push('/login')
-      
+
     } catch (err: any) {
       setError(err.response.data.error)
     }
   }
-  
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#739CEA]">
       <div className="w-full max-w-md space-y-6 rounded-xl">
-        <LoginRegisterHeader 
+        <LoginRegisterHeader
           subtitle="Register"
           className="mb-8"
         />
-        <form onSubmit={ handleFormSubmit } className="space-y-5 p-8">
-          { (error || message) &&
-            <div className={ `${error ? 'bg-red-500' : 'bg-green-500'}` + ' text-white m-auto rounded-sm p-3 mb-6' }>
-              <p>{ error || message }</p>
+        <form onSubmit={handleFormSubmit} className="space-y-5 p-8">
+          {(error || message) &&
+            <div className={`${error ? 'bg-red-500' : 'bg-green-500'}` + ' text-white m-auto rounded-sm p-3 mb-6'}>
+              <p>{error || message}</p>
             </div>
           }
 
@@ -83,8 +84,8 @@ export default function Register() {
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
                 placeholder="First name"
-                value={ firstName }
-                onChange={ e => setFirstName(e.target.value) }
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
               />
             </div>
             <div>
@@ -98,8 +99,8 @@ export default function Register() {
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
                 placeholder="Last name"
-                value={ lastName }
-                onChange={ e => setLastName(e.target.value) }
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
               />
             </div>
           </div>
@@ -115,11 +116,28 @@ export default function Register() {
               required
               className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
               placeholder="Enter your email"
-              value={ email }
-              onChange={ e => setEmail(e.target.value) }
+              value={email}
+              onChange={e => setEmail(e.target.value)}
             />
           </div>
 
+          {/* New UPI field but is not connected to form submission yet - did not want to mess up the schema or auth */}
+          <div>
+            <label htmlFor="upi" className="block text-sm font-medium text-white">
+              UPI
+            </label>
+            <input
+              id="upi"
+              name="upi"
+              type="text"
+              required
+              className="mt-2 block max-w-[40%] rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
+              placeholder="Enter your UPI"
+              value={upi}
+              onChange={e => setUpi(e.target.value)}
+            />
+          </div>
+          
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-white">
@@ -132,8 +150,8 @@ export default function Register() {
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
                 placeholder="Password"
-                value={ password }
-                onChange={ e => setPassword(e.target.value) }
+                value={password}
+                onChange={e => setPassword(e.target.value)}
               />
             </div>
             <div>
@@ -147,8 +165,8 @@ export default function Register() {
                 required
                 className="mt-2 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-white focus:ring-white bg-[#739CEA] bg-opacity-90 placeholder:text-gray-500"
                 placeholder="Confirm password"
-                value={ confirmPassword }
-                onChange={ e => setConfirmPassword(e.target.value) }
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
               />
             </div>
           </div>
@@ -160,7 +178,7 @@ export default function Register() {
             Register
           </button>
         </form>
-        
+
         <LoginRegisterFooter pageType="register" />
       </div>
     </div>
