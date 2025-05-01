@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { createPost, deletePost, editPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller'
+import { getAllCategories, getCategoryById, createCategory, editCategory, deleteCategory } from '../controllers/discussion/category.controller'
 import { getReplyById, getRepliesByPost, createReply, editReply, deleteReply,} from '../controllers/discussion/reply.controller'
 /**
  * @swagger
@@ -20,7 +21,15 @@ router.get('/category-posts/:id', getPostsByCategory)
 router.get('/member-posts/:id', getPostsByMember)
 router.post('/title-posts', getPostsByTitle)
 
-// /api/discussion/reply
+
+// category controller routes
+router.get('/categories', getAllCategories);
+router.get('/category/:id', getCategoryById);
+router.post('/category', createCategory);
+router.put('/category/:id', editCategory);
+router.delete('/category/:id', deleteCategory);
+
+// reply controller routes
 router.get('/reply/:id', getReplyById)
 router.get('/replies/post/:id', getRepliesByPost);
 router.post('/reply', createReply)
