@@ -48,7 +48,7 @@ export const getReplyById = async (req: Request, res: Response): Promise<void> =
 
 /**
  * @swagger
- * /discussion/reply/post/{id}:
+ * /discussion/replies/post/{id}:
  *   get:
  *     summary: Get all replies for a discussion post
  *     tags: [Discussion Board]
@@ -144,7 +144,6 @@ export const createReply = async (req: Request, res: Response): Promise<void> =>
         return;
     }
 };
-
 
 /**
  * @swagger

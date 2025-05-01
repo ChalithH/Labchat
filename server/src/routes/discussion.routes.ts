@@ -22,7 +22,7 @@ router.post('/title-posts', getPostsByTitle)
 
 // /api/discussion/reply
 router.get('/reply/:id', getReplyById)
-//getRepliesByPost route needed to add
+router.get('/replies/post/:id', getRepliesByPost);
 router.post('/reply', createReply)
 router.put('/reply/:id', editReply)
 router.delete('/reply/:id', deleteReply)
