@@ -5,11 +5,11 @@ import { Contact } from '@prisma/client';
 export const addContact = async (req: Request, res: Response): Promise<void> => {
   try {
     const contact_data = req.body;
-    const { userId, type, name, info } = contact_data;
+    const { userId, type, name, useCase, info } = contact_data;
 
     const contact: Contact = await prisma.contact.create({
       data: {
-        userId, type, name, info
+        userId, type, name, useCase, info
       }
     })
 

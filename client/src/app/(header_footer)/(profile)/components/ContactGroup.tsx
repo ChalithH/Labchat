@@ -56,6 +56,7 @@ const ContactGroup = ({ contact, is_users_profile }: ContactGroupTypes) => {
           <div className='flex justify-between items-center'>
             <div>
               <CardTitle className='mb-1'>{ contact.name }</CardTitle>
+              { contact.useCase && <p className='text-sm pb-2'>{ contact.useCase }</p> }
               <CardDescription>{ contact.info }</CardDescription>
             </div>
 

@@ -47,7 +47,7 @@ const GeneralTab = ({ values, setters, onSubmit }: GeneralTabProps) => {
   
 
   const handleSubmit = () => {
-    if (!values.displayName || !values.jobTitle || !values.office || !values.bio){
+    if (!values.displayName){
       setError('Fill in the form before submitting')
       return
     }
@@ -55,9 +55,9 @@ const GeneralTab = ({ values, setters, onSubmit }: GeneralTabProps) => {
     setError('')
     onSubmit({
       displayName: values.displayName,
-      jobTitle: values.jobTitle,
-      office: values.office,
-      bio: values.bio
+      jobTitle: values.jobTitle === '' ? 'None' : values.jobTitle,
+      office: values.office === '' ? 'None' : values.office,
+      bio: values.bio ?? ''
     })
   }
 

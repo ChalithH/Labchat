@@ -55,12 +55,12 @@ export default function ProfileClient({ data, is_users_profile }: { data: Profil
 
       <div className='mb-6'>
         <h1 className='text-3xl mb-1 font-semibold barlow-font'>Bio</h1>
-        <p className='text-sm'>{ data.bio || 'Nothing displayed' }</p>
+        <p className='text-sm'>{ data.bio || 'Write a short bio about your background, interests, current role or career and key skills.' }</p>
       </div>
 
       <section>
         <div className='flex justify-between'>
-          <h1 className='text-3xl mb-1 font-semibold barlow-font'>Contacts</h1>
+          <h1 className='text-3xl mb-1 font-semibold barlow-font'>Contact Details</h1>
           { is_users_profile && 
             <AddContact />
           }

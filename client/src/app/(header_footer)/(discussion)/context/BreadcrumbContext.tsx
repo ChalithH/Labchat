@@ -15,7 +15,7 @@ type BreadcrumbContextType = {
 const BreadcrumbContext = createContext<BreadcrumbContextType | undefined>(undefined)
 
 export const BreadcrumbProvider = ({ children }:{ children: React.ReactNode }) => {
-    const [ breadcrumbs, setBreadcrumbsState ] = useState<Breadcrumb[] | null>([{ name: 'Home', href: '/discussion/home' }])
+    const [ breadcrumbs, setBreadcrumbsState ] = useState<Breadcrumb[] | null>([{ name: 'Discussion Home', href: '/discussion/home' }])
     const [ breadcrumbHistory, setBreadcrumbHistory ] = useState<Breadcrumb[][]>([])
 
     useEffect(() => {
