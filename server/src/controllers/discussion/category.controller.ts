@@ -101,19 +101,23 @@ export const getCategoryById = async (req: Request, res: Response): Promise<void
  */
 export const createCategory = async (req: Request, res: Response): Promise<void> => {
     try {
+
+        console.log(req.body);
         const { tag, postId } = req.body;
         if (!tag || !postId) {
             res.status(400).json({ error: 'Tag and postId are required' });
             return;
         }
-
         const newCategory = await prisma.discussionPostTag.create({
             data: {
+                // No idea why but for some reason have to set id to undefined for this to work
+                id: undefined,
                 tag,
                 postId,
             },
         });
         res.status(201).json(newCategory);
+        return;
     } catch (error) {
         console.error('Error creating category:', error);
         res.status(500).json({ error: 'Failed to create category' });
