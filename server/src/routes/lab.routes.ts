@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getLab } from '../controllers/lab/lab.controller';
+import { getLab, getLabMembers } from '../controllers/lab/lab.controller';
 
 
 
@@ -14,5 +14,6 @@ const router = Router();
 
 // Contacts
 router.get('/:labId', getLab); 
+router.get('/getMembers/:labId', getLabMembers);
 
 export default router;
