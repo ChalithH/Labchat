@@ -64,20 +64,20 @@ export const getLab = async (req: Request, res: Response): Promise<void> => {
 
 /**
  * @swagger
- * /lab/getMembers/{labId}:
+ * /lab/{labId}/members:
  *   get:
- *     summary: Get all members of a specific lab
+ *     summary: Get all members of a lab with user and membership details flattened
  *     tags: [Lab]
  *     parameters:
  *       - in: path
  *         name: labId
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
  *         description: ID of the lab
  *     responses:
  *       200:
- *         description: List of lab members with user details
+ *         description: A list of lab members with flattened user and status data
  *         content:
  *           application/json:
  *             schema:
@@ -85,15 +85,11 @@ export const getLab = async (req: Request, res: Response): Promise<void> => {
  *               items:
  *                 $ref: '#/components/schemas/LabMember'
  *       500:
- *         description: Failed to retrieve lab member info
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
+ *         description: Internal server error
  */
+
+
+
 export const getLabMembers = async (req: Request, res: Response): Promise<void> => {
     const labId = req.params.labId; // Assuming labId is passed as a URL parameter
     try {
@@ -154,4 +150,6 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({ error: 'Failed to retrieve info' });
     }
 };
+
+
 
