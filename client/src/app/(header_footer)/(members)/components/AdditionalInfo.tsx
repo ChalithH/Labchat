@@ -14,8 +14,8 @@ interface AdditionalInfoProps {
 
 export default function AdditionalInfo({ additionalInfo, onClick }: AdditionalInfoProps) {
     return (
-        <div className="flex flex-col gap-4" onClick={onClick}>
-            <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4 border-t-1 border-[#D1D1D1]" onClick={onClick}>
+            <div className="flex flex-col gap-2 mt-3">
                 <p className="text-sm text-gray-600 font-semibold">
                     Primary Contact:  <span className="font-light">{additionalInfo.primaryContact}</span>
                 </p>
