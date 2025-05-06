@@ -1,8 +1,8 @@
 import React from 'react'
 
-import Navigation from '../../../components/Navigation'
-import Title from '../../../components/Title'
-import Thread from '../../../../../../components/discussion/Thread'
+import Navigation from './Navigation'
+import Title from './Title'
+import Thread from '../../../../components/discussion/Thread'
 import { TEST_DATA } from '@/app/testdata';
 
 

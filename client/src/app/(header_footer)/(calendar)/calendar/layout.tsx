@@ -8,8 +8,17 @@ import { ChangeWorkingHoursInput } from "@/calendar/components/change-working-ho
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import { getEvents, getUsers } from "@/calendar/requests";
+import { UserType } from "@/types/User.type";
+import getUserFromSessionServer from "@/lib/get_user_server";
+import { redirect } from "next/navigation";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
+  const user: UserType | false = await getUserFromSessionServer()
+
+  if (!user) {
+    redirect('/home')
+  }
+
   const [events, users] = await Promise.all([getEvents(), getUsers()]);
 
   return (
