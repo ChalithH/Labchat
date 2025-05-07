@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { createPost, deletePost, editPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller'
 import { getAllCategories, getCategoryById, createCategory, editCategory, deleteCategory } from '../controllers/discussion/category.controller'
 import { getReplyById, getRepliesByPost, createReply, editReply, deleteReply,} from '../controllers/discussion/reply.controller'
-import { getRecentPosts } from '../controllers/discussion/misc.controller'
+import { getPopularPosts, getRecentPosts } from '../controllers/discussion/misc.controller'
 /**
  * @swagger
  * tags:
@@ -42,6 +42,7 @@ router.delete('/reply/:id', deleteReply)
 
 // misc controller routes
 router.get('/recent', getRecentPosts)
+router.get('/popular', getPopularPosts)
 
 
 export default router
