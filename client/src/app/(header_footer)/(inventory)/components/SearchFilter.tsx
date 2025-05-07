@@ -1,18 +1,62 @@
-import React from 'react';
-import { Search, Filter } from "lucide-react";
+'use client';
 
-const SearchFilterBar = () => {
+import React from 'react';
+import { Filter, Search, X } from 'lucide-react';
+
+// This component is used to filter and search through inventory items.
+
+// Props for the SearchFilterBar component
+type Props = {
+  searchQuery: string;
+  setSearchQuery: (val: string) => void;
+  filterCategory: string;
+  setFilterCategory: (val: string) => void;
+};
+
+// Options for the category filter dropdown
+const categoryOptions = [
+  { label: "All Items", value: "" },
+  { label: "Low Stock", value: "low-stock" },
+  { label: "Consumables", value: "consumable" },
+  { label: "Chemicals", value: "chemical" },
+  { label: "Solvents", value: "solvent" },
+  { label: "Other", value: "other" },
+];
+
+// This component renders a search bar and a category filter dropdown.
+const SearchFilterBar: React.FC<Props> = ({
+  searchQuery,
+  setSearchQuery,
+  filterCategory,
+  setFilterCategory,
+}) => {
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
+
   return (
     <div className="w-[90dvw] m-auto top-4">
-      {/* Flex container that keeps children in one line */}
       <div className="flex flex-row items-stretch gap-2 w-full">
-        {/* Search bar - grows to fill space */}
+        {/* This is the search bar */}
         <div className="flex-1 flex items-center bg-gray-50 py-2 px-4 rounded-3xl shadow-xl border-2 border-sky-500 min-w-[150px]">
           <input 
-            type="text" 
-            placeholder="Search for anything..." 
+            type="text"
+            value={searchQuery}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchQuery(e.target.value)
+            }
+            placeholder="Search for anything..."
             className="flex-1 bg-transparent outline-none px-2 min-w-[50px]"
           />
+          {searchQuery && (
+            <button
+              onClick={handleClearSearch}
+              className="text-gray-400 hover:text-gray-600 mx-1"
+              aria-label="Clear search"
+            >
+              <X size={18} />
+            </button>
+          )}
           <button 
             className="bg-sky-600 w-8 h-8 flex-shrink-0" 
             style={{ clipPath: 'circle()' }}
@@ -22,19 +66,23 @@ const SearchFilterBar = () => {
           </button>
         </div>
 
-        {/* Filter dropdown - fixed width */}
+        {/* This is the category filter dropdown */}
         <div className="flex items-center bg-gray-50 py-2 px-4 rounded-3xl shadow-xl border-2 border-sky-500 w-[180px] flex-shrink-0">
           <Filter className="text-sky-600 mr-2 flex-shrink-0" />
-          <select 
+          <select
+            value={filterCategory}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setFilterCategory(e.target.value)
+            }
             className="bg-transparent outline-none appearance-none w-full"
-            aria-label="Filter options"
           >
-            <option value="">All Items</option>
-            <option value="consumables">Consumables</option>
-            <option value="chemicals">Chemicals</option>
-            <option value="solvents">Solvents</option>
-            <option value="other">Other</option>
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
+
         </div>
       </div>
     </div>

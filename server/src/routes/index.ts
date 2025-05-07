@@ -2,6 +2,10 @@ import { Router } from 'express';
 import userRoutes from './user.routes';
 import authRoutes from './auth.routes';
 import inventoryRoutes from './inventory.routes';
+import roleRoutes from './role.routes';
+import profileRoutes from './profile.routes';
+import discussionRoutes from './discussion.routes';
+import calendarRoutes from './calendar.routes';
 
 const router = Router();
 
@@ -31,8 +35,15 @@ router.get('/', (req, res) => {
   });
 });
 
-router.use('/user', userRoutes);
 router.use('/auth', authRoutes);
 router.use('/inventory', inventoryRoutes);
+router.use('/discussion', discussionRoutes);
+router.use('/profile', profileRoutes);
+router.use('/calendar', calendarRoutes);
+
+// Models
+router.use('/user', userRoutes);
+router.use('/role', roleRoutes);
+
 
 export default router;

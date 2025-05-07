@@ -1,5 +1,8 @@
 import React from 'react'
 
+import { Badge } from '../ui/badge'
+
+
 type ThreadAuthorGroupTypes = {
   role: string,
   name: string,
@@ -18,7 +21,8 @@ const ThreadAuthorGroup = ({ role, name, job_title, size }: ThreadAuthorGroupTyp
         alt="" />
 
       <div className="flex flex-col items-center">
-        <p className="text-sm text-center p-0.5 px-1.5 w-fit bg-sky-600 text-white rounded-[6px]">{ role }</p>
+        <Badge>{ role }</Badge>
+
         <p className="text-sm font-medium tracking-tighter">{ name } </p>
         { job_title && <p className="text-sm italic text-gray-600 font-medium tracking-tighter leading-[14px]">{ job_title } </p> }
       </div>

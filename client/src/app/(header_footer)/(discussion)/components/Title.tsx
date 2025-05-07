@@ -6,6 +6,7 @@ import React from 'react'
 import { TopicType } from '../../../../types/TestTypes'
 
 import { Breadcrumb, useBreadcrumb } from '../context/BreadcrumbContext';
+import { Button } from '@/components/ui/button';
 
 
 type TitlePropTypes = {
@@ -56,9 +57,9 @@ const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes
 
             <div className="flex justify-between items-center text-lg mb-4">
                 { b_categories && 
-                    <div className="flex justify-between items-center gap-4 mt-2">
-                        <button className="discussion-topic-filter-button">Recent</button>
-                        <button className="">Popular</button>
+                    <div className="flex justify-between items-center gap-4">
+                        <Button variant="outline" className="h-8">Recent</Button>
+                        <Button variant="outline" className="h-8">Popular</Button>
                     </div> }
 
                 { b_view_all && 
@@ -67,7 +68,7 @@ const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes
                             handleClick(topic.name, `/discussion/topic/${ topic.id }`) } 
                         href={ `/discussion/topic/${ topic.id }` }>
 
-                        <button className="discussion-topic-filter-button">View All</button>
+                        <Button className="h-8">View All</Button>
                     </Link> }
             </div>
         </div>

@@ -111,12 +111,13 @@ export const getInventoryItemByName = async (req: Request, res: Response): Promi
     try {
         const { name } = req.params;
         
-        // Find the inventory item where the related item's name matches
-        const inventoryItem = await prisma.labInventoryItem.findFirst({
+        // Find the inventory item where the related item's name matches 
+        // Note that we will need to make this lab specific in the future. Just adding it here now for testing
+        const inventoryItem = await prisma.labInventoryItem.findMany({
             where: {
                 item: {
                     name: {
-                        equals: name,
+                        contains: name,
                         mode: 'insensitive' // Case-insensitive search
                     }
                 }

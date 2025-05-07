@@ -2,32 +2,32 @@
   {
     "id": 1,
     "inventoryItemId": 1,
-    "name": "flammable"
+    "name": "chemical"
   },
   {
     "id": 2,
-    "inventoryItemId": 1,
+    "inventoryItemId": 2,
     "name": "solvent"
   },
   {
     "id": 3,
     "inventoryItemId": 2,
-    "name": "base"
+    "name": "chemical"
   },
   {
     "id": 4,
     "inventoryItemId": 2,
-    "name": "corrosive"
+    "name": "chemical"
   },
   {
     "id": 5,
     "inventoryItemId": 3,
-    "name": "PPE"
+    "name": "other"
   },
   {
     "id": 6,
     "inventoryItemId": 3,
-    "name": "disposable"
+    "name": "other"
   },
   {
     "id": 7,
@@ -37,11 +37,11 @@
   {
     "id": 8,
     "inventoryItemId": 5,
-    "name": "acid"
+    "name": "chemical"
   },
   {
     "id": 9,
     "inventoryItemId": 5,
-    "name": "corrosive"
+    "name": "chemical"
   }
 ]

@@ -1,57 +1,46 @@
-import React from 'react'
+import { redirect } from 'next/navigation'
+import { AxiosResponse } from 'axios'
 
-import { FIRST_USER_DATA, SECOND_USER_DATA } from '@/app/testdata'
-import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
-import { UserType } from '@/types/TestTypes'
-import ContactGroup from '../../components/ContactGroup'
+import ProfileClient from '../../components/ProfileClient'
+import { ProfileDataType } from '../../types/profile.types'
 
-const Profile = async ({ params }:{ params: { id: string } }) => {
+import getUserFromSessionServer from '@/lib/get_user_server'
+import setUsersLastViewed from '@/lib/set_last_viewed'
+import ResolveRoleName from '../../lib/resolve_role_name.util'
+
+import api from '@/lib/api'
+
+
+export default async function ProfilePage({ params }:{ params: { id: number }}) {
   const { id } = await params
-  const thread_id = parseInt(id, 10)
+  setUsersLastViewed(`/profile/${ id }`)
+
+  /* We want this information now since the result of it
+   depends on whether the content should be visible.
+
+   So we have to use a server side component wrapper
+   to provide this value immediately */
+  const user = await getUserFromSessionServer()
+
+  const user_id: number = parseInt(user.id, 10)
+  const role_id: number = parseInt(user.roleId, 10)
   
-  const USER_DATA_MAP: Record<number, UserType> = {
-    1: FIRST_USER_DATA,
-    2: SECOND_USER_DATA,
+  // Check if user has permission to view this page
+  if (!user || user_id != id && role_id != 1) {
+    redirect('/home')
   }
 
-  const USER_DATA: UserType = USER_DATA_MAP[thread_id] ?? FIRST_USER_DATA
+  const profile_data: AxiosResponse = await api.get(`/api/user/get/${ id }`)
+  
+  // Add data requried for Profile page
+  const contact_response: AxiosResponse = await api.get(`/api/profile/get/${ id }`)
+  profile_data.data.contacts = contact_response.data
+  profile_data.data.role = await ResolveRoleName(role_id)
+
+  const data: ProfileDataType = (profile_data.data as ProfileDataType)
+  const is_users_profile = user_id == id
 
   return (
-    <main className="barlow-font w-[90dvw] m-auto mt-4">
-      <header>
-        {/* Status section */}
-        <div className='bg-green-500 text-center text-sm text-white tracking-tight py-2 rounded-md mb-4'>
-          <p>Currently { USER_DATA.status }</p>
-        </div>
-
-        {/* User image, name and job title displayed */}
-        <div className='flex justify-center'>
-          <ThreadAuthorGroup name={ USER_DATA.name } role={ USER_DATA.title } job_title={ USER_DATA.job_title } size={ 64 }/>
-        </div>
-
-        {/* Bio div */}
-        <div className='my-2 mb-6'>
-          <h1 className='text-3xl font-semibold barlow-font'>Bio</h1>
-          <p className='text-sm'>{ USER_DATA.bio }</p>
-        </div>
-
-        {/* Contact section */}
-        <section className='flex flex-col gap-2'>
-          <h1 className='text-3xl font-semibold barlow-font'>Contacts</h1>
-          { USER_DATA.contacts
-            .slice()
-            .sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0))
-            .map(contact => (
-              <ContactGroup key={contact.id} contact={contact} />))
-          }
-        </section>
-      </header>
-
-      <section>
-
-      </section>
-    </main>
+    <ProfileClient data={ data } is_users_profile={ is_users_profile } />
   )
 }
-
-export default Profile
