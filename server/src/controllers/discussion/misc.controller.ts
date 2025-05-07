@@ -15,7 +15,7 @@ import { DiscussionPost } from '@prisma/client';
  */
 export const getRecentPosts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const amount = parseInt(req.body.amount as string) || 9
+    const amount: number = parseInt(req.body.amount as string) || 9
     const posts: DiscussionPost[] = await prisma.discussionPost.findMany({
       orderBy: { createdAt: 'desc' },
       take: amount,
@@ -41,8 +41,8 @@ export const getRecentPosts = async (req: Request, res: Response): Promise<void>
  */
 export const getPopularPosts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const amount = parseInt(req.body.amount as string) || 9
-    const posts = await prisma.discussionPost.findMany({
+    const amount: number = parseInt(req.body.amount as string) || 9
+    const posts: DiscussionPost[] = await prisma.discussionPost.findMany({
       take: amount,
       orderBy: {
         replies: { _count: 'desc' }},
@@ -58,7 +58,39 @@ export const getPopularPosts = async (req: Request, res: Response): Promise<void
   }
 }
 
-
+/*
+ *      Get Mixed Posts
+ *
+ *    Body Parameter:
+ *      amount?: number
+ * 
+ *    200:
+ *      - Successfully returned mixed posts
+ *    500:
+ *      - Internal server error
+ */
 export const getMixedPosts = async (req: Request, res: Response): Promise<void> => {
-    
+  try {
+    const amount: number = parseInt(req.body.amount as string) || 9
+
+    const recent: DiscussionPost[] = await prisma.discussionPost.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: amount,
+    })
+
+    const popular: DiscussionPost[] = await prisma.discussionPost.findMany({
+      take: amount,
+      orderBy: {
+        replies: { _count: 'desc' }},
+        
+      include: {
+        _count: { select: { replies: true } }}
+    })
+
+    const merged: DiscussionPost[] = [...recent, ...popular.filter(p => !recent.some(r => r.id === p.id))].slice(0, amount)
+    res.status(200).json(merged)
+
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to obtain list of mixed posts' })
+  }
 }
