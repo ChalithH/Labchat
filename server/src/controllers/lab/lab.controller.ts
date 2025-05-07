@@ -64,7 +64,7 @@ export const getLab = async (req: Request, res: Response): Promise<void> => {
 
 /**
  * @swagger
- * /lab/{labId}/members:
+ * /lab/getMembers/{labId}:
  *   get:
  *     summary: Get all members of a lab with user and membership details flattened
  *     tags: [Lab]
@@ -87,9 +87,6 @@ export const getLab = async (req: Request, res: Response): Promise<void> => {
  *       500:
  *         description: Internal server error
  */
-
-
-
 export const getLabMembers = async (req: Request, res: Response): Promise<void> => {
     const labId = req.params.labId; // Assuming labId is passed as a URL parameter
     try {
@@ -151,5 +148,63 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
     }
 };
 
+
+/**
+ * @swagger
+ * /lab/getMembersList/{labId}:
+ *   get:
+ *     summary: Get all members of a lab with user and membership details flattened
+ *     tags: [Lab]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *     responses:
+ *       200:
+ *         description: A list of lab members with flattened user and status data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/LabMember'
+ *       500:
+ *         description: Internal server error
+ */
+
+export const getLabMembersList = async (req: Request, res: Response): Promise<void> => {
+    const labId = req.params.labId; // Assuming labId is passed as a URL parameter
+    try {
+        const labMembers = await prisma.labMember.findMany({
+            where: { labId: Number(labId) },
+            select: {
+                id: true,
+                user: { 
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        displayName: true,
+                    },
+                }, 
+            },
+        });
+
+        const flattenedMembers = labMembers.map((member) => ({
+            ...member.user,
+            memberID: member.id,
+            labID: labId,
+          }));
+      
+        res.json(flattenedMembers);
+        
+    } catch (error) {
+        console.error("Error retrieving lab info:", error);
+        res.status(500).json({ error: 'Failed to retrieve info' });
+    }
+};
 
 

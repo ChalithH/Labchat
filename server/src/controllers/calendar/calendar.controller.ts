@@ -4,7 +4,7 @@ import { Event, Prisma, PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 //Helper functions to validate event input
-type BaseEventInput = {
+type EventRequestBody = {
     id?: number;
     labId: number;
     memberId: number;
@@ -13,18 +13,10 @@ type BaseEventInput = {
     status?: string;
     startTime: string | Date;
     endTime: string | Date;
+    instrumentId?: number | null;
+    type: string;
+    assignedMembers?: number[]; 
   };
-  
-  type RosteringEventInput = BaseEventInput & {
-    type: 'rostering';
-  };
-  
-  type EquipmentEventInput = BaseEventInput & {
-    type: 'equipment';
-    instrumentId: number;
-  };
-  
-  type EventRequestBody = RosteringEventInput | EquipmentEventInput;
 
 
   function isValidDate(val: any): boolean {
@@ -186,7 +178,9 @@ type BaseEventInput = {
  * @swagger
  * /calendar/create-event:
  *   post:
- *     summary: Creates a new rostering or equipment event
+ *     summary: Create a new event
+ *     description: Creates a new event in the system with optional assigned members and instrument booking
+ *     
  *     tags: [Calendar]
  *     requestBody:
  *       required: true
@@ -200,116 +194,189 @@ type BaseEventInput = {
  *               - title
  *               - startTime
  *               - endTime
- *               - type
  *             properties:
  *               labId:
  *                 type: integer
- *                 description: ID of the lab where the event is scheduled
+ *                 description: ID of the lab where the event takes place
  *               memberId:
  *                 type: integer
- *                 description: ID of the lab member associated with the event
+ *                 description: ID of the lab member creating the event
  *               instrumentId:
  *                 type: integer
  *                 nullable: true
- *                 description: ID of the instrument (required for equipment events)
+ *                 description: Optional ID of the instrument being booked
  *               title:
  *                 type: string
  *                 description: Title of the event
  *               description:
  *                 type: string
  *                 nullable: true
- *                 description: Optional description of the event
+ *                 description: Optional detailed description of the event
  *               status:
  *                 type: string
- *                 description: Status of the event (e.g., scheduled, cancelled)
+ *                 nullable: true
+ *                 description: Status of the event (e.g., "scheduled", "canceled", "completed")
  *               startTime:
  *                 type: string
  *                 format: date-time
- *                 description: Start time of the event
+ *                 description: Start time of the event (ISO format)
  *               endTime:
  *                 type: string
  *                 format: date-time
- *                 description: End time of the event
+ *                 description: End time of the event (ISO format)
  *               type:
  *                 type: string
- *                 enum: [rostering, equipment]
- *                 description: Type of the event
+ *                 nullable: true
+ *                 description: Type of event (e.g., "meeting", "training", "experiment")
+ *               assignedMembers:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of lab member IDs who are assigned to this event
  *     responses:
  *       201:
- *         description: Event successfully created
+ *         description: Event created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Event'
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: ID of the created event
+ *                 title:
+ *                   type: string
+ *                   description: Title of the event
+ *                 # Other event properties
+ *                 eventAssignments:
+ *                   type: array
+ *                   description: List of members assigned to the event
+ *                 lab:
+ *                   type: object
+ *                   description: Lab information
+ *                 instrument:
+ *                   type: object
+ *                   nullable: true
+ *                   description: Instrument information if applicable
  *       400:
- *         description: Validation error or invalid event type
+ *         description: Bad request - missing required fields or invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
  *       500:
- *         description: Failed to create event
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
  */
+
 
 export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: Response): Promise<void> => {
     try {
-        const eventType = req.body.type;
+        const {
+            labId,
+            memberId,
+            instrumentId,
+            title,
+            description,
+            status,
+            startTime,
+            endTime,
+            type,
+            assignedMembers = []
+        } = req.body;
 
-        let errors: string[] = [];
-
-        if (eventType === 'rostering') {
-          errors = validateRosteringEvent(req.body);
-        } else if (eventType === 'equipment') {
-          errors = validateEquipmentEvent(req.body);
-        } else {
-          res.status(400).json({ error: 'Invalid event type' });
-          return;
+        // Basic validation
+        if (!labId || !memberId || !title || !startTime || !endTime) {
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
         }
-    
-        if (errors.length > 0) {
-          res.status(400).json({ error: errors });
-          return;
+
+        // Parse dates if they're strings
+        const parsedStartTime = typeof startTime === 'string' ? new Date(startTime) : startTime;
+        const parsedEndTime = typeof endTime === 'string' ? new Date(endTime) : endTime;
+
+        // Validate date range
+        if (parsedEndTime <= parsedStartTime) {
+            res.status(400).json({ error: 'End time must be after start time' });
+            return;
         }
 
-        if (eventType === 'rostering') {
-            const { labId, memberId, title, description, status, startTime, endTime } = req.body;
-            const newEvent = await prisma.event.create({
+        // Create the event with a transaction to ensure event and assignments are created together
+        const event = await prisma.$transaction(async (tx) => {
+            // Create the event
+            const newEvent = await tx.event.create({
                 data: {
                     labId,
                     memberId,
+                    instrumentId: instrumentId || null,
                     title,
                     description,
                     status,
-                    startTime: startTime,
-                    endTime: endTime,
-                    type: 'rostering',
+                    startTime: parsedStartTime,
+                    endTime: parsedEndTime,
+                    type,
                 }
             });
 
-            res.status(201).json(newEvent);
+            // Create event assignments if any members are assigned
+            if (assignedMembers.length > 0) {
+                await tx.eventAssignment.createMany({
+                    data: assignedMembers.map((memberId: any) => ({
+                        eventId: newEvent.id,
+                        memberId
+                    }))
+                });
+            }
 
-        } else if (eventType === 'equipment') {
-            const { labId, memberId, instrumentId, title, description, status, startTime, endTime } = req.body;
-
-            const newEvent = await prisma.event.create({
-                data: {
-                    labId,
-                    memberId,
-                    instrumentId,
-                    title,
-                    description,
-                    status,
-                    startTime: startTime,
-                    endTime: endTime,
-                    type: 'equipment',
+            // Return the created event with assignments
+            return tx.event.findUnique({
+                where: { id: newEvent.id },
+                include: {
+                    eventAssignments: {
+                        include: {
+                            member: {
+                                select: {
+                                    id: true,
+                                    user: {
+                                        select: {
+                                            firstName: true,
+                                            lastName: true,
+                                            displayName: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    instrument: true,
+                    lab: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
                 }
             });
+        });
 
-            res.status(201).json(newEvent);
-
-        }
-
+        res.status(201).json(event);
     } catch (error) {
-        console.error(error);
+        console.error('Event creation error:', error);
         res.status(500).json({ error: 'Failed to create event' });
     }
-}
+};
+
 /**
  * @swagger
  * /calendar/update-event:
