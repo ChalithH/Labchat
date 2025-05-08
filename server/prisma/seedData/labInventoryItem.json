@@ -1,74 +1,178 @@
 [
   {
-    "id": 1,
     "itemId": 1,
-    "labId": 1,
-    "location": "Chemical Storage Cabinet A",
-    "itemUnit": "Bottle",
-    "currentStock": 8,
-    "minStock": 3
+    "labId": 2,
+    "location": "Chemical Cabinet C, Shelf 2",
+    "itemUnit": "ml",
+    "currentStock": 750,
+    "minStock": 200
   },
   {
-    "id": 2,
     "itemId": 2,
-    "labId": 1,
-    "location": "Chemical Storage Cabinet B",
-    "itemUnit": "Container",
-    "currentStock": 2,
+    "labId": 2,
+    "location": "Solid Reagents Cabinet A, Shelf 1",
+    "itemUnit": "g",
+    "currentStock": 250,
+    "minStock": 50
+  },
+  {
+    "itemId": 3,
+    "labId": 2,
+    "location": "Flammable Cabinet 1, Shelf 3",
+    "itemUnit": "L",
+    "currentStock": 4,
     "minStock": 1
   },
   {
-    "id": 3,
-    "itemId": 3,
+    "itemId": 4,
+    "labId": 2,
+    "location": "Flammable Cabinet 1, Shelf 2",
+    "itemUnit": "L",
+    "currentStock": 3,
+    "minStock": 0.5
+  },
+  {
+    "itemId": 5,
     "labId": 1,
-    "location": "Supply Shelf 2",
-    "itemUnit": "Box",
-    "currentStock": 10,
+    "location": "General Supplies, Bench 1",
+    "itemUnit": "L",
+    "currentStock": 20,
     "minStock": 5
   },
   {
-    "id": 4,
-    "itemId": 4,
+    "itemId": 6,
     "labId": 1,
-    "location": "Supply Shelf 1",
-    "itemUnit": "Box",
-    "currentStock": 4,
-    "minStock": 2
+    "location": "Glassware Shelf A, Section 1",
+    "itemUnit": "piece",
+    "currentStock": 30,
+    "minStock": 10
   },
   {
-    "id": 5,
-    "itemId": 5,
+    "itemId": 7,
     "labId": 1,
-    "location": "Acid Storage Cabinet",
-    "itemUnit": "Bottle",
-    "currentStock": 3,
+    "location": "Glassware Shelf A, Section 2",
+    "itemUnit": "piece",
+    "currentStock": 25,
+    "minStock": 8
+  },
+  {
+    "itemId": 8,
+    "labId": 3,
+    "location": "Consumables Cabinet 1, Shelf 1",
+    "itemUnit": "box",
+    "currentStock": 5,
     "minStock": 1
   },
   {
-    "id": 6,
-    "itemId": 1,
-    "labId": 2,
-    "location": "Chemical Storage Cabinet",
-    "itemUnit": "Bottle",
-    "currentStock": 5,
+    "itemId": 9,
+    "labId": 3,
+    "location": "Consumables Cabinet 2, Shelf 3",
+    "itemUnit": "box",
+    "currentStock": 8,
     "minStock": 2
   },
   {
-    "id": 7,
-    "itemId": 3,
-    "labId": 2,
-    "location": "Supply Shelf",
-    "itemUnit": "Box",
+    "itemId": 10,
+    "labId": 1,
+    "location": "Safety Equipment Cabinet, Shelf 1",
+    "itemUnit": "piece",
     "currentStock": 15,
     "minStock": 5
   },
   {
-    "id": 8,
-    "itemId": 2,
+    "itemId": 11,
+    "labId": 2,
+    "location": "Filtration Supplies, Drawer 1",
+    "itemUnit": "pack",
+    "currentStock": 10,
+    "minStock": 3
+  },
+  {
+    "itemId": 12,
+    "labId": 3,
+    "location": "Injection Supplies, Drawer 2",
+    "itemUnit": "pack",
+    "currentStock": 12,
+    "minStock": 4
+  },
+  {
+    "itemId": 13,
+    "labId": 3,
+    "location": "Cell Culture Supplies, Shelf 2",
+    "itemUnit": "pack",
+    "currentStock": 7,
+    "minStock": 2
+  },
+  {
+    "itemId": 14,
+    "labId": 3,
+    "location": "Microbiology Supplies, Cabinet B",
+    "itemUnit": "g",
+    "currentStock": 500,
+    "minStock": 100
+  },
+  {
+    "itemId": 15,
     "labId": 1,
-    "location": "Chemical Storage Cabinet C",
-    "itemUnit": "Bottle",
+    "location": "Microscopy Prep Area, Drawer 1",
+    "itemUnit": "box",
+    "currentStock": 6,
+    "minStock": 1
+  },
+  {
+    "itemId": 16,
+    "labId": 1,
+    "location": "Microscopy Prep Area, Drawer 2",
+    "itemUnit": "box",
+    "currentStock": 9,
+    "minStock": 2
+  },
+  {
+    "itemId": 17,
+    "labId": 3,
+    "location": "Sealing Supplies, Drawer 3",
+    "itemUnit": "roll",
+    "currentStock": 3,
+    "minStock": 1
+  },
+  {
+    "itemId": 18,
+    "labId": 1,
+    "location": "General Supplies, Drawer 5",
+    "itemUnit": "roll",
     "currentStock": 4,
+    "minStock": 1
+  },
+  {
+    "itemId": 20,
+    "labId": 2,
+    "location": "Weighing Area, Bench 1",
+    "itemUnit": "pack",
+    "currentStock": 15,
+    "minStock": 5
+  },
+  {
+    "itemId": 21,
+    "labId": 2,
+    "location": "General Supplies, Drawer 6",
+    "itemUnit": "set",
+    "currentStock": 5,
+    "minStock": 1
+  },
+  {
+    "itemId": 22,
+    "labId": 2,
+    "location": "Chemical Analysis Supplies, Drawer 7",
+    "itemUnit": "roll",
+    "currentStock": 8,
+    "minStock": 2
+  },
+  {
+    "itemId": 23,
+    "labId": 1,
+    "location": "General Supplies, Drawer 8",
+    "itemUnit": "set",
+    "currentStock": 7,
     "minStock": 2
   }
 ]

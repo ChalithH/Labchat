@@ -1,47 +1,186 @@
 [
   {
-    "id": 1,
     "discussionId": 1,
-    "memberId": 1,
-    "title": "Lab Safety Training",
-    "content": "Annual lab safety training will be held next Friday at 2 PM in Conference Room A. All lab members must attend.",
-    "isPinned": true,
-    "isAnnounce": true
-  },
-  {
-    "id": 2,
-    "discussionId": 2,
-    "memberId": 3,
-    "title": "HPLC Pressure Issues",
-    "content": "The HPLC #2 is showing high backpressure. I've changed the guard column but the issue persists. Has anyone else experienced this?",
-    "isPinned": false,
-    "isAnnounce": false
-  },
-  {
-    "id": 3,
-    "discussionId": 3,
     "memberId": 2,
-    "title": "Updated RNA Extraction Protocol",
-    "content": "I've optimized the RNA extraction protocol to improve yield. See attached details and feedback welcome.",
+    "title": "Welcome to Lab Alpha Discussion!",
+    "content": "This is the main discussion board for Lab Alpha. Feel free to post questions, announcements, or anything relevant to the lab.",
     "isPinned": true,
+    "isAnnounce": true
+  },
+  {
+    "discussionId": 1,
+    "memberId": 3,
+    "title": "Upcoming Lab Meeting Schedule",
+    "content": "Please note the updated schedule for our weekly lab meetings, attached as a PDF.",
+    "isPinned": true,
+    "isAnnounce": true
+  },
+  {
+    "discussionId": 2,
+    "memberId": 4,
+    "title": "Question about sample preparation for Project X",
+    "content": "I'm having trouble with the consistency of my sample preparation for the tensile strength tests. Any tips or suggestions?",
+    "isPinned": false,
     "isAnnounce": false
   },
   {
-    "id": 4,
-    "discussionId": 1,
-    "memberId": 1,
-    "title": "Inventory Reorganization",
-    "content": "We will be reorganizing the chemical storage cabinets this Thursday. Please plan your experiments accordingly as access might be limited.",
+    "discussionId": 3,
+    "memberId": 5,
+    "title": "Sharing results from XRD analysis",
+    "content": "I've uploaded the latest XRD data to the shared drive. Let me know if you have any questions.",
     "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 4,
+    "memberId": 6,
+    "title": "Issue with Spectrophotometer booking",
+    "content": "The spectrophotometer seems to be double-booked on Wednesday afternoon. Can someone please check the schedule?",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 5,
+    "memberId": 13,
+    "title": "Welcome to Lab Beta Discussion!",
+    "content": "This is the main discussion board for Lab Beta. Please introduce yourselves and feel free to start new topics.",
+    "isPinned": true,
     "isAnnounce": true
   },
   {
-    "id": 5,
-    "discussionId": 4,
-    "memberId": 7,
-    "title": "Welcome New Lab Members",
-    "content": "Please join me in welcoming Dr. Lisa Wong and graduate student Mark Thompson to our lab team!",
+    "discussionId": 6,
+    "memberId": 14,
+    "title": "New protocol for ester synthesis",
+    "content": "I've developed a modified protocol for synthesizing ethyl acetate with higher yield. I've attached the details.",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 7,
+    "memberId": 15,
+    "title": "HPLC peak broadening issue",
+    "content": "I'm observing significant peak broadening on my recent HPLC runs. Any ideas what might be causing this?",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 8,
+    "memberId": 16,
+    "title": "Chemical waste disposal reminder",
+    "content": "Please ensure all chemical waste is disposed of in the correct containers and labeled properly.",
     "isPinned": true,
     "isAnnounce": true
+  },
+  {
+    "discussionId": 9,
+    "memberId": 19,
+    "title": "Welcome to the Biotech Lab Discussion!",
+    "content": "This is the place for all discussions related to our biotechnology research.",
+    "isPinned": true,
+    "isAnnounce": true
+  },
+  {
+    "discussionId": 10,
+    "memberId": 20,
+    "title": "Troubleshooting cell contamination",
+    "content": "I'm dealing with persistent contamination in my cell cultures. Any advice on sterilization or technique?",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 11,
+    "memberId": 21,
+    "title": "Discussing CRISPR-Cas9 applications",
+    "content": "Let's discuss potential applications of CRISPR-Cas9 technology in our current genetics projects.",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 12,
+    "memberId": 22,
+    "title": "Welcome to the Physics Lab Discussion!",
+    "content": "General discussion board for the Physics Simulation Lab.",
+    "isPinned": true,
+    "isAnnounce": true
+  },
+  {
+    "discussionId": 13,
+    "memberId": 23,
+    "title": "Help with COMSOL simulation setup",
+    "content": "I'm new to COMSOL and need help setting up a basic fluid dynamics simulation.",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 14,
+    "memberId": 19,
+    "title": "Field trip planning for environmental sampling",
+    "content": "Let's coordinate the logistics for our upcoming field trip to the river for water quality sampling.",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 15,
+    "memberId": 5,
+    "title": "Sharing recent nanotech conference findings",
+    "content": "I attended the NanoTech 2025 conference and have some interesting findings to share.",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 16,
+    "memberId": 6,
+    "title": "Discussing fMRI data analysis techniques",
+    "content": "What are the preferred methods for analyzing fMRI data in our lab?",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 17,
+    "memberId": 7,
+    "title": "Bioinformatics tool recommendations",
+    "content": "What bioinformatics tools do you recommend for analyzing large genomic datasets?",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 18,
+    "memberId": 8,
+    "title": "Showcasing new robot arm capabilities",
+    "content": "I've programmed the new robot arm to perform a complex task. Check out the video!",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 19,
+    "memberId": 9,
+    "title": "Progress update on solar cell efficiency project",
+    "content": "We've made significant progress on improving solar cell efficiency. Details inside.",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 20,
+    "memberId": 10,
+    "title": "Identifying rock samples from recent field trip",
+    "content": "Help needed identifying some unusual rock samples collected last week.",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 21,
+    "memberId": 11,
+    "title": "Discussing marine invertebrate species",
+    "content": "Let's share information on the marine invertebrate species we've encountered in our recent surveys.",
+    "isPinned": false,
+    "isAnnounce": false
+  },
+  {
+    "discussionId": 22,
+    "memberId": 12,
+    "title": "Gene sequencing results interpretation",
+    "content": "Need help interpreting the results from the latest gene sequencing run.",
+    "isPinned": false,
+    "isAnnounce": false
   }
 ]

@@ -28,8 +28,11 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
         const inventoryItems = await prisma.labInventoryItem.findMany({
             include: {
                 item: true, 
-                itemTags: true,  
-                inventoryLogs: true
+                labItemTags: { 
+                    include: { 
+                        itemTag: true, // Include the related item tag data
+                    }
+                },
             }
         });
         
@@ -45,8 +48,11 @@ export const getInventoryItem = async (req: Request, res: Response): Promise<voi
         const inventoryItems = await prisma.labInventoryItem.findMany({
             include: {
                 item: true, 
-                itemTags: true,  
-                inventoryLogs: true
+                labItemTags: { 
+                    include: { 
+                        itemTag: true, // Include the related item tag data
+                    }
+                },
             }
         });
         
@@ -124,7 +130,11 @@ export const getInventoryItemByName = async (req: Request, res: Response): Promi
             },
             include: {
                 item: true,      // Include the related item data
-                itemTags: true   // Include any item tags
+                labItemTags: { 
+                    include: { 
+                        itemTag: true, // Include the related item tag data
+                    }
+                },
             }
         });
         

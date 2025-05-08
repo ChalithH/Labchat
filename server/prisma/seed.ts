@@ -28,28 +28,27 @@ async function main() {
   
   // Order matters due to foreign key relationships
   const orderedFileNames = [
-    "role.json",
-    "user.json",
-    "lab.json",
-    "labRole.json",
-    "labMember.json",
-    "contact.json",
-    "memberStatus.json",
-    "item.json",
-    "labInventoryItem.json",
-    "itemTag.json",
-    "inventoryLog.json",
-    "discussion.json",
-    "discussionPost.json",
-    "discussionReply.json",
-    "discussionPostTag.json",
-    "discussionReaction.json",
-    "instrument.json",
-    "instrumentIssue.json",
-    "issuePost.json",
-    "event.json",
-    "eventAssignment.json",
-    "clockInLog.json",
+    "role.json",          // First seed roles
+    "user.json",          // Then users (depends on roles)
+    "status.json",        // Independent table
+    "lab.json",           // Independent table
+    "labRole.json",       // Depends on role
+    "labMember.json",     // Depends on user, lab, and labRole
+    "contact.json",       // Depends on user
+    "memberStatus.json",  // Depends on contact, labMember, and status
+    "itemTag.json",       // Independent table
+    "item.json",          // Independent table but fix field name
+    "instrument.json",    // Depends on lab
+    "postReaction.json",  // Independent table
+    "postTag.json",       // Independent table
+    "discussion.json",    // Depends on lab
+    "discussionPost.json", // Depends on discussion and labMember
+    "discussionReply.json", // Depends on discussionPost and labMember
+    "discussionPostReaction.json", // Depends on discussionPost, labMember, and postReaction
+    "discussionPostTag.json", // Depends on discussionPost and postTag
+    "eventType.json",       // Independent table
+    "event.json",          // Depends on lab, labMember, and instrument and eventType
+    "eventAssignment.json", // Depends on event and labMember
   ];
 
   // First delete all existing data

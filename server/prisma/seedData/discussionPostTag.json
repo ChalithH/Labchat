@@ -1,37 +1,198 @@
 [
   {
-    "id": 1,
     "postId": 1,
-    "tag": "training"
+    "postTagId": 1
   },
   {
-    "id": 2,
     "postId": 1,
-    "tag": "safety"
+    "postTagId": 3
   },
   {
-    "id": 3,
     "postId": 2,
-    "tag": "equipment"
+    "postTagId": 1
   },
   {
-    "id": 4,
     "postId": 2,
-    "tag": "maintenance"
+    "postTagId": 11
   },
   {
-    "id": 5,
     "postId": 3,
-    "tag": "protocol"
+    "postTagId": 2
   },
   {
-    "id": 6,
+    "postId": 3,
+    "postTagId": 4
+  },
+  {
+    "postId": 3,
+    "postTagId": 18
+  },
+  {
+    "postId": 3,
+    "postTagId": 19
+  },
+  {
     "postId": 4,
-    "tag": "inventory"
+    "postTagId": 5
   },
   {
-    "id": 7,
+    "postId": 4,
+    "postTagId": 9
+  },
+  {
     "postId": 5,
-    "tag": "personnel"
+    "postTagId": 7
+  },
+  {
+    "postId": 5,
+    "postTagId": 10
+  },
+  {
+    "postId": 6,
+    "postTagId": 1
+  },
+  {
+    "postId": 6,
+    "postTagId": 3
+  },
+  {
+    "postId": 7,
+    "postTagId": 5
+  },
+  {
+    "postId": 7,
+    "postTagId": 6
+  },
+  {
+    "postId": 8,
+    "postTagId": 7
+  },
+  {
+    "postId": 8,
+    "postTagId": 10
+  },
+  {
+    "postId": 9,
+    "postTagId": 1
+  },
+  {
+    "postId": 9,
+    "postTagId": 8
+  },
+  {
+    "postId": 10,
+    "postTagId": 1
+  },
+  {
+    "postId": 10,
+    "postTagId": 3
+  },
+  {
+    "postId": 11,
+    "postTagId": 2
+  },
+  {
+    "postId": 11,
+    "postTagId": 4
+  },
+  {
+    "postId": 11,
+    "postTagId": 10
+  },
+  {
+    "postId": 12,
+    "postTagId": 3
+  },
+  {
+    "postId": 12,
+    "postTagId": 18
+  },
+  {
+    "postId": 13,
+    "postTagId": 1
+  },
+  {
+    "postId": 13,
+    "postTagId": 3
+  },
+  {
+    "postId": 14,
+    "postTagId": 2
+  },
+  {
+    "postId": 14,
+    "postTagId": 4
+  },
+  {
+    "postId": 14,
+    "postTagId": 14
+  },
+  {
+    "postId": 15,
+    "postTagId": 3
+  },
+  {
+    "postId": 15,
+    "postTagId": 15
+  },
+  {
+    "postId": 16,
+    "postTagId": 3
+  },
+  {
+    "postId": 16,
+    "postTagId": 16
+  },
+  {
+    "postId": 17,
+    "postTagId": 3
+  },
+  {
+    "postId": 17,
+    "postTagId": 17
+  },
+  {
+    "postId": 18,
+    "postTagId": 3
+  },
+  {
+    "postId": 18,
+    "postTagId": 18
+  },
+  {
+    "postId": 19,
+    "postTagId": 5
+  },
+  {
+    "postId": 19,
+    "postTagId": 18
+  },
+  {
+    "postId": 20,
+    "postTagId": 3
+  },
+  {
+    "postId": 20,
+    "postTagId": 15
+  },
+  {
+    "postId": 21,
+    "postTagId": 3
+  },
+  {
+    "postId": 21,
+    "postTagId": 12
+  },
+  {
+    "postId": 22,
+    "postTagId": 2
+  },
+  {
+    "postId": 22,
+    "postTagId": 4
+  },
+  {
+    "postId": 22,
+    "postTagId": 20
   }
 ]

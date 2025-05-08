@@ -14,9 +14,22 @@ type EventRequestBody = {
     startTime: string | Date;
     endTime: string | Date;
     instrumentId?: number | null;
-    type: string;
+    type: number;
     assignedMembers?: number[]; 
   };
+
+  interface UpdateEventRequestBody {
+    labId?: number;
+    memberId?: number; 
+    instrumentId?: number | null;
+    title?: string;
+    description?: string | null;
+    status?: string | null;
+    startTime?: string | Date;
+    endTime?: string | Date;
+    typeId?: number; 
+    assignedMembers?: number[]; 
+}
 
 
   function isValidDate(val: any): boolean {
@@ -325,7 +338,7 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
                     status,
                     startTime: parsedStartTime,
                     endTime: parsedEndTime,
-                    type,
+                    typeId: type,
                 }
             });
 
@@ -379,34 +392,30 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
 
 /**
  * @swagger
- * /calendar/update-event:
+ * /calendar/events/{id}:
  *   put:
  *     summary: Updates an existing event (rostering or equipment)
  *     tags: [Calendar]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the event to update
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - id
- *               - labId
- *               - memberId
- *               - title
- *               - startTime
- *               - endTime
- *               - type
  *             properties:
- *               id:
- *                 type: integer
- *                 description: ID of the event to update
  *               labId:
  *                 type: integer
  *                 description: ID of the lab where the event is scheduled
  *               memberId:
  *                 type: integer
- *                 description: ID of the lab member associated with the event
+ *                 description: ID of the lab member associated with the event (assigner)
  *               instrumentId:
  *                 type: integer
  *                 nullable: true
@@ -429,110 +438,177 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
  *                 type: string
  *                 format: date-time
  *                 description: End time of the event
- *               type:
- *                 type: string
- *                 enum: [rostering, equipment]
- *                 description: Type of the event
+ *               typeId:
+ *                 type: integer
+ *                 description: ID of the event type
+ *               assignedMembers:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of LabMember IDs assigned to the event
  *     responses:
- *       201:
+ *       200:
  *         description: Event successfully updated
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Event'
  *       400:
- *         description: Validation error or invalid event type
+ *         description: Validation error or invalid input
  *       404:
  *         description: Event not found
  *       500:
  *         description: Failed to update event
  */
-
-export const updateEvent = async (req: Request<{}, {}, EventRequestBody>, res: Response): Promise<void> => {
+export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRequestBody>, res: Response): Promise<void> => {
     try {
-        const eventId = req.body.id;
+        const eventId = parseInt(req.params.id, 10);
+        if (isNaN(eventId)) {
+            res.status(400).json({ error: 'Invalid event ID' });
+            return;
+        }
 
-        const eventtoUpdate = await prisma.event.findUnique({
+        const {
+            labId,
+            memberId, // This is the assigner memberId
+            instrumentId,
+            title,
+            description,
+            status,
+            startTime,
+            endTime,
+            typeId, // Changed from 'type' to 'typeId'
+            assignedMembers
+        } = req.body;
+
+        // Fetch the existing event to check if it exists and get current assignments
+        const existingEvent = await prisma.event.findUnique({
             where: { id: eventId },
+            include: {
+                eventAssignments: true, // Include existing assignments
+            },
         });
-        if (!eventtoUpdate) {
+
+        if (!existingEvent) {
             res.status(404).json({ error: 'Event not found' });
             return;
         }
 
-        if (req.body.labId !== eventtoUpdate.labId) {
-            res.status(400).json({ error: 'Cannot change labId of an existing event'});
-            return;
+        // Prepare data for the event update, only including fields that are provided
+        const updateData: any = {};
+        if (labId !== undefined) updateData.labId = labId;
+        if (memberId !== undefined) updateData.memberId = memberId;
+        if (instrumentId !== undefined) updateData.instrumentId = instrumentId; // Handle null explicitly
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description; // Handle null explicitly
+        if (status !== undefined) updateData.status = status;
+        if (startTime !== undefined) updateData.startTime = typeof startTime === 'string' ? new Date(startTime) : startTime;
+        if (endTime !== undefined) updateData.endTime = typeof endTime === 'string' ? new Date(endTime) : endTime;
+        if (typeId !== undefined) updateData.typeId = typeId; // Changed from 'type'
+
+        // Optional: Re-validate date range if start or end time is being updated
+        if (updateData.startTime !== undefined || updateData.endTime !== undefined) {
+            const finalStartTime = updateData.startTime || existingEvent.startTime;
+            const finalEndTime = updateData.endTime || existingEvent.endTime;
+            if (new Date(finalEndTime) <= new Date(finalStartTime)) {
+                res.status(400).json({ error: 'End time must be after start time' });
+                return;
+            }
         }
 
-        const eventType = req.body.type;
-
-        let errors: string[] = [];
-
-        if (eventType === 'rostering') {
-          errors = validateRosteringEvent(req.body);
-        } else if (eventType === 'equipment') {
-          errors = validateEquipmentEvent(req.body);
-        } else {
-          res.status(400).json({ error: 'Invalid event type' });
-          return;
-        }
-    
-        if (errors.length > 0) {
-          res.status(400).json({ error: errors });
-          return;
-        }
-
-        if (eventType === 'rostering') {
-            const { labId, memberId, title, description, status, startTime, endTime } = req.body;
-
-            const updatedEvent = await prisma.event.update({
-                where: {
-                    id: eventId,
-                  },
-                data: {
-                    labId,
-                    memberId,
-                    title,
-                    description,
-                    status,
-                    startTime: startTime,
-                    endTime: endTime,
-                    type: 'rostering',
-                }
+        // Use a transaction to update the event and its assignments
+        const updatedEvent = await prisma.$transaction(async (tx) => {
+            // Update the event itself
+            const event = await tx.event.update({
+                where: { id: eventId },
+                data: updateData,
             });
 
-            res.status(201).json(updatedEvent);
+            // Handle event assignments if 'assignedMembers' is provided in the request body
+            if (assignedMembers !== undefined) {
+                // 1. Delete existing assignments for this event
+                await tx.eventAssignment.deleteMany({
+                    where: { eventId: event.id },
+                });
 
-        } else if (eventType === 'equipment') {
-            const { labId, memberId, instrumentId, title, description, status, startTime, endTime } = req.body;
+                // 2. Create new assignments based on the provided list
+                if (assignedMembers.length > 0) {
+                    // Optional: Validate if the memberIds in assignedMembers exist in LabMember
+                    // This can prevent foreign key errors but adds extra queries.
+                    // const validMembers = await tx.labMember.findMany({
+                    //     where: {
+                    //         id: { in: assignedMembers }
+                    //     },
+                    //     select: { id: true }
+                    // });
+                    // const validMemberIds = validMembers.map(m => m.id);
+                    // const assignmentsToCreate = assignedMembers
+                    //     .filter(memberId => validMemberIds.includes(memberId))
+                    //     .map(memberId => ({
+                    //         eventId: event.id,
+                    //         memberId
+                    //     }));
 
-            const updatedEvent = await prisma.event.update({
-                where: {
-                    id: eventId,
-                  },
-                data: {
-                    labId,
-                    memberId,
-                    instrumentId,
-                    title,
-                    description,
-                    status,
-                    startTime: startTime,
-                    endTime: endTime,
-                    type: 'equipment',
+                    const assignmentsToCreate = assignedMembers.map(memberId => ({
+                         eventId: event.id,
+                         memberId
+                    }));
+
+
+                    if (assignmentsToCreate.length > 0) {
+                         await tx.eventAssignment.createMany({
+                            data: assignmentsToCreate,
+                            skipDuplicates: true // Optional: skip if an assignment already exists (shouldn't happen after deleting)
+                         });
+                    }
+                     // Optional: Handle case where some assignedMembers were invalid IDs
+                     // if (assignmentsToCreate.length !== assignedMembers.length) {
+                     //      console.warn(`Some assigned member IDs were invalid for event ${event.id}`);
+                     // }
                 }
+            }
+
+            // Return the updated event with the new assignments included
+            return tx.event.findUnique({
+                where: { id: event.id },
+                include: {
+                    eventAssignments: {
+                        include: {
+                            member: { // Include member details for the assignment
+                                select: {
+                                    id: true,
+                                    user: { // Include user details for the member
+                                        select: {
+                                            firstName: true,
+                                            lastName: true,
+                                            displayName: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    instrument: true, // Include instrument details
+                    lab: { // Include lab details
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    type: true // Include event type details
+                },
             });
+        });
 
-            res.status(201).json(updatedEvent);
-
-        }
-
+        res.status(200).json(updatedEvent);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to update event' });
+        console.error('Event update error:', error);
+
+             res.status(500).json({ error: 'Failed to update event' });
+        
     }
-}
+};
+
 
 /**
  * @swagger
