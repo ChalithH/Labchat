@@ -66,6 +66,7 @@ model Contact {
   userId         Int
   type           String
   info           String
+  useCase        String?
   name           String
   
   // Relationships
@@ -88,7 +89,7 @@ model Lab {
   labMembers  LabMember[]
   inventoryItems LabInventoryItem[]
   discussions Discussion[]
-  tasks       Task[]
+  events       Event[]
   clockInLogs ClockInLog[]
   instruments Instrument[]
 
@@ -125,9 +126,8 @@ model LabMember {
   discussionPosts DiscussionPost[]
   discussionReplies DiscussionReply[]
   discussionReactions DiscussionReaction[]
-  bookings     InstrumentBooking[]
-  taskAssignments TaskAssignment[]
-  tasks        Task[]
+  event Event[]
+  eventAssignments EventAssignment[]
   clockInLogs  ClockInLog[]
 
   @@map("lab_member")
@@ -290,27 +290,11 @@ model Instrument {
   labId        Int
   
   // Relationships
-  bookings     InstrumentBooking[]
+  bookings     Event[]
   issues       InstrumentIssue[]
   lab          Lab                 @relation(fields: [labId], references: [id])
 
   @@map("instrument")
-}
-
-model InstrumentBooking {
-  id           Int          @id @default(autoincrement())
-  memberId     Int
-  instrumentId Int
-  startTime    DateTime
-  endTime      DateTime
-  createdAt    DateTime     @default(now())
-  purpose      String?
-  
-  // Relationships
-  member       LabMember    @relation(fields: [memberId], references: [id])
-  instrument   Instrument   @relation(fields: [instrumentId], references: [id])
-
-  @@map("instrument_booking")
 }
 
 model InstrumentIssue {
@@ -341,37 +325,7 @@ model IssuePost {
   @@map("issue_post")
 }
 
-// Task Management
-model Task {
-  id           Int               @id @default(autoincrement())
-  labId        Int
-  memberId     Int
-  title        String
-  description  String?
-  status       String
-  startTime    DateTime
-  endTime      DateTime
-  updatedAt    DateTime          @updatedAt
-  
-  // Relationships
-  lab          Lab               @relation(fields: [labId], references: [id])
-  creator      LabMember         @relation(fields: [memberId], references: [id])
-  assignments  TaskAssignment[]
 
-  @@map("task")
-}
-
-model TaskAssignment {
-  id           Int        @id @default(autoincrement())
-  taskId       Int
-  memberId     Int
-  
-  // Relationships
-  task         Task       @relation(fields: [taskId], references: [id])
-  member       LabMember  @relation(fields: [memberId], references: [id])
-
-  @@map("task_assignment")
-}
 
 // Attendance Tracking
 model ClockInLog {
@@ -386,4 +340,39 @@ model ClockInLog {
   lab          Lab        @relation(fields: [labId], references: [id])
 
   @@map("clock_in_logs")
+}
+
+
+model Event {
+  id             Int               @id @default(autoincrement())
+  labId          Int               
+  memberId       Int               
+  instrumentId   Int?              
+  title          String
+  description    String?
+  status         String?
+  startTime      DateTime          
+  endTime        DateTime          
+  updatedAt      DateTime          @updatedAt 
+  type           String?
+  
+  // Relations
+  lab            Lab               @relation(fields: [labId], references: [id])
+  assigner       LabMember         @relation(fields: [memberId], references: [id])
+  instrument     Instrument?       @relation(fields: [instrumentId], references: [id])
+  
+  eventAssignments EventAssignment[] 
+  @@map("event")
+}
+
+model EventAssignment {
+  id        Int        @id @default(autoincrement())
+  memberId  Int
+  eventId   Int
+  
+  // Relations
+  member    LabMember  @relation(fields: [memberId], references: [id])
+  event     Event      @relation(fields: [eventId], references: [id])
+  
+  @@map("event_assignment")
 }

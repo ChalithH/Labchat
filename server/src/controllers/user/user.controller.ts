@@ -14,7 +14,9 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     }
 
     const hashed_password: string = await hashPassword(user_data.loginPassword)
-    const { id, ...data } = user_data;
+    const { iq, ...data } = user_data;
+
+    delete req.body.iq
 
     const user: User = await prisma.user.create({
       data: {

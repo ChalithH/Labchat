@@ -40,6 +40,7 @@ const CONTACT_TYPES: {type: string, display: string}[]= [
 const EditContact = ({ contact }:{ contact: ContactType }) => {
   const [type, setType] = useState<string>(contact.type)
   const [name, setName] = useState<string>(contact.name)
+  const [useCase, setUseCase] = useState<string>(contact.useCase)
   const [info, setInfo] = useState<string>(contact.info)
 
   const [isEditOpen, setIsEditOpen] = useState(false)
@@ -58,6 +59,7 @@ const EditContact = ({ contact }:{ contact: ContactType }) => {
       userId: user.id,
       type: type,
       name: name,
+      useCase: useCase ?? '',
       info: info
     }
     const response: AxiosResponse = await api.put(`/api/profile/edit/${ contact.id }`, new_contact)
@@ -110,6 +112,16 @@ const EditContact = ({ contact }:{ contact: ContactType }) => {
                 placeholder="Enter a name for the contact"
                 value={ name }
                 onChange={ e => setName(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="useCase" className='mb-1'>Use Case</Label>
+              <Input 
+                id='useCase' 
+                type="text" 
+                className='text-sm' 
+                placeholder="Enter a reason for using this contact"
+                value={ useCase }
+                onChange={ e => setUseCase(e.target.value)} />
             </div>
             <div>
               <Label htmlFor="info" className='mb-1'>Info</Label>

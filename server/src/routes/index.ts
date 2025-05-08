@@ -5,6 +5,7 @@ import inventoryRoutes from './inventory.routes';
 import roleRoutes from './role.routes';
 import profileRoutes from './profile.routes';
 import discussionRoutes from './discussion.routes';
+import calendarRoutes from './calendar.routes';
 
 const router = Router();
 
@@ -38,7 +39,7 @@ router.use('/auth', authRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/discussion', discussionRoutes);
 router.use('/profile', profileRoutes);
-
+router.use('/calendar', calendarRoutes);
 
 // Models
 router.use('/user', userRoutes);

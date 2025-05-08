@@ -5,6 +5,7 @@ export type ContactType = {
   userId: number
   type: string
   info: string
+  useCase: string
   name: string
 }
 

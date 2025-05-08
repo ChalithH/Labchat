@@ -61,5 +61,14 @@
     "itemUnit": "Box",
     "currentStock": 15,
     "minStock": 5
+  },
+  {
+    "id": 8,
+    "itemId": 2,
+    "labId": 1,
+    "location": "Chemical Storage Cabinet C",
+    "itemUnit": "Bottle",
+    "currentStock": 4,
+    "minStock": 2
   }
 ]

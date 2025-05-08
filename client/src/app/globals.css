@@ -3,6 +3,63 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme labchat {
+  --color-labchat-blue-50: rgb(232, 240, 246);
+  --color-labchat-blue-100: rgb(188, 199, 220);
+  --color-labchat-blue-200: rgb(156, 172, 213);
+  --color-labchat-blue-300: rgb(111, 134, 193);
+  --color-labchat-blue-400: rgb(83, 96, 181);
+  --color-labchat-blue-500: rgb(40, 54, 163);
+  --color-labchat-blue-600: rgb(34, 46, 148);
+  --color-labchat-blue-700: rgb(28, 35, 116);
+  --color-labchat-blue-800: rgb(22, 24, 80);
+  --color-labchat-blue-900: rgb(17, 19, 68);
+
+  --color-labchat-light-blue-50: rgb(241, 247, 253);
+  --color-labchat-light-blue-100: rgb(212, 233, 248);
+  --color-labchat-light-blue-200: rgb(185, 209, 245);
+  --color-labchat-light-blue-300: rgb(161, 180, 241);
+  --color-labchat-light-blue-400: rgb(135, 151, 238);
+  --color-labchat-light-blue-500: rgb(96, 130, 234);
+  --color-labchat-light-blue-600: rgb(106, 142, 213);
+  --color-labchat-light-blue-700: rgb(82, 111, 168);
+  --color-labchat-light-blue-800: rgb(63, 86, 129);
+  --color-labchat-light-blue-900: rgb(48, 66, 98);
+
+  --color-labchat-magenta-50: rgb(250, 237, 241);
+  --color-labchat-magenta-100: rgb(236, 195, 211);
+  --color-labchat-magenta-200: rgb(229, 126, 189);
+  --color-labchat-magenta-300: rgb(226, 136, 189);
+  --color-labchat-magenta-400: rgb(205, 95, 161);
+  --color-labchat-magenta-500: rgb(193, 62, 140);
+  --color-labchat-magenta-600: rgb(176, 56, 102);
+  --color-labchat-magenta-700: rgb(137, 44, 80);
+  --color-labchat-magenta-800: rgb(106, 34, 62);
+  --color-labchat-magenta-900: rgb(81, 26, 47);
+
+  --color-labchat-warning-50: rgb(254, 242, 230);
+  --color-labchat-warning-100: rgb(252, 214, 176);
+  --color-labchat-warning-200: rgb(251, 196, 138);
+  --color-labchat-warning-300: rgb(247, 167, 84);
+  --color-labchat-warning-400: rgb(244, 150, 51);
+  --color-labchat-warning-500: rgb(247, 167, 0);
+  --color-labchat-warning-600: rgb(223, 136, 0);
+  --color-labchat-warning-700: rgb(182, 88, 0);
+  --color-labchat-warning-800: rgb(142, 68, 0);
+  --color-labchat-warning-900: rgb(103, 52, 0);
+
+  --color-labchat-success-50: rgb(238, 246, 248);
+  --color-labchat-success-100: rgb(213, 226, 226);
+  --color-labchat-success-200: rgb(184, 211, 211);
+  --color-labchat-success-300: rgb(160, 196, 196);
+  --color-labchat-success-400: rgb(134, 182, 182);
+  --color-labchat-success-500: rgb(87, 175, 175);
+  --color-labchat-success-600: rgb(64, 161, 161);
+  --color-labchat-success-700: rgb(43, 146, 146);
+  --color-labchat-success-800: rgb(33, 113, 113);
+  --color-labchat-success-900: rgb(10, 89, 89);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
