@@ -6,7 +6,7 @@ import { ProfileDataType } from '../../types/profile.types'
 
 import getUserFromSessionServer from '@/lib/get_user_server'
 import setUsersLastViewed from '@/lib/set_last_viewed'
-import ResolveRoleName from '../../lib/resolve_role_name.util'
+import ResolveRoleName from '@/lib/resolve_role_name.util'
 
 import api from '@/lib/api'
 
@@ -24,6 +24,7 @@ export default async function ProfilePage({ params }:{ params: { id: number }}) 
 
   const user_id: number = parseInt(user.id, 10)
   const role_id: number = parseInt(user.roleId, 10)
+  
   
   // Check if user has permission to view this page
   if (!user || user_id != id && role_id != 1) {
