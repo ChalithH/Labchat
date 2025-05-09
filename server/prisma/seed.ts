@@ -38,6 +38,8 @@ async function main() {
     "memberStatus.json",  // Depends on contact, labMember, and status
     "itemTag.json",       // Independent table
     "item.json",          // Independent table but fix field name
+    "labInventoryItem.json", // Depends on lab and item
+    "labItemTag.json", // Depends on labInventoryItem and itemTag
     "instrument.json",    // Depends on lab
     "postReaction.json",  // Independent table
     "postTag.json",       // Independent table

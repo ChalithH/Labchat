@@ -35,7 +35,6 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
                 },
             }
         });
-        
         res.json(inventoryItems);
     } catch (error) {
         console.error("Error retrieving inventory items:", error);

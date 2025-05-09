@@ -1,187 +1,103 @@
 [
-    {
-      "itemTagId": 1,
-      "inventoryItemId": 1
-    },
-    {
-      "itemTagId": 5,
-      "inventoryItemId": 1
-    },
-    {
-      "itemTagId": 2,
-      "inventoryItemId": 2
-    },
-    {
-      "itemTagId": 5,
-      "inventoryItemId": 2
-    },
-    {
-      "itemTagId": 3,
-      "inventoryItemId": 3
-    },
-    {
-      "itemTagId": 4,
-      "inventoryItemId": 3
-    },
-    {
-      "itemTagId": 3,
-      "inventoryItemId": 4
-    },
-    {
-      "itemTagId": 4,
-      "inventoryItemId": 4
-    },
-    {
-      "itemTagId": 6,
-      "inventoryItemId": 4
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 5
-    },
-    {
-      "itemTagId": 7,
-      "inventoryItemId": 6
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 6
-    },
-    {
-      "itemTagId": 7,
-      "inventoryItemId": 7
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 7
-    },
-    {
-      "itemTagId": 8,
-      "inventoryItemId": 8
-    },
-    {
-      "itemTagId": 9,
-      "inventoryItemId": 8
-    },
-    {
-      "itemTagId": 8,
-      "inventoryItemId": 9
-    },
-    {
-      "itemTagId": 9,
-      "inventoryItemId": 9
-    },
-    {
-      "itemTagId": 10,
-      "inventoryItemId": 10
-    },
-    {
-      "itemTagId": 8,
-      "inventoryItemId": 12
-    },
-    {
-      "itemTagId": 9,
-      "inventoryItemId": 12
-    },
-    {
-      "itemTagId": 12,
-      "inventoryItemId": 12
-    },
-    {
-      "itemTagId": 8,
-      "inventoryItemId": 13
-    },
-    {
-      "itemTagId": 9,
-      "inventoryItemId": 13
-    },
-    {
-      "itemTagId": 13,
-      "inventoryItemId": 13
-    },
-    {
-      "itemTagId": 14,
-      "inventoryItemId": 14
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 14
-    },
-    {
-      "itemTagId": 7,
-      "inventoryItemId": 15
-    },
-    {
-      "itemTagId": 15,
-      "inventoryItemId": 15
-    },
-    {
-      "itemTagId": 7,
-      "inventoryItemId": 16
-    },
-    {
-      "itemTagId": 15,
-      "inventoryItemId": 16
-    },
-    {
-      "itemTagId": 16,
-      "inventoryItemId": 17
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 17
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 18
-    },
-    {
-      "itemTagId": 8,
-      "inventoryItemId": 19
-    },
-    {
-      "itemTagId": 9,
-      "inventoryItemId": 19
-    },
-    {
-      "itemTagId": 18,
-      "inventoryItemId": 19
-    },
-    {
-      "itemTagId": 19,
-      "inventoryItemId": 20
-    },
-    {
-      "itemTagId": 20,
-      "inventoryItemId": 21
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 21
-    },
-    {
-      "itemTagId": 19,
-      "inventoryItemId": 21
-    },
-    {
-      "itemTagId": 20,
-      "inventoryItemId": 22
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 22
-    },
-    {
-      "itemTagId": 19,
-      "inventoryItemId": 22
-    },
-    {
-      "itemTagId": 17,
-      "inventoryItemId": 23
-    },
-    {
-      "itemTagId": 19,
-      "inventoryItemId": 23
-    }
-  ]
-  
+  { "itemTagId": 1, "inventoryItemId": 1 },
+  { "itemTagId": 6, "inventoryItemId": 1 },
+  { "itemTagId": 1, "inventoryItemId": 2 },
+  { "itemTagId": 7, "inventoryItemId": 2 },
+  { "itemTagId": 1, "inventoryItemId": 3 },
+  { "itemTagId": 2, "inventoryItemId": 4 },
+  { "itemTagId": 5, "inventoryItemId": 4 },
+  { "itemTagId": 2, "inventoryItemId": 5 },
+  { "itemTagId": 5, "inventoryItemId": 5 },
+  { "itemTagId": 2, "inventoryItemId": 6 },
+  { "itemTagId": 5, "inventoryItemId": 6 },
+  { "itemTagId": 2, "inventoryItemId": 7 },
+  { "itemTagId": 4, "inventoryItemId": 7 },
+  { "itemTagId": 2, "inventoryItemId": 8 },
+  { "itemTagId": 5, "inventoryItemId": 8 },
+  { "itemTagId": 5, "inventoryItemId": 9 },
+  { "itemTagId": 8, "inventoryItemId": 10 },
+  { "itemTagId": 4, "inventoryItemId": 10 },
+  { "itemTagId": 1, "inventoryItemId": 11 },
+  { "itemTagId": 5, "inventoryItemId": 11 },
+  { "itemTagId": 3, "inventoryItemId": 12 },
+  { "itemTagId": 5, "inventoryItemId": 12 },
+  { "itemTagId": 3, "inventoryItemId": 13 },
+  { "itemTagId": 4, "inventoryItemId": 13 },
+  { "itemTagId": 3, "inventoryItemId": 14 },
+  { "itemTagId": 5, "inventoryItemId": 14 },
+  { "itemTagId": 5, "inventoryItemId": 15 },
+  { "itemTagId": 1, "inventoryItemId": 16 },
+  { "itemTagId": 7, "inventoryItemId": 16 },
+  { "itemTagId": 1, "inventoryItemId": 17 },
+  { "itemTagId": 2, "inventoryItemId": 18 },
+  { "itemTagId": 5, "inventoryItemId": 18 },
+  { "itemTagId": 2, "inventoryItemId": 19 },
+  { "itemTagId": 5, "inventoryItemId": 19 },
+  { "itemTagId": 2, "inventoryItemId": 20 },
+  { "itemTagId": 5, "inventoryItemId": 20 },
+  { "itemTagId": 2, "inventoryItemId": 21 },
+  { "itemTagId": 4, "inventoryItemId": 21 },
+  { "itemTagId": 2, "inventoryItemId": 22 },
+  { "itemTagId": 5, "inventoryItemId": 22 },
+  { "itemTagId": 5, "inventoryItemId": 23 },
+  { "itemTagId": 8, "inventoryItemId": 24 },
+  { "itemTagId": 4, "inventoryItemId": 24 },
+  { "itemTagId": 3, "inventoryItemId": 25 },
+  { "itemTagId": 5, "inventoryItemId": 25 },
+  { "itemTagId": 3, "inventoryItemId": 26 },
+  { "itemTagId": 4, "inventoryItemId": 26 },
+  { "itemTagId": 3, "inventoryItemId": 27 },
+  { "itemTagId": 5, "inventoryItemId": 27 },
+  { "itemTagId": 5, "inventoryItemId": 28 },
+  { "itemTagId": 1, "inventoryItemId": 29 },
+  { "itemTagId": 2, "inventoryItemId": 30 },
+  { "itemTagId": 5, "inventoryItemId": 30 },
+  { "itemTagId": 2, "inventoryItemId": 31 },
+  { "itemTagId": 5, "inventoryItemId": 31 },
+  { "itemTagId": 2, "inventoryItemId": 32 },
+  { "itemTagId": 5, "inventoryItemId": 32 },
+  { "itemTagId": 2, "inventoryItemId": 33 },
+  { "itemTagId": 4, "inventoryItemId": 33 },
+  { "itemTagId": 5, "inventoryItemId": 34 },
+  { "itemTagId": 8, "inventoryItemId": 35 },
+  { "itemTagId": 4, "inventoryItemId": 35 },
+  { "itemTagId": 3, "inventoryItemId": 36 },
+  { "itemTagId": 5, "inventoryItemId": 36 },
+  { "itemTagId": 3, "inventoryItemId": 37 },
+  { "itemTagId": 5, "inventoryItemId": 37 },
+  { "itemTagId": 1, "inventoryItemId": 38 },
+  { "itemTagId": 6, "inventoryItemId": 38 },
+  { "itemTagId": 1, "inventoryItemId": 39 },
+  { "itemTagId": 7, "inventoryItemId": 39 },
+  { "itemTagId": 1, "inventoryItemId": 40 },
+  { "itemTagId": 2, "inventoryItemId": 41 },
+  { "itemTagId": 5, "inventoryItemId": 41 },
+  { "itemTagId": 2, "inventoryItemId": 42 },
+  { "itemTagId": 5, "inventoryItemId": 42 },
+  { "itemTagId": 2, "inventoryItemId": 43 },
+  { "itemTagId": 5, "inventoryItemId": 43 },
+  { "itemTagId": 2, "inventoryItemId": 44 },
+  { "itemTagId": 4, "inventoryItemId": 44 },
+  { "itemTagId": 2, "inventoryItemId": 45 },
+  { "itemTagId": 5, "inventoryItemId": 45 },
+  { "itemTagId": 5, "inventoryItemId": 46 },
+  { "itemTagId": 8, "inventoryItemId": 47 },
+  { "itemTagId": 4, "inventoryItemId": 47 },
+  { "itemTagId": 1, "inventoryItemId": 48 },
+  { "itemTagId": 5, "inventoryItemId": 48 },
+  { "itemTagId": 3, "inventoryItemId": 49 },
+  { "itemTagId": 5, "inventoryItemId": 49 },
+  { "itemTagId": 3, "inventoryItemId": 50 },
+  { "itemTagId": 4, "inventoryItemId": 50 },
+  { "itemTagId": 3, "inventoryItemId": 51 },
+  { "itemTagId": 5, "inventoryItemId": 51 },
+  { "itemTagId": 5, "inventoryItemId": 52 },
+  { "itemTagId": 2, "inventoryItemId": 53 },
+  { "itemTagId": 5, "inventoryItemId": 53 },
+  { "itemTagId": 2, "inventoryItemId": 54 },
+  { "itemTagId": 5, "inventoryItemId": 54 },
+  { "itemTagId": 2, "inventoryItemId": 55 },
+  { "itemTagId": 5, "inventoryItemId": 55 },
+  { "itemTagId": 2, "inventoryItemId": 56 },
+  { "itemTagId": 4, "inventoryItemId": 56 }
+]
