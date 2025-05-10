@@ -114,7 +114,7 @@ const Inventory: React.FC = () => {
 
   return (
     <>
-      <h1 className="flex justify-center items-center font-play font-extrabold text-black text-[clamp(1.5rem,4vw,2rem)]">
+      <h1 className="mt-3 flex justify-center items-center font-play font-extrabold text-black text-[clamp(1.5rem,4vw,2rem)]">
         Inventory
       </h1>
       <SearchFilterBar
