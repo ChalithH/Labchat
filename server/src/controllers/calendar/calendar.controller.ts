@@ -14,11 +14,12 @@ type EventRequestBody = {
     startTime: string | Date;
     endTime: string | Date;
     instrumentId?: number | null;
-    type: number;
+    typeId: number;
     assignedMembers?: number[]; 
   };
 
   interface UpdateEventRequestBody {
+    id: string;
     labId?: number;
     memberId?: number; 
     instrumentId?: number | null;
@@ -119,6 +120,12 @@ type EventRequestBody = {
           name: true;
         }
       };
+    type: {
+        select: {
+        id: true;
+        name: true;
+        }
+    };
       assigner: {
         select: {
           id: true;
@@ -295,7 +302,8 @@ type EventRequestBody = {
 
 
 export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: Response): Promise<void> => {
-    try {
+    try {        
+        
         const {
             labId,
             memberId,
@@ -305,10 +313,10 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
             status,
             startTime,
             endTime,
-            type,
+            typeId,
             assignedMembers = []
         } = req.body;
-
+        
         // Basic validation
         if (!labId || !memberId || !title || !startTime || !endTime) {
             res.status(400).json({ error: 'Missing required fields' });
@@ -338,7 +346,7 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
                     status,
                     startTime: parsedStartTime,
                     endTime: parsedEndTime,
-                    typeId: type,
+                    typeId: typeId,
                 }
             });
 
@@ -356,34 +364,61 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
             return tx.event.findUnique({
                 where: { id: newEvent.id },
                 include: {
+                    lab: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    type: { 
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    assigner: {
+                        select: {
+                            id: true,
+                            user: {
+                                select: {
+                                    firstName: true,
+                                    lastName: true,
+                                    displayName: true
+                                }
+                            }
+                        }
+                    },
+                    instrument: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
                     eventAssignments: {
-                        include: {
+                        select: {
+                            id: true,
+                            memberId: true,
                             member: {
                                 select: {
-                                    id: true,
                                     user: {
                                         select: {
-                                            firstName: true,
-                                            lastName: true,
                                             displayName: true
                                         }
                                     }
                                 }
                             }
                         }
-                    },
-                    instrument: true,
-                    lab: {
-                        select: {
-                            id: true,
-                            name: true
-                        }
                     }
                 }
             });
         });
+        if (!event) {
+            res.status(500).json({ error: 'Failed to create event' });
+            return;
+        }
+        const transformedEvent = transformEvents([event])[0];
 
-        res.status(201).json(event);
+        res.status(201).json(transformedEvent);
     } catch (error) {
         console.error('Event creation error:', error);
         res.status(500).json({ error: 'Failed to create event' });
@@ -462,7 +497,9 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
  */
 export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRequestBody>, res: Response): Promise<void> => {
     try {
-        const eventId = parseInt(req.params.id, 10);
+        console.log('Update event request body:\n', req.body);
+        const eventId = parseInt(req.body.id, 10);
+        console.log('Event ID:', eventId);
         if (isNaN(eventId)) {
             res.status(400).json({ error: 'Invalid event ID' });
             return;
@@ -470,7 +507,7 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
 
         const {
             labId,
-            memberId, // This is the assigner memberId
+            memberId, 
             instrumentId,
             title,
             description,
@@ -481,11 +518,11 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
             assignedMembers
         } = req.body;
 
-        // Fetch the existing event to check if it exists and get current assignments
+
         const existingEvent = await prisma.event.findUnique({
             where: { id: eventId },
             include: {
-                eventAssignments: true, // Include existing assignments
+                eventAssignments: true, 
             },
         });
 
@@ -494,7 +531,7 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
             return;
         }
 
-        // Prepare data for the event update, only including fields that are provided
+
         const updateData: any = {};
         if (labId !== undefined) updateData.labId = labId;
         if (memberId !== undefined) updateData.memberId = memberId;
@@ -506,7 +543,7 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
         if (endTime !== undefined) updateData.endTime = typeof endTime === 'string' ? new Date(endTime) : endTime;
         if (typeId !== undefined) updateData.typeId = typeId; // Changed from 'type'
 
-        // Optional: Re-validate date range if start or end time is being updated
+
         if (updateData.startTime !== undefined || updateData.endTime !== undefined) {
             const finalStartTime = updateData.startTime || existingEvent.startTime;
             const finalEndTime = updateData.endTime || existingEvent.endTime;
@@ -516,15 +553,13 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
             }
         }
 
-        // Use a transaction to update the event and its assignments
+
         const updatedEvent = await prisma.$transaction(async (tx) => {
-            // Update the event itself
             const event = await tx.event.update({
                 where: { id: eventId },
                 data: updateData,
             });
 
-            // Handle event assignments if 'assignedMembers' is provided in the request body
             if (assignedMembers !== undefined) {
                 // 1. Delete existing assignments for this event
                 await tx.eventAssignment.deleteMany({
@@ -535,25 +570,19 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
                 if (assignedMembers.length > 0) {
                     // Optional: Validate if the memberIds in assignedMembers exist in LabMember
                     // This can prevent foreign key errors but adds extra queries.
-                    // const validMembers = await tx.labMember.findMany({
-                    //     where: {
-                    //         id: { in: assignedMembers }
-                    //     },
-                    //     select: { id: true }
-                    // });
-                    // const validMemberIds = validMembers.map(m => m.id);
-                    // const assignmentsToCreate = assignedMembers
-                    //     .filter(memberId => validMemberIds.includes(memberId))
-                    //     .map(memberId => ({
-                    //         eventId: event.id,
-                    //         memberId
-                    //     }));
-
-                    const assignmentsToCreate = assignedMembers.map(memberId => ({
-                         eventId: event.id,
-                         memberId
-                    }));
-
+                     const validMembers = await tx.labMember.findMany({
+                         where: {
+                             id: { in: assignedMembers }
+                         },
+                         select: { id: true }
+                     });
+                     const validMemberIds = validMembers.map(m => m.id);
+                     const assignmentsToCreate = assignedMembers
+                         .filter(memberId => validMemberIds.includes(memberId))
+                         .map(memberId => ({
+                             eventId: event.id,
+                             memberId
+                         }));
 
                     if (assignmentsToCreate.length > 0) {
                          await tx.eventAssignment.createMany({
@@ -561,10 +590,6 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
                             skipDuplicates: true // Optional: skip if an assignment already exists (shouldn't happen after deleting)
                          });
                     }
-                     // Optional: Handle case where some assignedMembers were invalid IDs
-                     // if (assignmentsToCreate.length !== assignedMembers.length) {
-                     //      console.warn(`Some assigned member IDs were invalid for event ${event.id}`);
-                     // }
                 }
             }
 
@@ -572,35 +597,62 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
             return tx.event.findUnique({
                 where: { id: event.id },
                 include: {
-                    eventAssignments: {
-                        include: {
-                            member: { // Include member details for the assignment
-                                select: {
-                                    id: true,
-                                    user: { // Include user details for the member
-                                        select: {
-                                            firstName: true,
-                                            lastName: true,
-                                            displayName: true
-                                        }
+                lab: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                type: { 
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                assigner: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                displayName: true
+                            }
+                        }
+                    }
+                },
+                instrument: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                eventAssignments: {
+                    select: {
+                        id: true,
+                        memberId: true,
+                        member: {
+                            select: {
+                                user: {
+                                    select: {
+                                        displayName: true
                                     }
                                 }
                             }
                         }
-                    },
-                    instrument: true, // Include instrument details
-                    lab: { // Include lab details
-                        select: {
-                            id: true,
-                            name: true
-                        }
-                    },
-                    type: true // Include event type details
-                },
+                    }
+                }
+            }
             });
         });
+        if (!updatedEvent) {
+            res.status(500).json({ error: 'Failed to create event' });
+            return;
+        }
+        const transformedEvent = transformEvents([updatedEvent])[0];
 
-        res.status(200).json(updatedEvent);
+        res.status(200).json(transformedEvent);
+                        
     } catch (error) {
         console.error('Event update error:', error);
 
@@ -951,6 +1003,12 @@ export const getLabEvents = async (req: Request, res: Response): Promise<void> =
                         name: true
                     }
                 },
+                type: { 
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
                 assigner: {
                     select: {
                         id: true,
@@ -998,142 +1056,51 @@ export const getLabEvents = async (req: Request, res: Response): Promise<void> =
 
 /**
  * @swagger
- * /calendar/member-events/{labId}/{memberId}:
+ * /calendar/getEventTypes:
  *   get:
- *     summary: Get all events within a lab where the member is assigned
+ *     summary: Get all event types
  *     tags: [Calendar]
- *     parameters:
- *       - in: path
- *         name: labId
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Positive integer Id of the lab to retrieve events from
- *       - in: path
- *         name: memberId
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Positive integer Id of the lab member assigned to the events
- *       - in: query
- *         name: start
- *         required: true
- *         schema:
- *           type: string
- *           format: date-time
- *         description: Start boundary (inclusive) for events (ISO 8601 UTC date-time string; if missing timezone, UTC is assumed) 
- *       - in: query
- *         name: end
- *         required: true
- *         schema:
- *           type: string
- *           format: date-time
- *         description: End boundary (inclusive) for events (ISO 8601 UTC date-time string; if missing timezone, UTC is assumed) 
  *     responses:
  *       200:
- *         description: A list of events where the lab member is assigned
+ *         description: A list of all event types
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Event'
- *       400:
- *         description: labId/memberId is missing or invalid (must be positive integers)
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                     description: Name of the event type
+ *                 example:
+ *                   id: 1
+ *                   name: "Meeting"
  *       500:
- *         description: Failed to retrieve events
+ *         description: Failed to retrieve event types
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *             example:
+ *               error: "Failed to retrieve event types"
  */
-
-export const getMemberEvents = async (req: Request, res: Response): Promise<void> => {
-    const { labId, memberId } = req.params;
-    const { start, end } = req.query;
-
-    if (!labId || !memberId) {
-        res.status(400).json({error: 'Both labId and memberId are required'});
-        return;
-    }
-    
-    if(!isValidLabId(labId)) { 
-        res.status(400).json({error: 'labId must be a positive integer'});
-        return;
-    }
-    
-    if(!isValidLabId(memberId)) { 
-        res.status(400).json({error: 'memberId must be a positive integer'});
-        return;
-    }
-
-    const { errors, startDate, endDate } = validateStartEndDates(start, end);
-
-    if (errors.length > 0) {
-        res.status(400).json({ error: errors });
-        return;
-    }
-
+export const getEventTypes = async (req: Request, res: Response): Promise<void> => {
     try {
-        const labIdNum = Number(labId);
-        const memberIdNum = Number(memberId);
-
-        // Get events where the member is assigned (in eventAssignments)
-        const events = await prisma.event.findMany({
-            where: {
-              labId: labIdNum,
-              startTime: { lte: endDate },
-              endTime: { gte: startDate },
-              eventAssignments: {
-                some: {
-                  memberId: memberIdNum,
-                },
-              },
-            },
-            include: {
-                lab: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                },
-                assigner: {
-                    select: {
-                        id: true,
-                        user: {
-                            select: {
-                                displayName: true
-                            }
-                        }
-                    }
-                },
-                instrument: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                },
-                eventAssignments: {
-                    select: {
-                        id: true,
-                        memberId: true,
-                        member: {
-                            select: {
-                                user: {
-                                    select: {
-                                        displayName: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+        const eventTypes = await prisma.eventType.findMany({
+            select: {
+                id: true,
+                name: true,
             }
         });
-        
-        // Use the imported transformation function
-        const transformedEvents = transformEvents(events);
-        
-        res.json(transformedEvents);
+        res.json(eventTypes);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to retrieve events'});
+        console.error('Error retrieving event types:', error);
+        res.status(500).json({ error: 'Failed to retrieve event types' });
     }
 }
