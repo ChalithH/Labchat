@@ -3,7 +3,6 @@ import { format, differenceInMinutes, parseISO } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
-import { DraggableEvent } from "@/calendar/components/dnd/draggable-event";
 import { EventDetailsDialog } from "@/calendar/components/dialogs/event-details-dialog";
 
 import { cn } from "@/lib/utils";
@@ -66,7 +65,6 @@ export function EventBlock({ event, className }: IProps) {
   };
 
   return (
-    <DraggableEvent event={event}>
       <EventDetailsDialog event={event}>
         <div role="button" tabIndex={0} className={calendarWeekEventCardClasses} style={{ height: `${heightInPixels}px` }} onKeyDown={handleKeyDown}>
           <div className="flex items-center gap-1.5 truncate">
@@ -86,6 +84,5 @@ export function EventBlock({ event, className }: IProps) {
           )}
         </div>
       </EventDetailsDialog>
-    </DraggableEvent>
   );
 }
