@@ -10,6 +10,7 @@ import {
     removeTagFromPost
 } from '../controllers/discussion/category.controller'; 
 import { getReplyById, getRepliesByPost, createReply, editReply, deleteReply,} from '../controllers/discussion/reply.controller'
+import { getMixedPosts, getPopularPosts, getRecentPosts } from '../controllers/discussion/misc.controller'
 /**
  * @swagger
  * tags:
@@ -20,6 +21,8 @@ const router = Router()
 
 
 // /api/discussion/
+
+// post controller routes
 router.delete('/post/:id', deletePost)
 router.get('/post/:id', getPostById)
 router.post('/post', createPost)
@@ -45,6 +48,12 @@ router.get('/replies/post/:id', getRepliesByPost);
 router.post('/reply', createReply)
 router.put('/reply/:id', editReply)
 router.delete('/reply/:id', deleteReply)
+
+
+// misc controller routes
+router.get('/recent', getRecentPosts)
+router.get('/popular', getPopularPosts)
+router.get('/mixed', getMixedPosts)
 
 
 export default router

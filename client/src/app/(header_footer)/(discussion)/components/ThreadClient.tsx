@@ -2,7 +2,7 @@ import React from 'react'
 
 import { TEST_DATA, FIRST_USER_DATA } from '@/app/testdata'
 
-import Navigation from '../../../components/Navigation'
+import Navigation from './Navigation'
 import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 import { Button } from '@/components/ui/button'
 

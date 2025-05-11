@@ -1,6 +1,6 @@
 import React from 'react'
 
-import TopicClient from './TopicClient'
+import TopicClient from '../../../components/TopicClient'
 import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
