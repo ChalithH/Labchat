@@ -1,0 +1,91 @@
+[
+    {
+      "statusName": "Active",
+      "statusWeight": 10
+    },
+    {
+      "statusName": "On Leave",
+      "statusWeight": 5
+    },
+    {
+      "statusName": "Inactive",
+      "statusWeight": 0
+    },
+    {
+      "statusName": "Suspended",
+      "statusWeight": -5
+    },
+    {
+      "statusName": "Probation",
+      "statusWeight": 3
+    },
+    {
+      "statusName": "Pending Induction",
+      "statusWeight": 8
+    },
+    {
+      "statusName": "Completed Induction",
+      "statusWeight": 9
+    },
+    {
+      "statusName": "Training Required",
+      "statusWeight": 7
+    },
+    {
+      "statusName": "Equipment Certified",
+      "statusWeight": 8
+    },
+    {
+      "statusName": "Project Assigned",
+      "statusWeight": 9
+    },
+    {
+      "statusName": "Writing Thesis",
+      "statusWeight": 6
+    },
+    {
+      "statusName": "On Conference Travel",
+      "statusWeight": 4
+    },
+    {
+      "statusName": "Maternity/Paternity Leave",
+      "statusWeight": 2
+    },
+    {
+      "statusName": "Sick Leave",
+      "statusWeight": 1
+    },
+    {
+      "statusName": "Vacation",
+      "statusWeight": 6
+    },
+    {
+      "statusName": "Remote Work",
+      "statusWeight": 7
+    },
+    {
+      "statusName": "Seeking Employment",
+      "statusWeight": 0
+    },
+    {
+      "statusName": "Graduated",
+      "statusWeight": -1
+    },
+    {
+      "statusName": "Transferred",
+      "statusWeight": -2
+    },
+    {
+      "statusName": "Dismissed",
+      "statusWeight": -10
+    },
+    {
+      "statusName": "Retired",
+      "statusWeight": -3
+    },
+    {
+      "statusName": "Visiting",
+      "statusWeight": 7
+    }
+  ]
+  

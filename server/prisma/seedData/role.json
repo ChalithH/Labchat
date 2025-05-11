@@ -1,38 +1,112 @@
 [
   {
-    "id": 1,
     "name": "Admin",
-    "description": "System administrator with full access",
+    "description": "Full administrative access to the platform.",
     "permissionLevel": 100
   },
   {
-    "id": 2,
+    "name": "University Admin",
+    "description": "Administrative access within their university context.",
+    "permissionLevel": 90
+  },
+  {
     "name": "Principal Investigator",
-    "description": "Lab leader with high-level permissions",
+    "description": "Lead researcher and manager of a lab.",
     "permissionLevel": 80
   },
   {
-    "id": 3,
-    "name": "Postdoc",
-    "description": "Postdoctoral researcher",
+    "name": "Lab Manager",
+    "description": "Manages day-to-day operations of a lab.",
+    "permissionLevel": 70
+  },
+  {
+    "name": "Senior Researcher",
+    "description": "Experienced researcher, may supervise others.",
     "permissionLevel": 60
   },
   {
-    "id": 4,
-    "name": "Senior Researcher",
-    "description": "Experienced lab researcher",
+    "name": "Postdoctoral Researcher",
+    "description": "Researcher with a completed doctorate.",
     "permissionLevel": 50
   },
   {
-    "id": 5,
-    "name": "Junior Researcher",
-    "description": "Entry-level researcher",
+    "name": "Graduate Student",
+    "description": "Student pursuing a Master's or PhD.",
+    "permissionLevel": 40
+  },
+  {
+    "name": "Undergraduate Student",
+    "description": "Student pursuing a Bachelor's degree.",
     "permissionLevel": 30
   },
   {
-    "id": 6,
-    "name": "Visitor",
-    "description": "Guest with limited access",
+    "name": "Research Assistant",
+    "description": "Provides support for research activities.",
+    "permissionLevel": 25
+  },
+  {
+    "name": "Technical Staff",
+    "description": "Provides technical support and instrument maintenance.",
+    "permissionLevel": 35
+  },
+  {
+    "name": "Visiting Scholar",
+    "description": "Researcher visiting from another institution.",
+    "permissionLevel": 45
+  },
+  {
+    "name": "Guest User",
+    "description": "Limited access for external visitors.",
     "permissionLevel": 10
+  },
+  {
+    "name": "Intern",
+    "description": "Temporary research intern.",
+    "permissionLevel": 20
+  },
+  {
+    "name": "Safety Officer",
+    "description": "Responsible for lab safety protocols.",
+    "permissionLevel": 75
+  },
+  {
+    "name": "Procurement Officer",
+    "description": "Manages lab purchasing and inventory.",
+    "permissionLevel": 65
+  },
+  {
+    "name": "IT Support",
+    "description": "Provides IT assistance for the lab.",
+    "permissionLevel": 55
+  },
+  {
+    "name": "Alumni",
+    "description": "Former lab member with limited access.",
+    "permissionLevel": 15
+  },
+  {
+    "name": "Collaborator",
+    "description": "External collaborator with specific project access.",
+    "permissionLevel": 40
+  },
+  {
+    "name": "Project Lead",
+    "description": "Leads a specific research project within a lab.",
+    "permissionLevel": 55
+  },
+  {
+    "name": "Data Analyst",
+    "description": "Focuses on data processing and analysis.",
+    "permissionLevel": 45
+  },
+  {
+    "name": "Web Developer",
+    "description": "Maintains the lab's online presence or tools.",
+    "permissionLevel": 50
+  },
+  {
+    "name": "Administrative Assistant",
+    "description": "Provides administrative support.",
+    "permissionLevel": 30
   }
 ]

@@ -1,0 +1,91 @@
+[
+    {
+      "tag": "Announcement",
+      "description": "Official announcements from lab management."
+    },
+    {
+      "tag": "Question",
+      "description": "Questions seeking help or information."
+    },
+    {
+      "tag": "Discussion",
+      "description": "Topics for general discussion."
+    },
+    {
+      "tag": "Help",
+      "description": "Requests for assistance."
+    },
+    {
+      "tag": "Update",
+      "description": "Sharing progress or updates."
+    },
+    {
+      "tag": "Protocol",
+      "description": "Sharing or discussing experimental protocols."
+    },
+    {
+      "tag": "Equipment",
+      "description": "Related to lab equipment."
+    },
+    {
+      "tag": "Safety",
+      "description": "Related to lab safety."
+    },
+    {
+      "tag": "Results",
+      "description": "Sharing experimental results."
+    },
+    {
+      "tag": "Troubleshooting",
+      "description": "Discussing and resolving issues."
+    },
+    {
+      "tag": "Meeting",
+      "description": "Related to lab meetings."
+    },
+    {
+      "tag": "Resource",
+      "description": "Sharing useful resources (papers, links, etc.)."
+    },
+    {
+      "tag": "Tip",
+      "description": "Sharing helpful tips or tricks."
+    },
+    {
+      "tag": "Software",
+      "description": "Related to lab software or analysis tools."
+    },
+    {
+      "tag": "Field Trip",
+      "description": "Related to planning or discussing field work."
+    },
+    {
+      "tag": "Conference",
+      "description": "Discussing conferences or presentations."
+    },
+    {
+      "tag": "Technique",
+      "description": "Discussing specific experimental techniques."
+    },
+    {
+      "tag": "Project",
+      "description": "Related to specific research projects."
+    },
+    {
+      "tag": "Sample",
+      "description": "Related to sample preparation or analysis."
+    },
+    {
+      "tag": "Data",
+      "description": "Related to data analysis or sharing."
+    },
+    {
+      "tag": "Collaboration",
+      "description": "Related to collaborative work."
+    },
+    {
+      "tag": "General",
+      "description": "General topics not covered by other tags."
+    }
+  ]
+  

@@ -1,37 +1,156 @@
 [
   {
-    "id": 1,
-    "contactId": 1,
-    "memberId": 1,
-    "status": "in lab",
-    "isActive": true
-  },
-  {
-    "id": 2,
-    "contactId": 3,
-    "memberId": 2,
-    "status": "remote",
-    "isActive": true
-  },
-  {
-    "id": 3,
     "contactId": 4,
-    "memberId": 3,
-    "status": "in lab",
-    "isActive": true
+    "memberId": 2,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Regularly active in the lab."
   },
   {
-    "id": 4,
+    "contactId": 5,
+    "memberId": 3,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Active on current project."
+  },
+  {
     "contactId": 6,
     "memberId": 4,
-    "status": "off: do not contact",
-    "isActive": true
+    "statusId": 1,
+    "isActive": true,
+    "description": "Full-time lab member."
   },
   {
-    "id": 5,
     "contactId": 7,
     "memberId": 5,
-    "status": "off: can contact",
-    "isActive": true
+    "statusId": 1,
+    "isActive": true,
+    "description": "Working on thesis experiments."
+  },
+  {
+    "contactId": 8,
+    "memberId": 6,
+    "statusId": 6,
+    "isActive": true,
+    "description": "Awaiting safety induction completion."
+  },
+  {
+    "contactId": 9,
+    "memberId": 7,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Providing research assistance."
+  },
+  {
+    "contactId": 10,
+    "memberId": 8,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Managing instrument calibrations."
+  },
+  {
+    "contactId": 19,
+    "memberId": 9,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Working on a new project."
+  },
+  {
+    "contactId": 21,
+    "memberId": 10,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Supervising junior members."
+  },
+  {
+    "contactId": 22,
+    "memberId": 11,
+    "statusId": 6,
+    "isActive": true,
+    "description": "New Master's student, needs induction."
+  },
+  {
+    "contactId": 11,
+    "memberId": 12,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Head of Lab Beta."
+  },
+  {
+    "contactId": 12,
+    "memberId": 13,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Managing Lab Beta operations."
+  },
+  {
+    "contactId": 13,
+    "memberId": 14,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Postdoc in Chemistry."
+  },
+  {
+    "contactId": 14,
+    "memberId": 15,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Working on Master's project."
+  },
+  {
+    "contactId": 15,
+    "memberId": 16,
+    "statusId": 6,
+    "isActive": true,
+    "description": "Undergrad assistant, needs induction."
+  },
+  {
+    "contactId": 16,
+    "memberId": 17,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Providing research support in Lab Beta."
+  },
+  {
+    "contactId": 20,
+    "memberId": 18,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Working on a collaborative project."
+  },
+  {
+    "contactId": 17,
+    "memberId": 19,
+    "statusId": 11,
+    "isActive": true,
+    "description": "Visiting for a semester."
+  },
+  {
+    "contactId": 18,
+    "memberId": 20,
+    "statusId": 12,
+    "isActive": false,
+    "description": "Temporary guest access."
+  },
+  {
+    "contactId": 6,
+    "memberId": 21,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Cross-lab collaboration."
+  },
+  {
+    "contactId": 7,
+    "memberId": 22,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Working on a joint project."
+  },
+  {
+    "contactId": 8,
+    "memberId": 23,
+    "statusId": 1,
+    "isActive": true,
+    "description": "Assisting with data collection."
   }
 ]

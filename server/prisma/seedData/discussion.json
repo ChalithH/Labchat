@@ -1,32 +1,112 @@
 [
   {
-    "id": 1,
     "labId": 1,
-    "name": "General Announcements",
-    "description": "Lab-wide announcements and important information"
+    "name": "Lab Alpha General Discussion",
+    "description": "General topics and announcements for Lab Alpha."
   },
   {
-    "id": 2,
     "labId": 1,
-    "name": "Equipment Issues",
-    "description": "Discussion of equipment problems and maintenance"
+    "name": "Project X Discussion",
+    "description": "Discussion related to Project X in Lab Alpha."
   },
   {
-    "id": 3,
     "labId": 1,
-    "name": "Protocol Sharing",
-    "description": "Share and discuss lab protocols"
+    "name": "Materials Characterization Discussion",
+    "description": "Discuss techniques and results from materials characterization."
   },
   {
-    "id": 4,
+    "labId": 1,
+    "name": "Equipment Booking Issues (Alpha)",
+    "description": "Report and discuss issues with equipment booking in Lab Alpha."
+  },
+  {
     "labId": 2,
-    "name": "General Announcements",
-    "description": "Lab-wide announcements and important information"
+    "name": "Lab Beta General Discussion",
+    "description": "General topics and announcements for Lab Beta."
   },
   {
-    "id": 5,
     "labId": 2,
-    "name": "Research Progress",
-    "description": "Updates on ongoing research projects"
+    "name": "Chemical Synthesis Protocols",
+    "description": "Discuss and share chemical synthesis protocols."
+  },
+  {
+    "labId": 2,
+    "name": "HPLC Troubleshooting",
+    "description": "Ask questions and share solutions for HPLC issues."
+  },
+  {
+    "labId": 2,
+    "name": "Safety Reminders (Beta)",
+    "description": "Important safety reminders for Lab Beta."
+  },
+  {
+    "labId": 3,
+    "name": "Biotech Lab General Discussion",
+    "description": "General discussion for the Biotechnology Lab."
+  },
+  {
+    "labId": 3,
+    "name": "Cell Culture Techniques",
+    "description": "Discuss best practices and challenges in cell culture."
+  },
+  {
+    "labId": 3,
+    "name": "Genetics Project Discussion",
+    "description": "Discussion related to genetics research projects."
+  },
+  {
+    "labId": 4,
+    "name": "Physics Lab General Discussion",
+    "description": "General discussion for the Physics Simulation Lab."
+  },
+  {
+    "labId": 4,
+    "name": "Simulation Software Help",
+    "description": "Get help with physics simulation software."
+  },
+  {
+    "labId": 5,
+    "name": "Environmental Science Discussion",
+    "description": "Discuss environmental research topics."
+  },
+  {
+    "labId": 6,
+    "name": "Nanotech Lab Discussion",
+    "description": "Discussion on nanotechnology research."
+  },
+  {
+    "labId": 7,
+    "name": "Neuroscience Lab Discussion",
+    "description": "Discuss topics in neuroscience research."
+  },
+  {
+    "labId": 8,
+    "name": "Computational Biology Discussion",
+    "description": "Discuss computational approaches in biology."
+  },
+  {
+    "labId": 9,
+    "name": "Robotics Lab Discussion",
+    "description": "Discuss robotics projects and challenges."
+  },
+  {
+    "labId": 10,
+    "name": "Renewable Energy Discussion",
+    "description": "Discuss research in renewable energy."
+  },
+  {
+    "labId": 11,
+    "name": "Geology Lab Discussion",
+    "description": "Discuss geological research topics."
+  },
+  {
+    "labId": 12,
+    "name": "Marine Biology Discussion",
+    "description": "Discuss research in marine biology."
+  },
+  {
+    "labId": 13,
+    "name": "Genetics Lab Discussion",
+    "description": "Discuss genetics research topics."
   }
 ]

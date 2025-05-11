@@ -1,0 +1,127 @@
+[
+  {
+    "postId": 1,
+    "memberId": 3,
+    "reactionId": 1
+  },
+  {
+    "postId": 1,
+    "memberId": 4,
+    "reactionId": 1
+  },
+  {
+    "postId": 1,
+    "memberId": 5,
+    "reactionId": 2
+  },
+  {
+    "postId": 2,
+    "memberId": 4,
+    "reactionId": 1
+  },
+  {
+    "postId": 2,
+    "memberId": 6,
+    "reactionId": 1
+  },
+  {
+    "postId": 3,
+    "memberId": 7,
+    "reactionId": 1
+  },
+  {
+    "postId": 3,
+    "memberId": 8,
+    "reactionId": 1
+  },
+  {
+    "postId": 4,
+    "memberId": 3,
+    "reactionId": 1
+  },
+  {
+    "postId": 5,
+    "memberId": 4,
+    "reactionId": 1
+  },
+  {
+    "postId": 6,
+    "memberId": 12,
+    "reactionId": 1
+  },
+  {
+    "postId": 6,
+    "memberId": 13,
+    "reactionId": 2
+  },
+  {
+    "postId": 7,
+    "memberId": 14,
+    "reactionId": 1
+  },
+  {
+    "postId": 7,
+    "memberId": 15,
+    "reactionId": 1
+  },
+  {
+    "postId": 8,
+    "memberId": 16,
+    "reactionId": 1
+  },
+  {
+    "postId": 9,
+    "memberId": 13,
+    "reactionId": 1
+  },
+  {
+    "postId": 10,
+    "memberId": 20,
+    "reactionId": 1
+  },
+  {
+    "postId": 11,
+    "memberId": 21,
+    "reactionId": 1
+  },
+  {
+    "postId": 12,
+    "memberId": 22,
+    "reactionId": 1
+  },
+  {
+    "postId": 13,
+    "memberId": 23,
+    "reactionId": 1
+  },
+  {
+    "postId": 14,
+    "memberId": 19,
+    "reactionId": 1
+  },
+  {
+    "postId": 15,
+    "memberId": 5,
+    "reactionId": 1
+  },
+  {
+    "postId": 16,
+    "memberId": 6,
+    "reactionId": 1
+  },
+  {
+    "postId": 17,
+    "memberId": 7,
+    "reactionId": 1
+  },
+  {
+    "postId": 18,
+    "memberId": 8,
+    "reactionId": 1
+  },
+  {
+    "postId": 19,
+    "memberId": 9,
+    "reactionId": 1
+  }
+]
