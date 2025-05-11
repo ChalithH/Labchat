@@ -7,6 +7,7 @@ import { TopicType } from '../../../../types/TestTypes'
 
 import { Breadcrumb, useBreadcrumb } from '../context/BreadcrumbContext';
 import { Button } from '@/components/ui/button';
+import { AddPostDialog } from './AddPostDialog'
 
 
 type TitlePropTypes = {
@@ -52,7 +53,7 @@ const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes
                         { topic.name[0].toUpperCase() + topic.name.slice(1, topic.name.length) }</h1>
                 </Link>
 
-                { perm_to_add && <button><img src="/add_to_topic_button.svg" alt="" /></button> }
+                { perm_to_add && <AddPostDialog discussionId={topic.id} memberId={2} onPostCreated={() => ("")} /> }
             </div>
 
             <div className="flex justify-between items-center text-lg mb-4">
