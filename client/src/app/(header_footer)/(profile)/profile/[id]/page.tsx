@@ -31,10 +31,10 @@ export default async function ProfilePage({ params }:{ params: { id: number }}) 
     redirect('/home')
   }
 
-  const profile_data: AxiosResponse = await api.get(`/api/user/get/${ id }`)
+  const profile_data: AxiosResponse = await api.get(`/user/get/${ id }`)
   
   // Add data requried for Profile page
-  const contact_response: AxiosResponse = await api.get(`/api/profile/get/${ id }`)
+  const contact_response: AxiosResponse = await api.get(`/profile/get/${ id }`)
   profile_data.data.contacts = contact_response.data
   profile_data.data.role = await ResolveRoleName(role_id)
 

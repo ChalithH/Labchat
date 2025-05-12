@@ -45,7 +45,7 @@ const ContactGroup = ({ contact, is_users_profile }: ContactGroupTypes) => {
   }
 
   const handleDeleteContact = async () => {
-    const response: AxiosResponse = await api.delete(`/api/profile/delete/${ contact.id }`)
+    const response: AxiosResponse = await api.delete(`/profile/delete/${ contact.id }`)
     router.refresh()
   }
 

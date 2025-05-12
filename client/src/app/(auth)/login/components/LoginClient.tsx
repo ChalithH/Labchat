@@ -22,7 +22,7 @@ const LoginClient = () => {
       e.preventDefault()
       
       try {
-        const response = await api.post("/api/auth/login", { loginEmail: email, loginPassword: password })
+        const response = await api.post("/auth/login", { loginEmail: email, loginPassword: password })
   
         setError(undefined)
         setMessage('Login successful')

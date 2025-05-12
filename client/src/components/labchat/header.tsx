@@ -45,7 +45,7 @@ export default function Header() {
 
   const handleLogout = () => {
     if (isLoggedIn) {
-      api.get("/api/auth/logout")
+      api.get("/auth/logout")
 
       setIsLoggedIn(false)
       redirect('/home')

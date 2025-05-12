@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export type InventoryItem = {
   id: number;
@@ -21,7 +21,7 @@ export type InventoryItem = {
 };
 
 export const getInventoryItems = async (): Promise<InventoryItem[]> => {
-  const response = await fetch(`${BASE_URL}/api/inventory`);
+  const response = await fetch(`${BASE_URL}/inventory`);
   if (!response.ok) {
     throw new Error('Failed to fetch inventory items');
   }
@@ -32,7 +32,7 @@ const postInventoryAction = async (
   endpoint: string,
   payload: Record<string, any>
 ): Promise<InventoryItem[]> => {
-  const response = await fetch(`${BASE_URL}/api/inventory/${endpoint}`, {
+  const response = await fetch(`${BASE_URL}/inventory/${endpoint}`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
