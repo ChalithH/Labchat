@@ -2,8 +2,8 @@ import React from 'react'
 
 import Title from '../Title'
 import Thread from '@/components/discussion/Thread'
-import { PostType } from '../../types/post.type';
-import { CategoryType } from '../../types/category.type';
+import { PostType } from '@/types/post.type';
+import { CategoryType } from '@/types/category.type';
 
 
 const TopicClient = async ({ params, category, posts }:{ params: { id: string }, category: CategoryType, posts: PostType[]}) => {

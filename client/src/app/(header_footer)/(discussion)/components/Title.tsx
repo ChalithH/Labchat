@@ -3,16 +3,14 @@
 import Link from 'next/link'
 import React from 'react'
 
-import { TopicType } from '../../../../types/TestTypes'
-
-import { Breadcrumb, useBreadcrumb } from '../context/BreadcrumbContext';
 import { Button } from '@/components/ui/button';
 import { AddPostDialog } from './AddPostDialog'
+import { CategoryType } from '@/types/category.type';
 
 
 type TitlePropTypes = {
     // Topic object
-    topic: TopicType,
+    category: CategoryType,
 
     // Permission required to view the add to topic button. Can ignore for now
     perm_to_add: string,
@@ -24,36 +22,16 @@ type TitlePropTypes = {
     b_categories: boolean
 } 
 
-const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes) => {
-    const { breadcrumbs, setBreadcrumbs } = useBreadcrumb()
-
-    const handleClick = (name: string, href: string) => {
-        // If the last breadcrumb added is the same as new one do not add.
-		// Easy fix to race condition problem I was having. Will check back to see
-		// if this will work with final project.
-		if (breadcrumbs && breadcrumbs[breadcrumbs.length - 1].href === href)
-			return
-        
-        const newCrumb: Breadcrumb = {
-            name: name,
-            href: href
-        }
-        const newBreadcrumbs: Breadcrumb[] = [ ...(breadcrumbs ?? []), newCrumb ]
-        setBreadcrumbs(newBreadcrumbs)
-    }
-
+const Title = ({ category, perm_to_add, b_view_all, b_categories } : TitlePropTypes) => {
     return (
         <div className="barlow-font">
             <div className="flex justify-between items-center mb-1">
-                <Link href={ `/discussion/topic/${ topic.id }` }>
-                    <h1 className="play-font text-3xl font-bold"
-                        onClick={ () => 
-                            handleClick(topic.name, `/discussion/topic/${ topic.id }`) }>
-                            
-                        { topic.name[0].toUpperCase() + topic.name.slice(1, topic.name.length) }</h1>
+                <Link href={ `/discussion/topic/${ category.id }` }>
+                    <h1 className="play-font text-3xl font-bold">
+                        { category.name[0].toUpperCase() + category.name.slice(1, category.name.length) }</h1>
                 </Link>
 
-                { perm_to_add && <AddPostDialog discussionId={topic.id} memberId={2} onPostCreated={() => ("")} /> }
+                { perm_to_add && <AddPostDialog discussionId={category.id} memberId={2} onPostCreated={() => ("")} /> }
             </div>
 
             <div className="flex justify-between items-center text-lg mb-4">
@@ -64,11 +42,7 @@ const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes
                     </div> }
 
                 { b_view_all && 
-                    <Link 
-                        onClick={ () => 
-                            handleClick(topic.name, `/discussion/topic/${ topic.id }`) } 
-                        href={ `/discussion/topic/${ topic.id }` }>
-
+                    <Link href={ `/discussion/topic/${ category.id }` }>
                         <Button className="h-8">View All</Button>
                     </Link> }
             </div>

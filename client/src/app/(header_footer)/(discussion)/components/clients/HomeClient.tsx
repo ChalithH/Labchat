@@ -2,24 +2,20 @@ import React from 'react'
 
 import Title from '@/app/(header_footer)/(discussion)/components/Title'
 
-import { TEST_DATA } from '@/app/testdata';
 import RecentActivity from '@/app/(header_footer)/(discussion)/components/RecentActivity';
-import { PostType } from '../../types/post.type';
-import { CategoryType } from '../../types/category.type';
+import { PostType } from '@/types/post.type';
+import { CategoryType } from '@/types/category.type';
 import Thread from '@/components/discussion/Thread';
 
 
 const THREADS_PER_TOPIC = 3
 
 const HomeClient = ({ recentActivity, categories, posts }:{ recentActivity: PostType[], categories: CategoryType[], posts: PostType[][] }): React.ReactNode => {
-  console.log(categories)
-  console.log(posts)
-
   return (
   	<main>
 		<section>
         <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Recent Activity</h1>
-        <RecentActivity posts={ recentActivity }/>
+        <RecentActivity />
       </section>
 
 			<section className="w-[90dvw] m-auto">
