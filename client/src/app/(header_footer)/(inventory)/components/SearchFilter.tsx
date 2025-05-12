@@ -5,23 +5,21 @@ import { Filter, Search, X } from 'lucide-react';
 
 // This component is used to filter and search through inventory items.
 
+// Tag type definition
+type Tag = {
+  id: number;
+  name: string;
+  description: string;
+};
+
 // Props for the SearchFilterBar component
 type Props = {
   searchQuery: string;
   setSearchQuery: (val: string) => void;
   filterCategory: string;
   setFilterCategory: (val: string) => void;
+  availableTags: Tag[];
 };
-
-// Options for the category filter dropdown
-const categoryOptions = [
-  { label: "All Items", value: "" },
-  { label: "Low Stock", value: "low-stock" },
-  { label: "Consumables", value: "consumable" },
-  { label: "Chemicals", value: "chemical" },
-  { label: "Solvents", value: "solvent" },
-  { label: "Other", value: "other" },
-];
 
 // This component renders a search bar and a category filter dropdown.
 const SearchFilterBar: React.FC<Props> = ({
@@ -29,10 +27,21 @@ const SearchFilterBar: React.FC<Props> = ({
   setSearchQuery,
   filterCategory,
   setFilterCategory,
+  availableTags,
 }) => {
   const handleClearSearch = () => {
     setSearchQuery('');
   };
+
+  // Create a list of filter options including built-in options and tags
+  const categoryOptions = [
+    { label: "All Items", value: "" },
+    { label: "Low Stock", value: "low-stock" },
+    ...(availableTags.map(tag => ({
+      label: tag.name,
+      value: `tag:${tag.id}`,
+    })))
+  ];
 
   return (
     <div className="w-[90dvw] m-auto top-4">
@@ -67,7 +76,7 @@ const SearchFilterBar: React.FC<Props> = ({
         </div>
 
         {/* This is the category filter dropdown */}
-        <div className="flex items-center bg-gray-50 py-2 px-4 rounded-3xl shadow-xl border-2 border-sky-500 w-[180px] flex-shrink-0">
+        <div className="flex items-center bg-gray-50 py-2 px-4 rounded-3xl shadow-xl border-2 border-sky-500 w-[200px] flex-shrink-0">
           <Filter className="text-sky-600 mr-2 flex-shrink-0" />
           <select
             value={filterCategory}
@@ -82,7 +91,6 @@ const SearchFilterBar: React.FC<Props> = ({
               </option>
             ))}
           </select>
-
         </div>
       </div>
     </div>

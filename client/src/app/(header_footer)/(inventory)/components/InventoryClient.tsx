@@ -13,20 +13,27 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+// Tag type definition
+type Tag = {
+  id: number;
+  name: string;
+  description: string;
+};
 
 // This component is used to display the inventory items and provide options to search and filter them.
 // It fetches the inventory items from the server and manages the state of the inventory items, search query, and filter category.
 
 type InventoryItemData = {
   id: number;
-  item: {
-    name: string;
-    description: string;
-    category?: string;
-  };
   currentStock: number;
   minStock: number;
   itemUnit: string;
+  location: string;
+  item: {
+    name: string;
+    description: string;  
+  };
+  itemTags: Tag[];
 };
 
 const InventoryClient: React.FC = () => {
@@ -34,23 +41,38 @@ const InventoryClient: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [sortOption, setSortOption] = useState<string>('name-asc');
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
 
+  // Fetch all available tags from the API
+  const fetchTags = async (): Promise<void> => {
+    try {
+      const response = await fetch('http://localhost:8000/api/inventory/item-tags');
+      if (!response.ok) {
+        throw new Error('Failed to fetch tags');
+      }
+      const tags = await response.json();
+      setAvailableTags(tags);
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+    }
+  };
 
   const fetchItems = async (): Promise<void> => {
     try {
       const itemsRaw = await getInventoryItems();
       const items: InventoryItemData[] = itemsRaw.map((item) => ({
         id: item.id,
-        item: {
-          name: item.item.name,
-          description: item.item.description,
-          category: (item.itemTags[0] as any)?.name || '',
-        },
         currentStock: item.currentStock,
         minStock: item.minStock,
         itemUnit: item.itemUnit,
+        location: item.location || '', // Ensure location is included
+        item: {
+          name: item.item.name,
+          description: item.item.description,
+        },
+        itemTags: item.itemTags,
       }));
-
+      
       const sortedItems = [...items].sort((a, b) =>
         a.item.name.localeCompare(b.item.name)
       );
@@ -76,13 +98,20 @@ const InventoryClient: React.FC = () => {
 
   const filteredItems = [...inventoryItems]
     .filter((item) => {
+      // Handle search query filtering
       const matchesSearch = item.item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter =
-        filterCategory === ''
-          ? true
-          : filterCategory === 'low-stock'
-            ? item.currentStock <= item.minStock
-            : item.item.category?.toLowerCase() === filterCategory.toLowerCase();
+      
+      // Handle category filtering
+      let matchesFilter = true;
+      
+      if (filterCategory === 'low-stock') {
+        // Filter for low stock items
+        matchesFilter = item.currentStock <= item.minStock;
+      } else if (filterCategory.startsWith('tag:')) {
+        // Filter by specific tag ID
+        const tagId = parseInt(filterCategory.replace('tag:', ''));
+        matchesFilter = item.itemTags.some(tag => tag.id === tagId);
+      }
 
       return matchesSearch && matchesFilter;
     })
@@ -107,9 +136,9 @@ const InventoryClient: React.FC = () => {
       }
     });
 
-
   useEffect(() => {
     fetchItems();
+    fetchTags();
   }, []);
 
   return (
@@ -122,6 +151,7 @@ const InventoryClient: React.FC = () => {
         setSearchQuery={setSearchQuery}
         filterCategory={filterCategory}
         setFilterCategory={setFilterCategory}
+        availableTags={availableTags}
       />
       <div className="w-full max-w-2xl mx-auto mt-4 px-4 flex justify-center">
         <div className="flex items-center space-x-2">
@@ -148,6 +178,7 @@ const InventoryClient: React.FC = () => {
             current_stock={item.currentStock}
             min_stock={item.minStock}
             unit={item.itemUnit}
+            tags={item.itemTags}
             onTake={(amount: number) => handleTake(item.id, amount)}
             onRestock={(amount: number) => handleRestock(item.id, amount)}
             refreshStockData={refreshStockData}
@@ -155,7 +186,7 @@ const InventoryClient: React.FC = () => {
         ))}
       </div>
     </>
-  )
-}
+  );
+};
 
-export default InventoryClient
+export default InventoryClient;
