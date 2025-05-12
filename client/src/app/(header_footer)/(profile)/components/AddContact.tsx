@@ -62,7 +62,7 @@ const AddContact = () => {
       info: info
     }
   
-    const response: AxiosResponse = await api.post(`/api/profile/add`, new_contact)
+    const response: AxiosResponse = await api.post(`/profile/add`, new_contact)
 
     setIsEditOpen(false)
     setType('')

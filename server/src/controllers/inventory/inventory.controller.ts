@@ -6,10 +6,18 @@ const prisma = new PrismaClient();
 
 /**
  * @swagger
- * /inventory:
+ * /inventory/{labId}:
  *   get:
  *     summary: Get all lab inventory items
- *     tags: [Inventory]
+ *     tags: 
+ *       - Inventory
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the lab to get inventory items for
  *     responses:
  *       200:
  *         description: A list of inventory items
@@ -22,10 +30,13 @@ const prisma = new PrismaClient();
  *       500:
  *         description: Failed to retrieve inventory items
  */
-
 export const getInventory = async (req: Request, res: Response): Promise<void> => {
     try {
+        const { labId } = req.params;
         const inventoryItems = await prisma.labInventoryItem.findMany({
+            where: {
+                labId: parseInt(labId), // Ensure labId is an integer
+            },
             include: {
                 item: true, 
                 labItemTags: { 

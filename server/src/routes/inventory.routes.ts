@@ -9,7 +9,7 @@ import { getInventory, takeItem, getAllLowStockItems, replenishStock, getInvento
  */
 const router = Router();
 
-router.get('/', getInventory);
+router.get('/:labId', getInventory);
 router.get('/name/:name', getInventoryItemByName);
 router.post('/take', takeItem);
 router.get('/low-stock', getAllLowStockItems);

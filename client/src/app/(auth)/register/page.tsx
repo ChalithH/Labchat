@@ -49,7 +49,7 @@ export default function Register() {
         dateJoined: new Date().toISOString()
       }
 
-      await api.post('/api/user/', new_user)
+      await api.post('/user/', new_user)
       setError(undefined)
       setMessage('Registration successful')
 

@@ -5,7 +5,7 @@ import type { LabMember } from "@/app/(header_footer)/(members)/types"
 import { MobileRow, DesktopRow } from "@/app/(header_footer)/(members)/components/member-row"
 
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function MembersTable() {
   const [members, setMembers] = useState<LabMember[]>([])
@@ -16,7 +16,7 @@ export default function MembersTable() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const response = await await axios.get(`${API_URL}/lab/getMembers/1`
+        const response = await axios.get(`${API_URL}/lab/getMembers/1`
 
         );
         if (response.status !== 200) {

@@ -16,7 +16,7 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
         redirect('/home')
     }
 
-    const post = await api.get(`/api/discussion/post/${ id }`)
+    const post = await api.get(`/discussion/post/${ id }`)
 
     return (
       <ThreadClient post={ post } params={ {id: `${ id }`} } />
