@@ -2,7 +2,8 @@
 
 import * as React from "react"
 
-import { Card, CardContent } from "@/components/ui/card"
+import Thread from "@/components/discussion/Thread"
+import { CardContent } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
@@ -11,10 +12,11 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
-import Thread from "@/components/discussion/Thread"
-import { FIRST_THREAD_DATA } from "@/app/testdata"
 
-const RecentActivity = () => {
+import { PostType } from "@/types/post.type"
+
+
+const RecentActivity = ({ posts }:{ posts: PostType[] }) => {
   const [api, setApi] = React.useState<CarouselApi>()
   const [current, setCurrent] = React.useState(0)
   const [count, setCount] = React.useState(0)
@@ -36,13 +38,13 @@ const RecentActivity = () => {
     <div className="w-[90dvw] m-auto mb-8">
       <Carousel className="overflow-hidden" setApi={ setApi }>
         <CarouselContent>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <CarouselItem key={index}>
+          { posts.map( (post, index) => 
+            <CarouselItem key={ index }>
                 <CardContent className="m-auto rounded-xl p-6">
-                    <Thread thread={ FIRST_THREAD_DATA } b_show_blurb={ false } />
+                    <Thread thread={ post } b_show_blurb={ false } />
                 </CardContent>
             </CarouselItem>
-          ))}
+          )}
         </CarouselContent>
         <CarouselPrevious />
         <CarouselNext />
