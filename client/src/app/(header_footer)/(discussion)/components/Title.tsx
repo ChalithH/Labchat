@@ -19,7 +19,7 @@ const Title = async ({ category, perm_to_add, b_view_all, b_categories }: TitleP
 
   return (
     <div className="barlow-font">
-      <div className="flex justify-between items-center mb-1">
+      <div className="flex justify-between items-center mb-2">
         <Link href={ `/discussion/topic/${ category.id }` }>
           <h1 className="play-font text-3xl font-bold">
             { category.tag[0].toUpperCase() + category.tag.slice(1) }

@@ -25,8 +25,14 @@ const ThreadClient = async ({ post, replies, replyUsers, author, authorRole, use
                 <ThreadAuthorGroup role={ authorRole } name={ author.displayName } size={ 48 } />
                 
                 <div className="text-right text-sm">
-                    <p>Created { post.createdAt }</p>
-                    <p>Last activity { post.updatedAt }</p>
+                    <p>Created { new Date(post.createdAt).toLocaleString('en-GB', {
+						day: '2-digit', month: 'short', year: 'numeric',
+						hour: '2-digit', minute: '2-digit', hour12: true
+					}) }</p>
+					<p>Last Activity { new Date(post.updatedAt).toLocaleString('en-GB', {
+						day: '2-digit', month: 'short', year: 'numeric',
+						hour: '2-digit', minute: '2-digit', hour12: true
+					}) }</p>
                 </div>
             </div>
 
@@ -70,7 +76,10 @@ const ThreadClient = async ({ post, replies, replyUsers, author, authorRole, use
                         name={ replyUser.displayName } 
                         size={ 42 } 
                     />
-                    <p className="text-sm">Posted { reply.createdAt }</p>
+                    <p className="text-sm">Posted { new Date(reply.createdAt).toLocaleString('en-GB', {
+						day: '2-digit', month: 'short', year: 'numeric',
+						hour: '2-digit', minute: '2-digit', hour12: true
+					}) }</p>
                     </div>
                     <p>{ reply.content }</p>
                 </div>

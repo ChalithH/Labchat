@@ -13,8 +13,8 @@ const THREADS_PER_TOPIC = 3
 const HomeClient = ({ recentActivity, categories, posts }:{ recentActivity: PostType[], categories: CategoryType[], posts: PostType[][] }): React.ReactNode => {
   return (
   	<main>
-		<section>
-        <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Recent Activity</h1>
+      <section className='mb-8'>
+        <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Browse Recent Discussion</h1>
         <RecentActivity posts={ recentActivity }/>
       </section>
 
@@ -28,7 +28,7 @@ const HomeClient = ({ recentActivity, categories, posts }:{ recentActivity: Post
 							b_categories={ true } 
 						/>
 
-						<div className="pl-4 mt-2 space-y-4">
+						<div className="mt-2 space-y-6">
 							{ posts[index].slice(0, THREADS_PER_TOPIC).map(post => 
 								<Thread key={ post.id } thread={ post } b_show_blurb={ true }/>
 							) }
