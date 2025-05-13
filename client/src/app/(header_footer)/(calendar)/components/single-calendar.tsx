@@ -11,6 +11,7 @@ const SingleCalendar = () => {
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
+    console.log("Selected date:", date);
   };
 
   return (

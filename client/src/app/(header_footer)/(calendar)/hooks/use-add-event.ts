@@ -1,19 +1,36 @@
+import { useState } from "react";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { createEvent } from "@/calendar/requests";
+
 import type { IEvent } from "@/calendar/interfaces";
 
 export function useAddEvent() {
   const { setLocalEvents } = useCalendar();
+  const [isAdding, setIsAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // This is just an example, in a real scenario
-  // you would call an API to add the event
-  const addEvent = (eventData: Omit<IEvent, "id">) => {
-    const newEvent: IEvent = {
-      id: Date.now(), // Generate a unique ID for the new event
-      ...eventData
-    };
-
-    setLocalEvents(prev => [...prev, newEvent]);
+  const addEvent = async (eventData: Partial<IEvent>) => {
+    setIsAdding(true);
+    setError(null);
+    
+    try {
+      const newEvent = await createEvent(eventData);
+      
+      if (newEvent) {
+        setLocalEvents(prev => [...prev, newEvent]);
+        return true;
+      } else {
+        setError("Failed to create event");
+        return false;
+      }
+    } catch (err) {
+      console.error("Error creating event:", err);
+      setError("An error occurred while creating the event");
+      return false;
+    } finally {
+      setIsAdding(false);
+    }
   };
 
-  return { addEvent };
+  return { addEvent, isAdding, error };
 }

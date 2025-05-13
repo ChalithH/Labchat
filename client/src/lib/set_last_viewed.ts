@@ -5,7 +5,7 @@ const setUsersLastViewed = async (page: string) => {
   try {
     const user_response = await getUserFromSessionServer()
     if (!user_response) {
-      throw new Error("User not found");
+      return;
     }
     const new_user = { ...user_response, lastViewed: page }
     
