@@ -11,6 +11,10 @@ import { UserType } from '@/types/User.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 import getUserFromSession from '@/lib/get_user'
 import { Pencil, Trash } from 'lucide-react'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '../ui/button'
+import { useRouter } from 'next/navigation'
+
 
 
 const BLURB_CHAR_LIMIT = 128
@@ -19,6 +23,17 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 	const [ author, setAuthor ] = useState<any>(null)
   const [ user, setUser ] = useState<any>()
 	const [ role, setRole ] = useState<string>('')
+  const [showPopup, setShowPopup] = useState<boolean>(false)
+  const router = useRouter()
+  
+  const handleDeletePopup = () => {
+    setShowPopup(!showPopup)
+  }
+  
+  const handleDeleteThread = async () => {
+    const response: AxiosResponse = await api.delete(`/discussion/post/${ thread.id }`)
+    router.refresh()
+  }
 
 	useEffect(() => {
 		const getUser = async () => {
@@ -93,11 +108,30 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
 
         { author.id === user.id && 
-          <div className='flex space-x-4 absolute top-2 right-2'>
+          <div className='flex space-x-6 absolute top-2 right-2'>
             <Pencil className="w-5 h-5 cursor-pointer text-muted-foreground" />
-            <Trash className='w-5 h-5 text-muted-foreground' />
+            <Trash onClick={ handleDeletePopup } className='w-5 h-5 text-muted-foreground' />
           </div> }
 			</div>
+
+      <Dialog open={ showPopup } onOpenChange={ setShowPopup }>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Post</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this post?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button onClick={ handleDeleteThread }>Delete Post</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 		</div>
 	)
 }
