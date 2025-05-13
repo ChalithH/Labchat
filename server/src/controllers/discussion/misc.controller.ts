@@ -15,7 +15,7 @@ import { DiscussionPost } from '@prisma/client';
  */
 export const getRecentPosts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const amount: number = parseInt(req.body.amount as string) || 9
+    const amount = parseInt(req.params.amount, 10) || 9
     const posts: DiscussionPost[] = await prisma.discussionPost.findMany({
       orderBy: { createdAt: 'desc' },
       take: amount,
@@ -41,7 +41,7 @@ export const getRecentPosts = async (req: Request, res: Response): Promise<void>
  */
 export const getPopularPosts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const amount: number = parseInt(req.body.amount as string) || 9
+    const amount = parseInt(req.params.amount, 10) || 9
     const posts: DiscussionPost[] = await prisma.discussionPost.findMany({
       take: amount,
       orderBy: {
@@ -71,8 +71,7 @@ export const getPopularPosts = async (req: Request, res: Response): Promise<void
  */
 export const getMixedPosts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const amount: number = parseInt(req.body.amount as string) || 9
-
+    const amount = parseInt(req.params.amount, 10) || 9
     const recent: DiscussionPost[] = await prisma.discussionPost.findMany({
       orderBy: { createdAt: 'desc' },
       take: amount,
