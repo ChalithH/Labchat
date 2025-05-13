@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { assignMember, createEvent, updateEvent, removeMember, deleteEvent, getLabEvents, getMemberEvents }  from '../controllers/calendar/calendar.controller';
+import { assignMember, createEvent, updateEvent, removeMember, deleteEvent, getLabEvents, getEventTypes }  from '../controllers/calendar/calendar.controller';
 
 /**
  * @swagger
@@ -16,7 +16,7 @@ router.post('/assign-member', assignMember);
 router.delete('/remove-member', removeMember);
 
 router.get('/events/:labId', getLabEvents);
-router.get('/member-events/:labId/:memberId', getMemberEvents);
-
+//router.get('/member-events/:labId/:memberId', getMemberEvents);
+router.get('/getEventTypes', getEventTypes)
 
 export default router;

@@ -35,12 +35,20 @@ export const loggedInsiteConfig: SiteConfig = {
             href: "/home",
         },
         {
-            title: "About",
-            href: "/about",
+            title: "Inventory",
+            href: "/inventory",
         },
         {
-            title: "Contact",
-            href: "/contact",
+            title: "Calendar",
+            href: "/calendar",
+        },
+        {
+            title: "Discussion Board",
+            href: "/discussion/home",
+        },
+        {
+            title: "Members",
+            href: "/members",
         },
     ],
 };

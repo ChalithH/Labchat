@@ -1,9 +1,17 @@
 import React from 'react'
 
-import HomeClient from './HomeClient'
+import { redirect } from 'next/navigation'
+import { AxiosResponse } from 'axios'
+
+import { PostType } from '@/types/post.type'
+import { CategoryType } from '@/types/category.type'
+
 import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server'
-import { redirect } from 'next/navigation'
+
+import HomeClient from '../../components/clients/HomeClient'
+import api from '@/lib/api'
+
 
 
 const DiscussionHome = async () => {
@@ -13,9 +21,22 @@ const DiscussionHome = async () => {
     if (!user) {
       redirect('/home')
     }
-  
+
+    const recentActivityRequest: AxiosResponse = await api.get('/discussion/recent/9')
+    const recentActivity: PostType[] = recentActivityRequest.data
+
+    const categoriesRequest: AxiosResponse = await api.get('/discussion/tags')
+    const categories: CategoryType[] = categoriesRequest.data
+
+    const posts: PostType[][] = await Promise.all(
+      categories.map(async (category) => {
+        const response: AxiosResponse = await api.get(`/discussion/category-posts/${category.id}`)
+        return response.data
+      })
+    )
+
     return (
-      <HomeClient />
+      <HomeClient recentActivity={ recentActivity } categories={ categories } posts={ posts }/>
     )
   }
 

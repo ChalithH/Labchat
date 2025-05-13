@@ -34,11 +34,22 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
       res.status(400).send({ error: 'Missing fields in request body' })
       return
     }
+    
+    const member = await prisma.labMember.findFirst({
+      where: {
+        userId: memberId
+      }
+    })
+
+    if (!member) {
+      res.status(400).json({ error: 'No lab member found' });
+      return;
+    }
 
     const post = await prisma.discussionPost.create({
       data: {
         discussionId,
-        memberId,
+        memberId: member.id,
         title,
         content,
         createdAt: createdAt ? new Date(createdAt) : now,

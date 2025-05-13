@@ -1,24 +1,40 @@
+import { useState } from "react";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { updateEvent as apiUpdateEvent } from "@/calendar/requests";
 
 import type { IEvent } from "@/calendar/interfaces";
 
 export function useUpdateEvent() {
   const { setLocalEvents } = useCalendar();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // This is just and example, in a real scenario
-  // you would call an API to update the event
-  const updateEvent = (event: IEvent) => {
-    const newEvent: IEvent = event;
-
-    newEvent.startDate = new Date(event.startDate).toISOString();
-    newEvent.endDate = new Date(event.endDate).toISOString();
-
-    setLocalEvents(prev => {
-      const index = prev.findIndex(e => e.id === event.id);
-      if (index === -1) return prev;
-      return [...prev.slice(0, index), newEvent, ...prev.slice(index + 1)];
-    });
+  const updateEvent = async (event: IEvent) => {
+    setIsUpdating(true);
+    setError(null);
+    
+    try {
+      const updatedEvent = await apiUpdateEvent(event);
+      
+      if (updatedEvent) {
+        setLocalEvents(prev => {
+          const index = prev.findIndex(e => e.id === event.id);
+          if (index === -1) return prev;
+          return [...prev.slice(0, index), updatedEvent, ...prev.slice(index + 1)];
+        });
+        return true;
+      } else {
+        setError("Failed to update event");
+        return false;
+      }
+    } catch (err) {
+      console.error("Error updating event:", err);
+      setError("An error occurred while updating the event");
+      return false;
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  return { updateEvent };
+  return { updateEvent, isUpdating, error };
 }

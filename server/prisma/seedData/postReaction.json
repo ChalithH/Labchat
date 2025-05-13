@@ -1,0 +1,91 @@
+[
+    {
+      "reactionName": "Like",
+      "reaction": "👍"
+    },
+    {
+      "reactionName": "Heart",
+      "reaction": "❤️"
+    },
+    {
+      "reactionName": "Laugh",
+      "reaction": "😂"
+    },
+    {
+      "reactionName": "Sad",
+      "reaction": "😢"
+    },
+    {
+      "reactionName": "Angry",
+      "reaction": "😠"
+    },
+    {
+      "reactionName": "Wow",
+      "reaction": "😮"
+    },
+    {
+      "reactionName": "Thumbs Down",
+      "reaction": "👎"
+    },
+    {
+      "reactionName": "Clap",
+      "reaction": "👏"
+    },
+    {
+      "reactionName": "Rocket",
+      "reaction": "🚀"
+    },
+    {
+      "reactionName": "Question",
+      "reaction": "❓"
+    },
+    {
+      "reactionName": "Check Mark",
+      "reaction": "✅"
+    },
+    {
+      "reactionName": "Fire",
+      "reaction": "🔥"
+    },
+    {
+      "reactionName": "Hundred",
+      "reaction": "💯"
+    },
+    {
+      "reactionName": "Pray",
+      "reaction": "🙏"
+    },
+    {
+      "reactionName": "Thinking Face",
+      "reaction": "🤔"
+    },
+    {
+      "reactionName": "Party Popper",
+      "reaction": "🎉"
+    },
+    {
+      "reactionName": "Star",
+      "reaction": "⭐"
+    },
+    {
+      "reactionName": "Eyes",
+      "reaction": "👀"
+    },
+    {
+      "reactionName": "Bookmark",
+      "reaction": "🔖"
+    },
+    {
+      "reactionName": "Caution",
+      "reaction": "⚠️"
+    },
+    {
+      "reactionName": "Idea",
+      "reaction": "💡"
+    },
+    {
+      "reactionName": "Up Arrow",
+      "reaction": "⬆️"
+    }
+  ]
+  

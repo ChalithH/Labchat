@@ -1,0 +1,532 @@
+❯  npm run seed
+
+> server@1.0.0 seed
+> ts-node prisma/seed.ts
+
+Cleared data from itemTag
+Cleared data from item
+Cleared data from eventAssignment
+Cleared data from event
+Cleared data from discussionPostReaction
+Cleared data from discussionPostTag
+Cleared data from discussionReply
+Cleared data from discussionPost
+Cleared data from discussion
+Cleared data from instrument
+Cleared data from memberStatus
+Cleared data from labMember
+Cleared data from contact
+Cleared data from labRole
+Cleared data from lab
+Cleared data from user
+Cleared data from postReaction
+Cleared data from postTag
+Cleared data from status
+Cleared data from role
+Seeded role with data from role.json
+Seeded status with data from status.json
+Seeded postTag with data from postTag.json
+Seeded postReaction with data from postReaction.json
+Error seeding data for user: PrismaClientValidationError: 
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create({
+           data: {
+             id: 1,
+             roleId: 12,
+             universityId: "UNI1001",
+             username: "schwartzjoshua",
+             loginEmail: "joshuacarter@gmail.com",
+             loginPassword: "z^E7jBJl4*",
+             firstName: "John",
+             lastName: "Kelly",
+             displayName: "Christopher Hernandez",
+             jobTitle: "Physiotherapist",
+             office: "environment",
+             bio: "All machine guess quickly action firm forward. Officer wrong your. Weight practice when last like.\nHouse fish today president kitchen well. Product window term vote write. Up return why up.",
+             dateJoined: "2022-02-17T09:31:16",
+                         ~~~~~~~~~~~~~~~~~~~~~
+             lastViewed: null
+           }
+         })
+
+Invalid value for argument `dateJoined`: premature end of input. Expected ISO-8601 DateTime.
+    at Cn (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7177)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  clientVersion: '6.5.0'
+}
+PrismaClientValidationError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create({
+           data: {
+             id: 1,
+             roleId: 12,
+             universityId: "UNI1001",
+             username: "schwartzjoshua",
+             loginEmail: "joshuacarter@gmail.com",
+             loginPassword: "z^E7jBJl4*",
+             firstName: "John",
+             lastName: "Kelly",
+             displayName: "Christopher Hernandez",
+             jobTitle: "Physiotherapist",
+             office: "environment",
+             bio: "All machine guess quickly action firm forward. Officer wrong your. Weight practice when last like.\nHouse fish today president kitchen well. Product window term vote write. Up return why up.",
+             dateJoined: "2022-02-17T09:31:16",
+                         ~~~~~~~~~~~~~~~~~~~~~
+             lastViewed: null
+           }
+         })
+
+Invalid value for argument `dateJoined`: premature end of input. Expected ISO-8601 DateTime.
+    at Cn (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7177)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  clientVersion: '6.5.0'
+}
+Seeded lab with data from lab.json
+Seeded labRole with data from labRole.json
+Error seeding data for contact: PrismaClientKnownRequestError: 
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `contact_userId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: { modelName: 'Contact', field_name: 'contact_userId_fkey (index)' },
+  clientVersion: '6.5.0'
+}
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `contact_userId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: { modelName: 'Contact', field_name: 'contact_userId_fkey (index)' },
+  clientVersion: '6.5.0'
+}
+Error seeding data for labMember: PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `lab_member_userId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'LabMember',
+    field_name: 'lab_member_userId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `lab_member_userId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'LabMember',
+    field_name: 'lab_member_userId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+Error seeding data for memberStatus: PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `member_status_contactId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'MemberStatus',
+    field_name: 'member_status_contactId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `member_status_contactId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'MemberStatus',
+    field_name: 'member_status_contactId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+Error seeding data for instrument: PrismaClientKnownRequestError: 
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+The provided value for the column is too long for the column's type. Column: (not available)
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2000',
+  meta: { modelName: 'Instrument', column_name: '(not available)' },
+  clientVersion: '6.5.0'
+}
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+The provided value for the column is too long for the column's type. Column: (not available)
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2000',
+  meta: { modelName: 'Instrument', column_name: '(not available)' },
+  clientVersion: '6.5.0'
+}
+Seeded discussion with data from discussion.json
+Error seeding data for discussionPost: PrismaClientKnownRequestError: 
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `discussion_post_memberId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'DiscussionPost',
+    field_name: 'discussion_post_memberId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `discussion_post_memberId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'DiscussionPost',
+    field_name: 'discussion_post_memberId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+Error seeding data for discussionReply: PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `discussion_reply_memberId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'DiscussionReply',
+    field_name: 'discussion_reply_memberId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `discussion_reply_memberId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'DiscussionReply',
+    field_name: 'discussion_reply_memberId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+Error seeding data for discussionPostTag: PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `d_post_tags_postId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'DiscussionPostTag',
+    field_name: 'd_post_tags_postId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `d_post_tags_postId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'DiscussionPostTag',
+    field_name: 'd_post_tags_postId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+Error seeding data for discussionPostReaction: PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `discussion_post_reaction_postId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'DiscussionPostReaction',
+    field_name: 'discussion_post_reaction_postId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `discussion_post_reaction_postId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'DiscussionPostReaction',
+    field_name: 'discussion_post_reaction_postId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+Error seeding data for event: PrismaClientValidationError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create({
+           data: {
+             id: 1,
+             labId: 16,
+             memberId: 19,
+             instrumentId: 1,
+             title: "Event 1",
+             description: "Possible seat which experience wife realize discussion.",
+             status: "scheduled",
+             startTime: "2025-03-22T20:37:37",
+                        ~~~~~~~~~~~~~~~~~~~~~
+             endTime: "2025-01-03T12:13:12",
+             type: "booking"
+           }
+         })
+
+Invalid value for argument `startTime`: premature end of input. Expected ISO-8601 DateTime.
+    at Cn (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7177)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  clientVersion: '6.5.0'
+}
+PrismaClientValidationError: 
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create({
+           data: {
+             id: 1,
+             labId: 16,
+             memberId: 19,
+             instrumentId: 1,
+             title: "Event 1",
+             description: "Possible seat which experience wife realize discussion.",
+             status: "scheduled",
+             startTime: "2025-03-22T20:37:37",
+                        ~~~~~~~~~~~~~~~~~~~~~
+             endTime: "2025-01-03T12:13:12",
+             type: "booking"
+           }
+         })
+
+Invalid value for argument `startTime`: premature end of input. Expected ISO-8601 DateTime.
+    at Cn (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7177)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  clientVersion: '6.5.0'
+}
+Error seeding data for eventAssignment: PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `event_assignment_memberId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'EventAssignment',
+PrismaClientKnownRequestError:
+Invalid `model.create()` invocation in
+D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:21
+
+  71 const model: any = prisma[prismaModelName as keyof typeof prisma];
+  72 try {
+  73   for (const data of jsonData) {
+→ 74     await model.create(
+Foreign key constraint violated: `event_assignment_memberId_fkey (index)`
+    at Wn.handleRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:7534)
+    at Wn.handleAndLogRequestError (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6858)
+    at Wn.request (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:121:6565)
+    at async l (D:\Uni\capstone-project-2025-s1-team-13\server\node_modules\@prisma\client\runtime\library.js:130:10067)
+    at async main (D:\Uni\capstone-project-2025-s1-team-13\server\prisma\seed.ts:74:9) {
+  code: 'P2003',
+  meta: {
+    modelName: 'EventAssignment',
+    field_name: 'event_assignment_memberId_fkey (index)'
+  },
+  clientVersion: '6.5.0'
+}
+Seeded item with data from item.json
+Seeded itemTag with data from itemTag.json

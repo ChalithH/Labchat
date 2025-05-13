@@ -8,7 +8,8 @@
     "build": "tsc",
     "migrate": "prisma migrate dev",
     "generate": "prisma generate",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "remigrate": "prisma migrate reset && npm run migrate"
   },
   "keywords": [],
   "author": "",

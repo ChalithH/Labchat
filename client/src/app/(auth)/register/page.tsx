@@ -23,20 +23,7 @@ export default function Register() {
   const [error, setError] = useState<string | undefined>(undefined)
   const [message, setMessage] = useState<string | undefined>(undefined)
 
-  const new_user: UserType = {
-    roleId: 6, /* Vistor */
-    universityId: '',
-    username: `${firstName}_${lastName}`,
-    loginEmail: email,
-    loginPassword: password,
-    firstName: firstName,
-    lastName: lastName,
-    displayName: `${ firstName } ${ lastName }`,
-    jobTitle: 'None',
-    office: 'None',
-    bio: '',
-    dateJoined: new Date().toISOString()
-  }
+  
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,8 +33,23 @@ export default function Register() {
         setError("Passwords do not match")
         return
       }
+      
+      const new_user: UserType = {
+        roleId: 6, /* Vistor */
+        universityId: '',
+        username: `${firstName}_${lastName}`,
+        loginEmail: email,
+        loginPassword: password,
+        firstName: firstName,
+        lastName: lastName,
+        displayName: `${ firstName } ${ lastName }`,
+        jobTitle: 'None',
+        office: 'None',
+        bio: '',
+        dateJoined: new Date().toISOString()
+      }
 
-      await api.post('/api/user/', new_user)
+      await api.post('/user/', new_user)
       setError(undefined)
       setMessage('Registration successful')
 

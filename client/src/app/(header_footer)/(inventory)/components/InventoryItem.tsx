@@ -2,10 +2,17 @@ import { useState } from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import InventoryItemDialog from './InventoryItemDialog';
 
 // This component is used to display an inventory item with its details and provide options to take or restock the item.
 // It also handles the dialog for taking or restocking the item.
+
+type Tag = {
+  name: string;
+  description: string;
+};
 
 type InventoryItemProps = {
   name: string;
@@ -13,6 +20,7 @@ type InventoryItemProps = {
   current_stock: number;
   min_stock: number;
   unit: string;
+  tags: Tag[];
   onTake: (amount: number) => Promise<void>;
   onRestock: (amount: number) => Promise<void>;
   refreshStockData: () => void;
@@ -25,6 +33,7 @@ const InventoryItem = ({
   current_stock,
   min_stock,
   unit,
+  tags,
   onTake,
   onRestock,
   refreshStockData,
@@ -65,6 +74,7 @@ const InventoryItem = ({
       setTimeout(() => setDialogType(null), 3000);
     } catch (error) {
       setFeedback('Something went wrong. Please try again.');
+      console.error('Error during inventory action:', error);
     }
   };
 
@@ -81,12 +91,33 @@ const InventoryItem = ({
         </div>
       </CardHeader>
 
-
       <CardContent>
-        <p className="text-gray-600">
-          <span className="font-medium">{current_stock}</span> {unit}
-          {current_stock !== 1 ? 's' : ''} remaining
-        </p>
+        <div className="flex flex-col gap-2">
+          <p className="text-gray-600">
+            <span className="font-medium">{current_stock}</span> {unit}
+            {current_stock !== 1 ? 's' : ''} remaining
+          </p>
+          
+          {/* Tags with tooltips */}
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {tags.map((tag, index) => (
+                <TooltipProvider key={index}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100">
+                        {tag.name}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{tag.description || `${tag.name} category`}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+            </div>
+          )}
+        </div>
       </CardContent>
 
       {isOpen && (

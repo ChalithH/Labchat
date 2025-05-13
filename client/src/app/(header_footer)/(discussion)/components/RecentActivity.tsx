@@ -2,7 +2,8 @@
 
 import * as React from "react"
 
-import { Card, CardContent } from "@/components/ui/card"
+import Thread from "@/components/discussion/Thread"
+import { CardContent } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
@@ -11,18 +12,17 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
-import Thread from "@/components/discussion/Thread"
-import { FIRST_THREAD_DATA } from "@/app/testdata"
 
-const RecentActivity = () => {
+import { Button } from "@/components/ui/button"
+import { PostType } from "@/types/post.type"
+
+const RecentActivity = ({ posts }:{ posts: PostType[] }) => {
   const [api, setApi] = React.useState<CarouselApi>()
   const [current, setCurrent] = React.useState(0)
   const [count, setCount] = React.useState(0)
 
   React.useEffect(() => {
-    if (!api) {
-      return
-    }
+    if (!api) return
 
     setCount(api.scrollSnapList().length)
     setCurrent(api.selectedScrollSnap() + 1)
@@ -33,20 +33,29 @@ const RecentActivity = () => {
   }, [api])
 
   return (
-    <div className="w-[90dvw] m-auto mb-8">
-      <Carousel className="overflow-hidden" setApi={ setApi }>
+    <div className="w-[87dvw] m-auto">
+      <Carousel className="overflow-hidden flex justify-center items-center" setApi={setApi}>
+        <Button className="max-[500px]:hidden" variant="outline" onClick={ () => api?.scrollPrev() } disabled={ current <= 1 }>
+          ←
+        </Button>
+
         <CarouselContent>
-          {Array.from({ length: 5 }).map((_, index) => (
+          {posts.map((post, index) => (
             <CarouselItem key={index}>
-                <CardContent className="m-auto rounded-xl p-6">
-                    <Thread thread={ FIRST_THREAD_DATA } b_show_blurb={ false } />
-                </CardContent>
+              <CardContent className="m-auto rounded-xl p-6">
+                <Thread thread={post} b_show_blurb={false} />
+              </CardContent>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
+
+        <Button className="max-[500px]:hidden" variant="outline" onClick={ () => api?.scrollNext( )} disabled={ current >= count }>
+          →
+        </Button>
       </Carousel>
+
+        
+        
     </div>
   )
 }

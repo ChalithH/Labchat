@@ -36,7 +36,15 @@ const WORKING_HOURS = {
 
 const VISIBLE_HOURS = { from: 7, to: 18 };
 
-export function CalendarProvider({ children, users, events }: { children: React.ReactNode; users: IUser[]; events: IEvent[] }) {
+export function CalendarProvider({ 
+  children, 
+  users, 
+  initialEvents = [] 
+}: { 
+  children: React.ReactNode; 
+  users: IUser[]; 
+  initialEvents?: IEvent[] 
+}) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
   const [visibleHours, setVisibleHours] = useState<TVisibleHours>(VISIBLE_HOURS);
   const [workingHours, setWorkingHours] = useState<TWorkingHours>(WORKING_HOURS);
@@ -44,11 +52,8 @@ export function CalendarProvider({ children, users, events }: { children: React.
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">("all");
 
-  // This localEvents doesn't need to exists in a real scenario.
-  // It's used here just to simulate the update of the events.
-  // In a real scenario, the events would be updated in the backend
-  // and the request that fetches the events should be refetched
-  const [localEvents, setLocalEvents] = useState<IEvent[]>(events);
+  // Initialize with server-provided data instead of empty array
+  const [localEvents, setLocalEvents] = useState<IEvent[]>(initialEvents);
 
   const handleSelectDate = (date: Date | undefined) => {
     if (!date) return;
@@ -69,7 +74,6 @@ export function CalendarProvider({ children, users, events }: { children: React.
         setVisibleHours,
         workingHours,
         setWorkingHours,
-        // If you go to the refetch approach, you can remove the localEvents and pass the events directly
         events: localEvents,
         setLocalEvents,
       }}

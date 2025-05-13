@@ -20,7 +20,7 @@ const ThreadAuthorGroup = ({ role, name, job_title, size }: ThreadAuthorGroupTyp
         src="/default_pfp.svg" 
         alt="" />
 
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-start">
         <Badge>{ role }</Badge>
 
         <p className="text-sm font-medium tracking-tighter">{ name } </p>
