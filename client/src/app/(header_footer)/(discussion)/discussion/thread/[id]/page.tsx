@@ -36,9 +36,12 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
 
     const replyUsers: UserType[] = await Promise.all(
       replies.map(async (reply) => {
-        const res: AxiosResponse = await api.get(`/user/get/${ reply.memberId }`)
-        return res.data
+        const res: AxiosResponse = await api.get(`/member/get/${ reply.memberId }`)
+        const user: AxiosResponse = await api.get(`/user/get/${ res.data.userId }`)
+        return user.data
     }))
+
+    const member = await api.get(`/member/get/user/${ user.id }`)
 
     return (
       <ThreadClient 
@@ -49,6 +52,7 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
         authorRole={authorRole} 
         user={user} 
         userRole={userRole}
+        member={member.data}
       />
     )
   }

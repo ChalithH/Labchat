@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getMemberById } from '../controllers/member/member.controller';
+import { getMemberById, getMemberByUserId } from '../controllers/member/member.controller';
 
 /**
  * @swagger
@@ -11,5 +11,6 @@ const router = Router();
 
 
 router.get('/get/:id', getMemberById);
+router.get('/get/user/:id', getMemberByUserId);
 
 export default router;
