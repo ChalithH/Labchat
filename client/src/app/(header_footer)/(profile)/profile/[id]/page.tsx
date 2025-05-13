@@ -10,9 +10,13 @@ import ResolveRoleName from '@/lib/resolve_role_name.util'
 
 import api from '@/lib/api'
 
+type Params = Promise<{ id: number }>
 
-export default async function ProfilePage({ params }:{ params: { id: number }}) {
-  const { id } = await params
+export default async function ProfilePage(props:{ params: Params}) {
+  const params = await props.params
+  const id = params.id
+
+
   setUsersLastViewed(`/profile/${ id }`)
 
   /* We want this information now since the result of it

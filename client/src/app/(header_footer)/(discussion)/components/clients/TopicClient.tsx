@@ -20,7 +20,7 @@ const TopicClient = async ({ params, category, posts }:{ params: { id: string },
             <Breadcrumb className='mb-4'>
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href="/discussion/home">Home</BreadcrumbLink>
+                        <BreadcrumbLink href="/discussion/home">Discussion Home</BreadcrumbLink>
                     </BreadcrumbItem>
 
                     <BreadcrumbSeparator />
