@@ -14,7 +14,7 @@ const HomeClient = ({ recentActivity, categories, posts }:{ recentActivity: Post
   return (
   	<main>
       <section className='mb-8'>
-        <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Browse Recent Discussion</h1>
+        <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Browse Recent Discussions</h1>
         <RecentActivity posts={ recentActivity }/>
       </section>
 

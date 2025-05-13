@@ -19,7 +19,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Pencil } from "lucide-react"
 import { PostType } from "@/types/post.type"
@@ -28,8 +27,8 @@ import { PostType } from "@/types/post.type"
 const EditPost = ({ post }: { post: PostType }) => {
   const router = useRouter()
 
-  const [title, setTitle] = useState<string>('')
-  const [contents, setContents] = useState<string>('')
+  const [title, setTitle] = useState<string>(post.title)
+  const [contents, setContents] = useState<string>(post.content)
   const [error, setError] = useState<string | null>(null)
 
   const [isEditOpen, setIsEditOpen] = useState(false)

@@ -24,8 +24,6 @@ export const AddPostDialog = ({ discussionId, memberId }: AddPostDialogProps) =>
 
   const handleCreatePost = async () => {
     setIsLoading(true)
-
-    console.log(discussionId, memberId, title, content)
     const response: AxiosResponse = await api.post('/discussion/post', {discussionId,memberId,title,content})
 
     if (response.status === 200) {

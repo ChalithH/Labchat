@@ -109,7 +109,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
 
         { author.id === user.id && 
-          <div className='flex space-x-6 absolute top-2 right-2'>
+          <div className='flex space-x-4 absolute top-2 right-2'>
             <EditPost post={ thread }/>
             <Trash onClick={ handleDeletePopup } className='w-5 h-5 text-muted-foreground' />
           </div> }
