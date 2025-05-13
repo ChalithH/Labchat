@@ -5,6 +5,11 @@ import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import api from '@/lib/api'
 import ThreadClient from '../../../components/clients/ThreadClient'
+import { AxiosResponse } from 'axios'
+import { PostType } from '@/types/post.type'
+import { ReplyType } from '@/types/reply.type'
+import { UserType } from '@/types/User.type'
+import ResolveRoleName from '@/lib/resolve_role_name.util'
 
 
 const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
@@ -16,10 +21,35 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
         redirect('/home')
     }
 
-    const post = await api.get(`/discussion/post/${ id }`)
+
+    const postResponse: AxiosResponse = await api.get(`/discussion/post/${ id }`)
+    const post: PostType = postResponse.data
+
+    const replyResponse: AxiosResponse = await api.get(`/discussion/replies/post/${ id }`)
+    const replies: ReplyType[] = replyResponse.data
+
+    const authorResponse: AxiosResponse = await api.get(`/user/get/${ id }`)
+    const author: UserType = authorResponse.data
+
+    const userRole = await ResolveRoleName(user.roleId)
+    const authorRole = await ResolveRoleName(author.roleId)
+
+    const replyUsers: UserType[] = await Promise.all(
+      replies.map(async (reply) => {
+        const res: AxiosResponse = await api.get(`/user/get/${ reply.memberId }`)
+        return res.data
+    }))
 
     return (
-      <ThreadClient post={ post } params={ {id: `${ id }`} } />
+      <ThreadClient 
+        post={post} 
+        replies={replies} 
+        replyUsers={replyUsers}
+        author={author} 
+        authorRole={authorRole} 
+        user={user} 
+        userRole={userRole}
+      />
     )
   }
 

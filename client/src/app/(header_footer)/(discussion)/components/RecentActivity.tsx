@@ -2,7 +2,8 @@
 
 import * as React from "react"
 
-import { Card, CardContent } from "@/components/ui/card"
+import Thread from "@/components/discussion/Thread"
+import { CardContent } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
@@ -11,10 +12,8 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
-import Thread from "@/components/discussion/Thread"
-import { FIRST_THREAD_DATA } from "@/app/testdata"
-import { PostType } from "@/types/post.type"
 
+import { PostType } from "@/types/post.type"
 
 
 const RecentActivity = ({ posts }:{ posts: PostType[] }) => {
