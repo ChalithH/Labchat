@@ -118,7 +118,7 @@ model LabRole {
 
 model LabMember {
   id                      Int                      @id @default(autoincrement())
-  userId                  Int
+  userId                  Int               
   labId                   Int
   labRoleId               Int
   createdAt               DateTime                 @default(now())

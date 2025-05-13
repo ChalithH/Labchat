@@ -25,10 +25,13 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     const postResponse: AxiosResponse = await api.get(`/discussion/post/${ id }`)
     const post: PostType = postResponse.data
 
+    const categoryResponse: AxiosResponse = await api.get(`/discussion/tags/${ post.discussionId }`)
+    const category = categoryResponse.data
+
     const replyResponse: AxiosResponse = await api.get(`/discussion/replies/post/${ id }`)
     const replies: ReplyType[] = replyResponse.data
 
-    const authorResponse: AxiosResponse = await api.get(`/user/get/${ id }`)
+    const authorResponse: AxiosResponse = await api.get(`/user/get/${ user.id }`)
     const author: UserType = authorResponse.data
 
     const userRole = await ResolveRoleName(user.roleId)
@@ -36,19 +39,24 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
 
     const replyUsers: UserType[] = await Promise.all(
       replies.map(async (reply) => {
-        const res: AxiosResponse = await api.get(`/user/get/${ reply.memberId }`)
-        return res.data
+        const res: AxiosResponse = await api.get(`/member/get/${ reply.memberId }`)
+        const user: AxiosResponse = await api.get(`/user/get/${ res.data.userId }`)
+        return user.data
     }))
+
+    const member = await api.get(`/member/get/user/${ user.id }`)
 
     return (
       <ThreadClient 
         post={post} 
+        category={category.tag}
         replies={replies} 
         replyUsers={replyUsers}
         author={author} 
         authorRole={authorRole} 
         user={user} 
         userRole={userRole}
+        member={member.data}
       />
     )
   }
