@@ -11,9 +11,13 @@ import { ReplyType } from '@/types/reply.type'
 import { UserType } from '@/types/User.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 
+type Params = Promise<{ id: number }>
 
-const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
-    const { id } = await params
+
+const DiscussionThread = async (props:{ params: Params}) => {
+    const params = await props.params
+    const id = params.id
+    
     setUsersLastViewed(`/discussion/thread//${ id }`)
     
     const user = await getUserFromSessionServer()
