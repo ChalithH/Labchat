@@ -51,9 +51,9 @@ router.delete('/reply/:id', deleteReply)
 
 
 // misc controller routes
-router.get('/recent', getRecentPosts)
-router.get('/popular', getPopularPosts)
-router.get('/mixed', getMixedPosts)
+router.get('/recent/:id', getRecentPosts)
+router.get('/popular/:id', getPopularPosts)
+router.get('/mixed/:id', getMixedPosts)
 
 
 export default router
