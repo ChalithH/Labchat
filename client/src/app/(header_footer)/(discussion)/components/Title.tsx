@@ -9,16 +9,9 @@ import { CategoryType } from '@/types/category.type';
 
 
 type TitlePropTypes = {
-    // Topic object
     category: CategoryType,
-
-    // Permission required to view the add to topic button. Can ignore for now
     perm_to_add: string,
-
-    // Should there be a view all topics button
     b_view_all: boolean,
-
-    // Should there be buttons for Recent / Popular categories
     b_categories: boolean
 } 
 
@@ -28,7 +21,7 @@ const Title = ({ category, perm_to_add, b_view_all, b_categories } : TitlePropTy
             <div className="flex justify-between items-center mb-1">
                 <Link href={ `/discussion/topic/${ category.id }` }>
                     <h1 className="play-font text-3xl font-bold">
-                        { category.name[0].toUpperCase() + category.name.slice(1, category.name.length) }</h1>
+                        { category.tag[0].toUpperCase() + category.tag.slice(1, category.tag.length) }</h1>
                 </Link>
 
                 { perm_to_add && <AddPostDialog discussionId={category.id} memberId={2} onPostCreated={() => ("")} /> }

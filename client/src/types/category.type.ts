@@ -1,6 +1,5 @@
 export type CategoryType = {
     id: number,
-    labId: number,
-    name: string,
+    tag: string,
     description: string
 }

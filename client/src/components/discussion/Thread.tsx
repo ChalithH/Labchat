@@ -26,10 +26,10 @@ const Thread = ({ thread, b_show_blurb }:{ thread : PostType, b_show_blurb : boo
 			<div className="mt-4 flex justify-between ">
 				<ThreadAuthorGroup role={ FIRST_USER_DATA.title } name={ FIRST_USER_DATA.name } size={ 42 } />
 
-				{/* <div className="text-xs m-auto text-right">
-					<p>Created { thread.post_date }</p>
-					<p>Last Activity { thread.last_activity }</p>
-				</div> */}
+				<div className="text-[12px] mt-auto text-right">
+					<p>Created { new Date(thread.createdAt).toLocaleString() }</p>
+					<p>Last Activity { new Date(thread.updatedAt).toLocaleString() }</p>
+				</div>
 			</div>
     	</div>
   	)

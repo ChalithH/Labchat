@@ -1,9 +1,9 @@
 import React from 'react'
 
-import TopicClient from '../../../components/TopicClient'
 import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
+import TopicClient from '../../../components/clients/TopicClient'
 
 
 const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {

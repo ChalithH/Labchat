@@ -1,10 +1,10 @@
 import React from 'react'
 
-import ThreadClient from '../../../components/ThreadClient'
 import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import api from '@/lib/api'
+import ThreadClient from '../../../components/clients/ThreadClient'
 
 
 const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
