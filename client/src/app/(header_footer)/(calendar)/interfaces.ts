@@ -6,6 +6,22 @@ export interface IUser {
   picturePath: string | null;
 }
 
+export interface IInstrument {
+  id: number;
+  name: string | null;
+}
+
+export interface ILab {
+  id: number;
+  name: string;
+}
+
+export interface IAssignment {
+  id: number;
+  memberId?: number;
+  name: string;
+}
+
 export interface IEvent {
   id: number;
   startDate: string;
@@ -13,7 +29,11 @@ export interface IEvent {
   title: string;
   color: TEventColor;
   description: string;
-  user: IUser;
+  status?: string | null;
+  user: IUser;  // This is the assigner
+  instrument?: IInstrument | null;
+  lab?: ILab;
+  assignments?: IAssignment[];
 }
 
 export interface ICalendarCell {
