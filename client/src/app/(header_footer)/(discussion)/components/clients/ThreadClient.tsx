@@ -16,9 +16,18 @@ import {
 import api from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import EditReply from '../EditReply'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 type ThreadClientProps = {
   post: PostType,
+  category: string
   replies: ReplyType[],
   replyUsers: UserType[],
   author: any,
@@ -28,7 +37,7 @@ type ThreadClientProps = {
   member: any
 }
 
-const ThreadClient = ({ post, replies, replyUsers, author, authorRole, user, userRole, member }: ThreadClientProps) => {
+const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole, user, userRole, member }: ThreadClientProps) => {
   const [response, setResponse] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [showDeletePostPopup, setShowDeletePostPopup] = useState<boolean>(false)
@@ -76,6 +85,25 @@ const ThreadClient = ({ post, replies, replyUsers, author, authorRole, user, use
 
   return (
     <main className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
+      <Breadcrumb className='mb-4'>
+        <BreadcrumbList>
+            <BreadcrumbItem>
+                <BreadcrumbLink href="/discussion/home">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+
+            <BreadcrumbSeparator />
+
+            <BreadcrumbItem>
+                <BreadcrumbLink href={ `/discussion/topic/${ post.discussionId }` }>{ category }</BreadcrumbLink>
+            </BreadcrumbItem>
+            
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+                <BreadcrumbPage>{ post.title }</BreadcrumbPage>
+            </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className='flex justify-between items-center'>
         <h1 className="text-3xl font-bold play-font">{post.title}</h1>
         {author.id === user.id &&
