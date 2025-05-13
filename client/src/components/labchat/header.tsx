@@ -137,19 +137,14 @@ export default function Header() {
               </div>
             </SheetContent>
           </Sheet>
-
+          
           {/* User profile and logout buttons - only shown when logged in */}
           {isLoggedIn && 
             <div className="flex items-center justify-between gap-4 mt-2">
-              <button 
+              {/* <button 
                 className="cursor-pointer bg-sky-500 text-white p-2 rounded-md"
                 onClick={handleProfile}>
-                  <strong>Profile</strong><br />{userData.displayName}</button> 
-
-              <button 
-                className="cursor-pointer bg-red-500 text-white p-2 rounded-md"
-                onClick={handleLogout}>
-                  Log out</button> 
+                  <strong>Profile</strong><br />{userData.displayName}</button>  */}
             </div>
           }
         </div>
