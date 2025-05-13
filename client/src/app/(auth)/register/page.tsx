@@ -37,8 +37,8 @@ export default function Register() {
       }
       
       const new_user: UserType = {
-        roleId: 6, /* Vistor */
-        universityId: '',
+        roleId: 12, /* Vistor */
+        universityId: upi,
         username: `${firstName}_${lastName}`,
         loginEmail: email,
         loginPassword: password,
