@@ -22,14 +22,14 @@ const LoginClient = () => {
       e.preventDefault()
       
       try {
-        const response = await api.post("/api/auth/login", { loginEmail: email, loginPassword: password })
+        const response = await api.post("/auth/login", { loginEmail: email, loginPassword: password })
   
         setError(undefined)
         setMessage('Login successful')
         
         const user = await getUserFromSession()
   
-        router.push(`http://localhost:3000/${ user.lastViewed || DEFAULT_REDIRECT_ROUTE }`)
+        router.push(`${ process.env.NEXT_PUBLIC_CORS_ORIGIN }/${ user.lastViewed || DEFAULT_REDIRECT_ROUTE }`)
       } catch (err: any) {
         setMessage(undefined)
         setError(err.response.data.error)

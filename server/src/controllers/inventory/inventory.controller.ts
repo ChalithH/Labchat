@@ -6,10 +6,18 @@ const prisma = new PrismaClient();
 
 /**
  * @swagger
- * /inventory:
+ * /inventory/{labId}:
  *   get:
  *     summary: Get all lab inventory items
- *     tags: [Inventory]
+ *     tags: 
+ *       - Inventory
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the lab to get inventory items for
  *     responses:
  *       200:
  *         description: A list of inventory items
@@ -22,31 +30,85 @@ const prisma = new PrismaClient();
  *       500:
  *         description: Failed to retrieve inventory items
  */
-
 export const getInventory = async (req: Request, res: Response): Promise<void> => {
     try {
+        const { labId } = req.params;
         const inventoryItems = await prisma.labInventoryItem.findMany({
+            where: {
+                labId: parseInt(labId), // Ensure labId is an integer
+            },
             include: {
                 item: true, 
-                itemTags: true,  
-                inventoryLogs: true
+                labItemTags: { 
+                    include: { 
+                        itemTag: true, // Include the related item tag data
+                    }
+                },
             }
         });
-        
-        res.json(inventoryItems);
+
+        const flattenedInventory = inventoryItems.map((item) => ({
+            id: item.id,
+            labId:    labId,
+            location: item.location,
+            itemUnit: item.itemUnit,
+            currentStock: item.currentStock,
+            minStock: item.minStock,
+            item: item.item, 
+            itemTags: item.labItemTags.map((tag) => ({
+                id: tag.itemTag.id,
+                name: tag.itemTag.name,
+                description: tag.itemTag.tagDescription,
+            })),
+          }));
+      
+
+        res.json(flattenedInventory);
     } catch (error) {
         console.error("Error retrieving inventory items:", error);
         res.status(500).json({ error: 'Failed to retrieve inventory items' });
     }
 }
 
+/**
+ * @swagger
+ * /inventory/item-tags:
+ *   get:
+ *     summary: Get all item tags
+ *     tags: [Inventory]
+ *     responses:
+ *       200:
+ *         description: A list of item tags
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ItemTag'
+ *       500:
+ *         description: Failed to retrieve item tags
+ */
+export const getItemTags = async (req: Request, res: Response): Promise<void> => {
+    try {
+        console.log("Fetching item tags...");
+        const itemTags = await prisma.itemTag.findMany();
+        res.json(itemTags);
+    } catch (error) {
+        console.error("Error retrieving item tags:", error);
+        res.status(500).json({ error: 'Failed to retrieve item tags' });
+    }
+} 
+
 export const getInventoryItem = async (req: Request, res: Response): Promise<void> => {
     try {
         const inventoryItems = await prisma.labInventoryItem.findMany({
             include: {
                 item: true, 
-                itemTags: true,  
-                inventoryLogs: true
+                labItemTags: { 
+                    include: { 
+                        itemTag: true, // Include the related item tag data
+                    }
+                },
             }
         });
         
@@ -124,7 +186,11 @@ export const getInventoryItemByName = async (req: Request, res: Response): Promi
             },
             include: {
                 item: true,      // Include the related item data
-                itemTags: true   // Include any item tags
+                labItemTags: { 
+                    include: { 
+                        itemTag: true, // Include the related item tag data
+                    }
+                },
             }
         });
         

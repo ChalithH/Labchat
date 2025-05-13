@@ -6,6 +6,9 @@ import roleRoutes from './role.routes';
 import profileRoutes from './profile.routes';
 import discussionRoutes from './discussion.routes';
 import calendarRoutes from './calendar.routes';
+import labRoutes from './lab.routes';
+import memberRoutes from './member.routes';
+
 
 const router = Router();
 
@@ -40,9 +43,10 @@ router.use('/inventory', inventoryRoutes);
 router.use('/discussion', discussionRoutes);
 router.use('/profile', profileRoutes);
 router.use('/calendar', calendarRoutes);
-
+router.use('/lab', labRoutes);
 // Models
 router.use('/user', userRoutes);
+router.use('/member', memberRoutes);
 router.use('/role', roleRoutes);
 
 

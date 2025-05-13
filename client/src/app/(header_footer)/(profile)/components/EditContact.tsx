@@ -62,7 +62,7 @@ const EditContact = ({ contact }:{ contact: ContactType }) => {
       useCase: useCase ?? '',
       info: info
     }
-    const response: AxiosResponse = await api.put(`/api/profile/edit/${ contact.id }`, new_contact)
+    const response: AxiosResponse = await api.put(`/profile/edit/${ contact.id }`, new_contact)
 
     setIsEditOpen(false)
     setType('')

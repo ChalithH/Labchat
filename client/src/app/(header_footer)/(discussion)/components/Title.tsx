@@ -1,78 +1,50 @@
-'use client'
-
 import Link from 'next/link'
 import React from 'react'
 
-import { TopicType } from '../../../../types/TestTypes'
-
-import { Breadcrumb, useBreadcrumb } from '../context/BreadcrumbContext';
 import { Button } from '@/components/ui/button';
+import { AddPostDialog } from './AddPostDialog'
+import { CategoryType } from '@/types/category.type';
+import getUserFromSession from '@/lib/get_user_server';
 
 
 type TitlePropTypes = {
-    // Topic object
-    topic: TopicType,
+  category: CategoryType,
+  perm_to_add: string,
+  b_view_all: boolean,
+  b_categories: boolean
+}
 
-    // Permission required to view the add to topic button. Can ignore for now
-    perm_to_add: string,
+const Title = async ({ category, perm_to_add, b_view_all, b_categories }: TitlePropTypes) => {
+  const user = await getUserFromSession()
 
-    // Should there be a view all topics button
-    b_view_all: boolean,
+  return (
+    <div className="barlow-font">
+      <div className="flex justify-between items-center mb-2">
+        <Link href={ `/discussion/topic/${ category.id }` }>
+          <h1 className="play-font text-3xl font-bold">
+            { category.tag[0].toUpperCase() + category.tag.slice(1) }
+          </h1>
+        </Link>
 
-    // Should there be buttons for Recent / Popular categories
-    b_categories: boolean
-} 
+        { perm_to_add && <AddPostDialog discussionId={ category.id } memberId={ user.id } /> }
+      </div>
 
-const Title = ({ topic, perm_to_add, b_view_all, b_categories } : TitlePropTypes) => {
-    const { breadcrumbs, setBreadcrumbs } = useBreadcrumb()
-
-    const handleClick = (name: string, href: string) => {
-        // If the last breadcrumb added is the same as new one do not add.
-		// Easy fix to race condition problem I was having. Will check back to see
-		// if this will work with final project.
-		if (breadcrumbs && breadcrumbs[breadcrumbs.length - 1].href === href)
-			return
-        
-        const newCrumb: Breadcrumb = {
-            name: name,
-            href: href
+      <div className="flex justify-between items-center text-lg mb-4">
+        { b_categories &&
+          <div className="flex justify-between items-center gap-4">
+            <Button variant="outline" className="h-8">Recent</Button>
+            <Button variant="outline" className="h-8">Popular</Button>
+          </div>
         }
-        const newBreadcrumbs: Breadcrumb[] = [ ...(breadcrumbs ?? []), newCrumb ]
-        setBreadcrumbs(newBreadcrumbs)
-    }
 
-    return (
-        <div className="barlow-font">
-            <div className="flex justify-between items-center mb-1">
-                <Link href={ `/discussion/topic/${ topic.id }` }>
-                    <h1 className="play-font text-3xl font-bold"
-                        onClick={ () => 
-                            handleClick(topic.name, `/discussion/topic/${ topic.id }`) }>
-                            
-                        { topic.name[0].toUpperCase() + topic.name.slice(1, topic.name.length) }</h1>
-                </Link>
-
-                { perm_to_add && <button><img src="/add_to_topic_button.svg" alt="" /></button> }
-            </div>
-
-            <div className="flex justify-between items-center text-lg mb-4">
-                { b_categories && 
-                    <div className="flex justify-between items-center gap-4">
-                        <Button variant="outline" className="h-8">Recent</Button>
-                        <Button variant="outline" className="h-8">Popular</Button>
-                    </div> }
-
-                { b_view_all && 
-                    <Link 
-                        onClick={ () => 
-                            handleClick(topic.name, `/discussion/topic/${ topic.id }`) } 
-                        href={ `/discussion/topic/${ topic.id }` }>
-
-                        <Button className="h-8">View All</Button>
-                    </Link> }
-            </div>
-        </div>
-    )
+        { b_view_all &&
+          <Link href={ `/discussion/topic/${category.id}` }>
+            <Button className="h-8">View All</Button>
+          </Link>
+        }
+      </div>
+    </div>
+  )
 }
 
 export default Title

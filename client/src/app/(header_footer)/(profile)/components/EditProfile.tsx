@@ -56,7 +56,7 @@ const EditProfile = () => {
     const user = await getUserFromSession()
     const updatedUser = { ...user, ...pendingFields }
   
-    await api.put(`/api/user/update/${user.id}`, updatedUser)
+    await api.put(`/user/update/${user.id}`, updatedUser)
   
     setIsConfirmOpen(false)
     setIsEditOpen(false)

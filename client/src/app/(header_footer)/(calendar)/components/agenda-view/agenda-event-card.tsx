@@ -2,11 +2,12 @@
 
 import { format, parseISO } from "date-fns";
 import { cva } from "class-variance-authority";
-import { Clock, Text, User } from "lucide-react";
+import { Clock, Text, User, Users, Microscope } from "lucide-react";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
-
 import { EventDetailsDialog } from "@/calendar/components/dialogs/event-details-dialog";
+import { Badge } from "@/components/ui/badge";
+import { eventTypeColors } from "@/calendar/requests";
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
@@ -53,6 +54,12 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
 
+  // Find the event type based on color
+  const eventType = Object.entries(eventTypeColors).find(([, color]) => color === event.color)?.[0] || "default";
+  
+  // Format the type label for display
+  const typeLabel = eventType.charAt(0).toUpperCase() + eventType.slice(1);
+
   const color = (badgeVariant === "dot" ? `${event.color}-dot` : event.color) as VariantProps<typeof agendaEventCardVariants>["color"];
 
   const agendaEventCardClasses = agendaEventCardVariants({ color });
@@ -63,6 +70,9 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
       if (e.currentTarget instanceof HTMLElement) e.currentTarget.click();
     }
   };
+
+  const hasAssignments = event.assignments && event.assignments.length > 0;
+  const hasInstrument = !!event.instrument;
 
   return (
     <EventDetailsDialog event={event}>
@@ -75,33 +85,72 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
               </svg>
             )}
 
-            <p className="font-medium">
-              {eventCurrentDay && eventTotalDays && (
-                <span className="mr-1 text-xs">
-                  Day {eventCurrentDay} of {eventTotalDays} •{" "}
-                </span>
-              )}
-              {event.title}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium">
+                {eventCurrentDay && eventTotalDays && (
+                  <span className="mr-1 text-xs">
+                    Day {eventCurrentDay} of {eventTotalDays} •{" "}
+                  </span>
+                )}
+                {event.title}
+              </p>
+              
+              <Badge 
+                variant={eventType === "rostering" ? "default" : eventType === "equipment" ? "secondary" : "outline"}
+                className="ml-1"
+              >
+                {typeLabel}
+              </Badge>
+            </div>
           </div>
 
-          <div className="mt-1 flex items-center gap-1">
-            <User className="size-3 shrink-0" />
-            <p className="text-xs text-foreground">{event.user.name}</p>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <User className="size-3.5 shrink-0 text-muted-foreground" />
+              <p className="text-xs text-foreground">Assigner: {event.user.name}</p>
+            </div>
+
+            {hasAssignments && (
+              <div className="flex items-center gap-1">
+                <Users className="size-3.5 shrink-0 text-muted-foreground" />
+                <p className="text-xs text-foreground">
+                  {event.assignments?.length ?? 0} {event.assignments?.length === 1 ? "member" : "members"} assigned
+                </p>
+              </div>
+            )}
+
+            {hasInstrument && (
+              <div className="flex items-center gap-1">
+                <Microscope className="size-3.5 shrink-0 text-muted-foreground" />
+                <p className="text-xs text-foreground">
+                  {event.instrument?.name || "N/A"}
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-1">
-            <Clock className="size-3 shrink-0" />
-            <p className="text-xs text-foreground">
-              {format(startDate, "h:mm a")} - {format(endDate, "h:mm a")}
-            </p>
-          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Clock className="size-3.5 shrink-0 text-muted-foreground" />
+              <p className="text-xs text-foreground">
+                {format(startDate, "h:mm a")} - {format(endDate, "h:mm a")}
+              </p>
+            </div>
 
-          <div className="flex items-center gap-1">
-            <Text className="size-3 shrink-0" />
-            <p className="text-xs text-foreground">{event.description}</p>
+            {event.description && (
+              <div className="flex items-center gap-1">
+                <Text className="size-3.5 shrink-0 text-muted-foreground" />
+                <p className="text-xs text-foreground max-w-[300px] truncate">{event.description}</p>
+              </div>
+            )}
           </div>
         </div>
+        
+        {event.status && (
+          <Badge variant="outline" className="capitalize">
+            {event.status}
+          </Badge>
+        )}
       </div>
     </EventDetailsDialog>
   );

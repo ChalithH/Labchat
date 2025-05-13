@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Columns, Grid3x3, List, Plus, Grid2x2, CalendarRange } from "lucide-react";
+import { Columns, List, Plus, Grid2x2, CalendarRange, RefreshCw, Loader2  } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -14,14 +14,37 @@ import type { TCalendarView } from "@/calendar/types";
 interface IProps {
   view: TCalendarView;
   events: IEvent[];
+  onRefresh?: () => void;
+  isLoading?: boolean;
 }
 
-export function CalendarHeader({ view, events }: IProps) {
+export function CalendarHeader({ view, events, onRefresh, isLoading  }: IProps) {
   return (
     <div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center gap-3">
         <TodayButton />
-        <DateNavigator view={view} events={events} />
+        <DateNavigator 
+          view={view} 
+          events={events} 
+          onRefresh={onRefresh}
+          isLoading={isLoading}
+        />
+
+        {onRefresh && (
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={onRefresh} 
+            className="ml-2"
+            title="Refresh events"
+          >
+                        {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:justify-between">
@@ -64,17 +87,6 @@ export function CalendarHeader({ view, events }: IProps) {
               </Link>
             </Button>
 
-            <Button
-              asChild
-              aria-label="View by year"
-              size="icon"
-              variant={view === "year" ? "default" : "outline"}
-              className="-ml-px rounded-none [&_svg]:size-5"
-            >
-              <Link href="/calendar/year-view">
-                <Grid3x3 strokeWidth={1.8} />
-              </Link>
-            </Button>
 
             <Button
               asChild
@@ -89,7 +101,7 @@ export function CalendarHeader({ view, events }: IProps) {
             </Button>
           </div>
 
-          <UserSelect />
+          <UserSelect onRefresh={onRefresh} isLoading={isLoading} />
         </div>
 
         <AddEventDialog>

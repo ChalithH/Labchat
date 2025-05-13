@@ -1,42 +1,112 @@
 [
   {
-    "id": 1,
-    "postId": 1,
-    "memberId": 2,
-    "content": "Will the training be recorded for those who can't attend in person?",
-    "createdAt": "2025-04-01T11:30:00.000Z",
-    "updatedAt": "2025-04-01T11:30:00.000Z"
-  },
-  {
-    "id": 2,
-    "postId": 1,
-    "memberId": 1,
-    "content": "Yes, we'll record it and share the link afterward.",
-    "createdAt": "2025-04-01T13:45:00.000Z",
-    "updatedAt": "2025-04-01T13:45:00.000Z"
-  },
-  {
-    "id": 3,
-    "postId": 2,
-    "memberId": 4,
-    "content": "I had the same issue last month. Check the inlet filter, it might be clogged.",
-    "createdAt": "2025-04-02T10:15:00.000Z",
-    "updatedAt": "2025-04-02T10:15:00.000Z"
-  },
-  {
-    "id": 4,
-    "postId": 2,
-    "memberId": 3,
-    "content": "Thanks, I'll check that. The system is also due for a full maintenance cycle.",
-    "createdAt": "2025-04-02T14:20:00.000Z",
-    "updatedAt": "2025-04-02T14:20:00.000Z"
-  },
-  {
-    "id": 5,
     "postId": 3,
+    "memberId": 6,
+    "content": "For sample prep, try using a consistent pressing force and curing time for each sample."
+  },
+  {
+    "postId": 3,
+    "memberId": 7,
+    "content": "Also, ensure your raw material batches are consistent."
+  },
+  {
+    "postId": 4,
     "memberId": 4,
-    "content": "Great work! The yield improvement is significant. Have you tested this with degraded samples?",
-    "createdAt": "2025-04-03T09:30:00.000Z",
-    "updatedAt": "2025-04-03T09:30:00.000Z"
+    "content": "Thanks for sharing the XRD data! I'll take a look."
+  },
+  {
+    "postId": 5,
+    "memberId": 3,
+    "content": "I'll check the spectrophotometer calendar now and resolve the conflict."
+  },
+  {
+    "postId": 7,
+    "memberId": 13,
+    "content": "Peak broadening can sometimes be caused by column issues or mobile phase problems. What's your mobile phase composition?"
+  },
+  {
+    "postId": 7,
+    "memberId": 14,
+    "content": "Also check your injection volume and flow rate."
+  },
+  {
+    "postId": 10,
+    "memberId": 21,
+    "content": "Are you using sterile technique rigorously? Check your media and reagents for contamination as well."
+  },
+  {
+    "postId": 10,
+    "memberId": 20,
+    "content": "Consider using a different antibiotic or antifungal in your media."
+  },
+  {
+    "postId": 13,
+    "memberId": 22,
+    "content": "Happy to help with COMSOL! What specific issues are you encountering?"
+  },
+  {
+    "postId": 14,
+    "memberId": 19,
+    "content": "I can help with the logistics for the field trip. Let's discuss transport options."
+  },
+  {
+    "postId": 15,
+    "memberId": 5,
+    "content": "Great! I'm interested in the findings on nanoparticle synthesis."
+  },
+  {
+    "postId": 16,
+    "memberId": 6,
+    "content": "We typically use SPM for initial fMRI analysis, followed by custom scripts for specific contrasts."
+  },
+  {
+    "postId": 17,
+    "memberId": 7,
+    "content": "For large genomic datasets, I recommend using tools like samtools and BEDTools for processing, and R or Python with libraries like Bioconductor or Biopython for analysis."
+  },
+  {
+    "postId": 18,
+    "memberId": 8,
+    "content": "That's awesome! Looking forward to seeing the video."
+  },
+  {
+    "postId": 19,
+    "memberId": 9,
+    "content": "Excellent work on the solar cells! What's the current efficiency percentage?"
+  },
+  {
+    "postId": 20,
+    "memberId": 10,
+    "content": "Send me some photos of the rock samples, and I'll see if I can help identify them."
+  },
+  {
+    "postId": 21,
+    "memberId": 11,
+    "content": "I've attached a list of common marine invertebrates found in our survey area."
+  },
+  {
+    "postId": 22,
+    "memberId": 12,
+    "content": "What kind of sequencing data is it (e.g., RNA-Seq, ChIP-Seq)? I can provide guidance once I know the type."
+  },
+  {
+    "postId": 3,
+    "memberId": 8,
+    "content": "Make sure your molds are clean and dry before sample preparation."
+  },
+  {
+    "postId": 7,
+    "memberId": 17,
+    "content": "Check the column temperature as well; fluctuations can affect peak shape."
+  },
+  {
+    "postId": 10,
+    "memberId": 19,
+    "content": "Have you tried filtering your media through a 0.22µm filter before use?"
+  },
+  {
+    "postId": 13,
+    "memberId": 23,
+    "content": "The COMSOL documentation and tutorials are very helpful for getting started."
   }
 ]

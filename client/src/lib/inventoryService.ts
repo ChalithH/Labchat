@@ -1,14 +1,18 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export type Tag = {
+  id: number;
+  name: string;
+  description: string;
+};
 
 export type InventoryItem = {
   id: number;
-  itemId: number;
   labId: number;
   location: string;
   itemUnit: string;
   currentStock: number;
   minStock: number;
-  updatedAt: string;
   item: {
     id: number;
     name: string;
@@ -16,23 +20,36 @@ export type InventoryItem = {
     description: string;
     safetyInfo: string;
   };
-  itemTags: unknown[];
-  inventoryLogs: unknown[];
+  itemTags: Tag[];
 };
 
 export const getInventoryItems = async (): Promise<InventoryItem[]> => {
-  const response = await fetch(`${BASE_URL}/api/inventory`);
+  const response = await fetch(`${BASE_URL}/inventory/1`);
   if (!response.ok) {
     throw new Error('Failed to fetch inventory items');
   }
   return response.json();
 };
 
+// Fetch all available item tags
+export const getItemTags = async (): Promise<Tag[]> => {
+  try {
+    const response = await fetch(`${BASE_URL}/inventory/item-tags`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch item tags');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getItemTags:', error);
+    throw error;
+  }
+};
+
 const postInventoryAction = async (
   endpoint: string,
-  payload: Record<string, any>
+  payload: Record<string, unknown>
 ): Promise<InventoryItem[]> => {
-  const response = await fetch(`${BASE_URL}/api/inventory/${endpoint}`, {
+  const response = await fetch(`${BASE_URL}/inventory/${endpoint}`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

@@ -1,6 +1,14 @@
 import { Router } from 'express'
 import { createPost, deletePost, editPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller'
-import { getAllCategories, getCategoryById, createCategory, editCategory, deleteCategory } from '../controllers/discussion/category.controller'
+import {
+    getAllTags,
+    getTagById,
+    createTag,
+    editTag,
+    deleteTag,
+    assignTagToPost, 
+    removeTagFromPost
+} from '../controllers/discussion/category.controller'; 
 import { getReplyById, getRepliesByPost, createReply, editReply, deleteReply,} from '../controllers/discussion/reply.controller'
 import { getMixedPosts, getPopularPosts, getRecentPosts } from '../controllers/discussion/misc.controller'
 /**
@@ -26,11 +34,13 @@ router.post('/title-posts', getPostsByTitle)
 
 
 // category controller routes
-router.get('/categories', getAllCategories);
-router.get('/category/:id', getCategoryById);
-router.post('/category', createCategory);
-router.put('/category/:id', editCategory);
-router.delete('/category/:id', deleteCategory);
+router.get('/tags', getAllTags); 
+router.get('/tags/:id', getTagById); 
+router.post('/tags', createTag); 
+router.put('/tags/:id', editTag); 
+router.delete('/tags/:id', deleteTag); 
+router.post('/posts/:postId/tags', assignTagToPost);
+router.delete('/posts/:postId/tags/:tagAssignmentId', removeTagFromPost);
 
 // reply controller routes
 router.get('/reply/:id', getReplyById)
@@ -41,9 +51,9 @@ router.delete('/reply/:id', deleteReply)
 
 
 // misc controller routes
-router.get('/recent', getRecentPosts)
-router.get('/popular', getPopularPosts)
-router.get('/mixed', getMixedPosts)
+router.get('/recent/:id', getRecentPosts)
+router.get('/popular/:id', getPopularPosts)
+router.get('/mixed/:id', getMixedPosts)
 
 
 export default router
