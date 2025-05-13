@@ -89,9 +89,12 @@ export default function Header() {
               <SheetHeader className='flex items-center justify-center'>
                 <SheetClose asChild>
                   { isLoggedIn ?
-                    <Button onClick={ handleProfile } variant="outline" className="w-12 h-12 overflow-hidden">
-                      <img src="/default_pfp.svg" className='scale-420' alt="" />
-                    </Button>
+                    <div className='flex items-center space-x-4'>
+                      <Button onClick={ handleProfile } variant="outline" className="w-12 h-12 overflow-hidden">
+                        <img src="/default_pfp.svg" className='scale-420' alt="" />
+                      </Button>
+                      <p className="font-semibold play-font">{ userData.username }</p>
+                    </div>
                   :
                     <Link href="#" className="flex items-center gap-2" prefetch={false}>
                       <span className="text-2xl font-bold play-font text-labchat-blue-500">Labchat Navigation</span>
