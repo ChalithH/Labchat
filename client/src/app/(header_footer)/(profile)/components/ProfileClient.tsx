@@ -48,6 +48,13 @@ export default function ProfileClient({ data, is_users_profile }: { data: Profil
               {data.office}
             </p>
           </div>
+
+          <div className="mb-2">
+            <h3 className="barlow-font font-semibold text-sm">UPI</h3>
+            <p className="text-sm italic text-gray-600 font-medium tracking-tighter leading-[14px]">
+              {data.universityId}
+            </p>
+          </div>
         </div>
       </section>
 

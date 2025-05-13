@@ -9,9 +9,12 @@ import api from '@/lib/api'
 import { CategoryType } from '@/types/category.type'
 import { PostType } from '@/types/post.type'
 
+type Params = Promise<{ id: number }>
 
-const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {
-    const { id } = await params
+const DiscussionTopic = async (props:{ params: Params}) => {
+    const params = await props.params
+    const id = params.id
+
     setUsersLastViewed(`/discussion/topic/${ id }`)
     
     const user = await getUserFromSessionServer()
