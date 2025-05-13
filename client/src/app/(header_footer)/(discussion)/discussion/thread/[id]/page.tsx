@@ -28,7 +28,7 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     const replyResponse: AxiosResponse = await api.get(`/discussion/replies/post/${ id }`)
     const replies: ReplyType[] = replyResponse.data
 
-    const authorResponse: AxiosResponse = await api.get(`/user/get/${ id }`)
+    const authorResponse: AxiosResponse = await api.get(`/user/get/${ user.id }`)
     const author: UserType = authorResponse.data
 
     const userRole = await ResolveRoleName(user.roleId)

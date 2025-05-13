@@ -5,14 +5,18 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { AxiosResponse } from 'axios'
+import api from '@/lib/api'
+import { useRouter } from 'next/navigation'
 
 type AddPostDialogProps = {
   discussionId: number
   memberId: number
-  onPostCreated?: () => void // optional callback to refresh post list
 }
 
-export const AddPostDialog = ({ discussionId, memberId, onPostCreated }: AddPostDialogProps) => {
+export const AddPostDialog = ({ discussionId, memberId }: AddPostDialogProps) => {
+  const router = useRouter()
+
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -21,24 +25,15 @@ export const AddPostDialog = ({ discussionId, memberId, onPostCreated }: AddPost
   const handleCreatePost = async () => {
     setIsLoading(true)
 
-    const res = await fetch('/api/discussion/post', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        discussionId,
-        memberId,
-        title,
-        content
-      })
-    })
+    console.log(discussionId, memberId, title, content)
+    const response: AxiosResponse = await api.post('/discussion/post', {discussionId,memberId,title,content})
 
-    if (res.ok) {
+    if (response.status === 200) {
       setTitle('')
       setContent('')
       setOpen(false)
-      onPostCreated?.()
+      
+      router.refresh()
     } else {
       console.error('Failed to create post')
     }

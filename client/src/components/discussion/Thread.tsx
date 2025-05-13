@@ -19,8 +19,9 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 	useEffect(() => {
 		const getUser = async () => {
 			try {
-				const response: AxiosResponse = await api.get(`/user/get/${ thread.memberId }`)
-				setAuthor(response.data)
+				const response: AxiosResponse = await api.get(`/member/get/${ thread.memberId }`)
+				const user: AxiosResponse = await api.get(`/user/get/${ response.data.userId }`)
+				setAuthor(user.data)
 			} catch (err) {
 				console.error('Failed to fetch author', err)
 			}
