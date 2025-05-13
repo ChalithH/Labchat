@@ -14,6 +14,7 @@ import { Pencil, Trash } from 'lucide-react'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
+import EditPost from '@/app/(header_footer)/(discussion)/components/EditPost'
 
 
 
@@ -109,7 +110,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
         { author.id === user.id && 
           <div className='flex space-x-6 absolute top-2 right-2'>
-            <Pencil className="w-5 h-5 cursor-pointer text-muted-foreground" />
+            <EditPost post={ thread }/>
             <Trash onClick={ handleDeletePopup } className='w-5 h-5 text-muted-foreground' />
           </div> }
 			</div>
