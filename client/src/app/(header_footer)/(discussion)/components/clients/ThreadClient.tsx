@@ -88,7 +88,7 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
       <Breadcrumb className='mb-4'>
         <BreadcrumbList>
             <BreadcrumbItem>
-                <BreadcrumbLink href="/discussion/home">Home</BreadcrumbLink>
+                <BreadcrumbLink href="/discussion/home">Discussion Home</BreadcrumbLink>
             </BreadcrumbItem>
 
             <BreadcrumbSeparator />

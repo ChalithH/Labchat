@@ -18,6 +18,8 @@ import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetHeader, SheetDescri
 import { ModeSwitch } from "@/components/ui/mode-switch";
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
+import { Badge } from "../ui/badge";
+import ResolveRoleName from "@/lib/resolve_role_name.util";
 
 export default function Header() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,6 +37,8 @@ export default function Header() {
       const user = await getUserFromSession()
 
       if (user) {
+        const role = await ResolveRoleName(user.roleId)
+        user.role = role
         setUserData(user)
         setIsLoggedIn(true)
       }
@@ -89,11 +93,14 @@ export default function Header() {
               <SheetHeader className='flex items-center justify-center'>
                 <SheetClose asChild>
                   { isLoggedIn ?
-                    <div className='flex items-center space-x-4'>
-                      <Button onClick={ handleProfile } variant="outline" className="w-12 h-12 overflow-hidden">
-                        <img src="/default_pfp.svg" className='scale-420' alt="" />
-                      </Button>
-                      <p className="font-semibold play-font">{ userData.username }</p>
+                    <div className='flex items-center space-x-2'>
+                        <Button onClick={ handleProfile } variant="outline" className="w-12 h-12 overflow-hidden">
+                          <img src="/default_pfp.svg" className='scale-420' alt="" />
+                        </Button>
+                        <div className='flex flex-col items-center justify-between'>
+                          <Badge>{ userData.role }</Badge>
+                          <p className="font-semibold play-font">{ userData.username }</p>
+                        </div>
                     </div>
                   :
                     <Link href="#" className="flex items-center gap-2" prefetch={false}>

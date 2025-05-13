@@ -8,6 +8,8 @@ import { LoginRegisterFooter } from '@/components/ui/LoginRegisterFooter';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { UserType } from '@/types/User.type';
+import { ContactType } from '@/app/(header_footer)/(profile)/types/profile.types';
+import { AxiosResponse } from 'axios';
 
 
 export default function Register() {
@@ -35,8 +37,8 @@ export default function Register() {
       }
       
       const new_user: UserType = {
-        roleId: 6, /* Vistor */
-        universityId: '',
+        roleId: 12, /* Vistor */
+        universityId: upi,
         username: `${firstName}_${lastName}`,
         loginEmail: email,
         loginPassword: password,
@@ -49,7 +51,16 @@ export default function Register() {
         dateJoined: new Date().toISOString()
       }
 
-      await api.post('/user/', new_user)
+      const user: AxiosResponse = await api.post('/user/', new_user)
+      const new_contact: ContactType = {
+        userId: user.data.id,
+        type: 'Email',
+        name: 'Primary Email',
+        useCase: '',
+        info: user.data.loginEmail
+      }
+      const response: AxiosResponse = await api.post(`/profile/add`, new_contact)
+
       setError(undefined)
       setMessage('Registration successful')
 
