@@ -51,6 +51,15 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
       description: "",
       startDate: typeof startDate !== "undefined" ? startDate : undefined,
       startTime: typeof startTime !== "undefined" ? startTime : undefined,
+      endDate: typeof startDate !== "undefined" 
+        ? new Date(startDate.getTime() + (startTime?.hour === 23 ? 24 * 60 * 60 * 1000 : 0)) 
+        : undefined,
+      endTime: typeof startTime !== "undefined" 
+        ? { 
+            hour: (startTime.hour + 1) % 24, 
+            minute: startTime.minute 
+          } 
+        : undefined,
       type: "rostering", // Default type
       color: "blue" // Default color for rostering
     },
