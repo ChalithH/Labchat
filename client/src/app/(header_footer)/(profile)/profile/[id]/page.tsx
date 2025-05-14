@@ -31,7 +31,7 @@ export default async function ProfilePage(props:{ params: Params}) {
   
   
   // Check if user has permission to view this page
-  if (!user || user_id != id && role_id != 1) {
+  if (!user) {
     redirect('/home')
   }
 
@@ -40,10 +40,13 @@ export default async function ProfilePage(props:{ params: Params}) {
   // Add data requried for Profile page
   const contact_response: AxiosResponse = await api.get(`/profile/get/${ id }`)
   profile_data.data.contacts = contact_response.data
-  profile_data.data.role = await ResolveRoleName(role_id)
+
+  profile_data.data.role = await ResolveRoleName(profile_data.data.roleId)
 
   const data: ProfileDataType = (profile_data.data as ProfileDataType)
   const is_users_profile = user_id == id
+
+  // console.log('DASDASDASD',data)
 
   return (
     <ProfileClient data={ data } is_users_profile={ is_users_profile } />
