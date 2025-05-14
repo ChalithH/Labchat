@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import SectionCard from './SectionCard';  
 import LabDetails from './LabDetails';    
 import { Button } from '@/components/ui/button';
+import { AddTagDialog } from './AddTagDialog';
+import { DeleteTagDialog } from './DeleteTagDialog';
 
 const UniqueLab: React.FC = () => {
     const [labDetails, setLabDetails] = useState<{ name: string; description: string } | null>(null);
@@ -36,8 +38,8 @@ const UniqueLab: React.FC = () => {
 
             <SectionCard title="Manage Tags">
                 <div className="flex justify-center gap-4">
-                    <Button className="bg-labchat-blue-500 text-white">+ Tag</Button>
-                    <Button className="bg-labchat-magenta-400 text-white">- Tag</Button>
+                    <AddTagDialog />
+                    <DeleteTagDialog />
                 </div>
             </SectionCard>
 
@@ -47,6 +49,8 @@ const UniqueLab: React.FC = () => {
                     <Button className="bg-labchat-magenta-400 text-white">- Task</Button>
                 </div>
             </SectionCard>
+
+
         </div>
     );
 };
