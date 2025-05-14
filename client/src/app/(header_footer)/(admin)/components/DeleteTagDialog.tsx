@@ -17,7 +17,7 @@ export const DeleteTagDialog = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    setTags(['Tag1', 'Tag2', 'Tag3']) // add fetch for all tags
+    setTags(['Consumables', 'Chemicals', 'Fluids']) // add fetch for all tags
   }, [])
 
   const handleDeleteTag = async () => {

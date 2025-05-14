@@ -6,6 +6,7 @@ import LabDetails from './LabDetails';
 import { Button } from '@/components/ui/button';
 import { AddTagDialog } from './AddTagDialog';
 import { DeleteTagDialog } from './DeleteTagDialog';
+import { AddEventDialog } from '../../(calendar)/components/dialogs/add-event-dialog';
 
 const UniqueLab: React.FC = () => {
     const [labDetails, setLabDetails] = useState<{ name: string; description: string } | null>(null);
@@ -47,6 +48,7 @@ const UniqueLab: React.FC = () => {
                 <div className="flex justify-center gap-4">
                     <Button className="bg-labchat-blue-500 text-white">+ Task</Button>
                     <Button className="bg-labchat-magenta-400 text-white">- Task</Button>
+                    <AddEventDialog />
                 </div>
             </SectionCard>
 
