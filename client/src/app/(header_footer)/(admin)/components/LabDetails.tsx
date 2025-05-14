@@ -19,8 +19,8 @@ const LabDetails: React.FC<LabDetailsProps> = ({ labDetails }) => {
 
     return (
         <div className="mb-6">
-            <h1 className="text-2xl font-bold">Env Chemistry Lab</h1>
-            <p><strong>Description:</strong> {labDetails.description}</p>
+            <h1 className="text-2xl font-bold mb-2">Analytical Chemistry Lab</h1>
+            <p> {labDetails.description}</p>
             {/* Add more specific details for each lab here */}
         </div>
     );

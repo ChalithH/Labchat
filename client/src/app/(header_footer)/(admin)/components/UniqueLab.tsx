@@ -16,8 +16,8 @@ const UniqueLab: React.FC = () => {
         if (id) {
             const dummyLabDetails = {
                 id: id as string,
-                name: `Environmental Chemistry Lab`,
-                description: `Investigates the chemical processes that occur in natural environments, including air, water, and soil. The lab\'s research focuses on pollutant behavior, chemical fate and transport, and the development of methods for environmental monitoring and remediation`
+                name: `Analytical Chemistry Lab`,
+                description: `Focuses on developing and applying methods for the detection, identification, and quantification of chemical substances. `
             };
             setLabDetails(dummyLabDetails);
         }
