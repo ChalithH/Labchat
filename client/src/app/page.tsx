@@ -13,6 +13,11 @@ export default function Home() {
             </Link>
           </li>
           <li className="tracking-[-.01em]">
+            <Link href="/dashboard">
+              Dashboard
+            </Link>
+          </li>
+          <li className="tracking-[-.01em]">
             <Link href="/discussion/home">
               Discussion Home
             </Link>

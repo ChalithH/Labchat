@@ -35,6 +35,10 @@ export const loggedInsiteConfig: SiteConfig = {
             href: "/home",
         },
         {
+            title: "Dashboard",
+            href: "/dashboard",
+        },
+        {
             title: "Inventory",
             href: "/inventory",
         },
