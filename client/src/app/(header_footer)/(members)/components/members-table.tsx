@@ -7,7 +7,12 @@ import { MobileRow, DesktopRow } from "@/app/(header_footer)/(members)/component
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export default function MembersTable() {
+type Props = {
+  searchQuery: string;
+  statusFilter: string;
+};
+
+export default function MembersTable({ searchQuery, statusFilter }: Props) {
   const [members, setMembers] = useState<LabMember[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -51,6 +56,18 @@ export default function MembersTable() {
     return a.displayName.localeCompare(b.displayName)
   })
 
+  const filteredMembers = sortedMembers.filter((member) => {
+  const matchesSearch =
+    member.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.jobTitle.toLowerCase().includes(searchQuery.toLowerCase());
+
+  const activeStatus = member.status.find((s) => s.isActive)?.status.statusName.toLowerCase();
+  const matchesStatus =
+    statusFilter === "" || (activeStatus && activeStatus === statusFilter.toLowerCase());
+
+  return matchesSearch && matchesStatus;
+});
+
   if (loading) {
     return <div className="text-center py-8">Loading members...</div>
   }
@@ -63,7 +80,7 @@ export default function MembersTable() {
     <div className="overflow-hidden border rounded-lg shadow bg-white">
       {/* Mobile view (hidden on md and larger screens) */}
       <div className="md:hidden divide-y">
-        {sortedMembers.map((member) => (
+        {filteredMembers.map((member) => (
           <MobileRow
             key={member.id}
             member={member}
@@ -108,7 +125,7 @@ export default function MembersTable() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedMembers.map((member) => (
+            {filteredMembers.map((member) => (
               <DesktopRow
                 key={member.id}
                 member={member}
