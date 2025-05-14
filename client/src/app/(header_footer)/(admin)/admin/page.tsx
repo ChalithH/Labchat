@@ -1,35 +1,30 @@
-import React from 'react'
-import Admin from './AdminPage'
-import LabManager from './LabManagerPage'
-import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 
-const AdminPage = async () => {
-    const user = 0 //await getUserFromSessionServer()
-    
-    if (user) {
-        redirect('/home')
-    }
+import getUserFromSessionServer from '@/lib/get_user_server'
+import setUsersLastViewed from '@/lib/set_last_viewed'
 
-    if (1 === 1 || user?.role === 'admin') {
-        return (
-            <>
-                <Admin />
-            </>
-        )
-    } 
-    
-    else if (user?.role === 'lab_manager') {
-        return (
-            <>
-                <LabManager />
-            </>
-        )
-    } 
+import PanelClient from './PanelClient'
+import ResolveRoleName from '@/lib/resolve_role_name.util'
 
-   else {
+export default async function PanelPage() {
+  setUsersLastViewed(`/admin`)
+
+  const user = await getUserFromSessionServer()
+  const role_id: number = parseInt(user.roleId, 10)
+  
+  if (!user && role_id > 4) {
+    redirect('/home')
+  }
+
+  console.log(role_id)
+  if (role_id > 4) {
     redirect('/dashboard')
-   } 
-}
+  }
 
-export default AdminPage
+  const role: string = await ResolveRoleName(role_id)
+  console.log(role)
+
+  return (
+    <PanelClient role={ role } roleId={ role_id } />
+  )
+}
