@@ -62,7 +62,7 @@ const AccountTab = ({ values, setters, onSubmit }: AccountTabProps) => {
 
   return (
     <div className="grid py-4 gap-4">
-      <p className='text-white text-sm bg-red-500 rounded-sm p-1 px-2'>Email changes are not implemented</p>
+      {/* <p className='text-white text-sm bg-red-500 rounded-sm p-1 px-2'>Email changes are not implemented</p> */}
 
       { error && <ErrorBox error={ error }/> }
       
