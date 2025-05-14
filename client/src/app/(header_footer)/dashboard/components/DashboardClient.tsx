@@ -14,6 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import type { Announcement, Member, Job, InventoryItem } from "./types";
+import Link from "next/link";
 
 interface DashboardClientProps {
   user: {
@@ -98,7 +99,7 @@ export default function DashboardClient({ user, announcements, members: initialM
         <h1 className="text-2xl font-semibold">
           Welcome back, {user?.firstName || "User"}
         </h1>
-        <p className="text-muted-foreground text-sm">Here's a quick overview of what's happening.</p>
+        <p className="text-muted-foreground text-sm">Here&apos;s a quick overview of what&apos;s happening.</p>
       </section>
 
       {/* Row 1: Announcements + Currently in Lab */}
@@ -108,7 +109,7 @@ export default function DashboardClient({ user, announcements, members: initialM
           <div className="flex items-center mb-2 md:pr-8">
             <h2 className="text-lg font-semibold flex-grow">Recent Announcements</h2>
             <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
-              <a href="/discussion/topic/1">View All</a>
+              <Link href="/discussion/topic/1">View All</Link>
             </Button>
           </div>
           <div className="relative">

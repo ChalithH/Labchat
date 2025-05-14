@@ -2,7 +2,13 @@ import React from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
-export default function MemberCard({ member }) {
+interface Member {
+  name: string;
+  image?: string;
+  title: string;
+}
+
+export default function MemberCard({ member }: { member: Member }) {
   // Helper to get initials
   const getInitials = (name: string) => name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 
