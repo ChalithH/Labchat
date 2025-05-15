@@ -65,6 +65,7 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
   }
 
   const confirmDeleteThread = () => setShowDeletePostPopup(true)
+
   const confirmDeleteReply = (reply: ReplyType) => {
     setReplyToDelete(reply)
     setShowDeleteReplyPopup(true)
@@ -87,20 +88,21 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
     <main className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
       <Breadcrumb className='mb-4'>
         <BreadcrumbList>
-            <BreadcrumbItem>
-                <BreadcrumbLink href="/discussion/home">Discussion Home</BreadcrumbLink>
-            </BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/discussion/home">Discussion Home</BreadcrumbLink>
+          </BreadcrumbItem>
 
-            <BreadcrumbSeparator />
+          <BreadcrumbSeparator />
 
-            <BreadcrumbItem>
-                <BreadcrumbLink href={ `/discussion/topic/${ post.discussionId }` }>{ category }</BreadcrumbLink>
-            </BreadcrumbItem>
-            
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-                <BreadcrumbPage>{ post.title }</BreadcrumbPage>
-            </BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink href={ `/discussion/topic/${ post.discussionId }` }>{ category }</BreadcrumbLink>
+          </BreadcrumbItem>
+
+          <BreadcrumbSeparator />
+
+          <BreadcrumbItem>
+            <BreadcrumbPage>{ post.title }</BreadcrumbPage>
+          </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 

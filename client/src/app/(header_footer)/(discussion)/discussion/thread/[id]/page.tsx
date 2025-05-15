@@ -26,14 +26,13 @@ type ReplyType = {
 }
 
 const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
-    const { id } = params
+    const { id } = await params
     await setUsersLastViewed(`/discussion/thread/${ id }`)
     
     const user = await getUserFromSessionServer()
     if (!user) {
         redirect('/home')
     }
-
 
     const postResponse: AxiosResponse = await api.get(`/discussion/post/${ id }`)
     const post: PostType = postResponse.data
@@ -44,7 +43,7 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     const replyResponse: AxiosResponse = await api.get(`/discussion/replies/post/${ id }`)
     const replies: ReplyType[] = replyResponse.data
 
-    const authorResponse: AxiosResponse = await api.get(`/user/get/${ user.id }`)
+    const authorResponse: AxiosResponse = await api.get(`/user/get/${ post.member.userId }`)
     const author: UserType = authorResponse.data
 
     const userRole = await ResolveRoleName(user.roleId)

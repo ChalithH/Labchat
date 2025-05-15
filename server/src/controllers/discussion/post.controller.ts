@@ -196,12 +196,17 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
     }
 
     const post: DiscussionPost | null = await prisma.discussionPost.findUnique({ 
-      where: { id } 
+      where: { id },
+      include: {
+        member: { include: { user: true } }
+      }
     })
     if (!post) {
       res.status(400).json({ error: `No post found with an ID of ${ id }` })
       return
     }
+
+
     
     res.status(200).send(post)
     return

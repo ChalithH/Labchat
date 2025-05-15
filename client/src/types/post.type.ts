@@ -1,3 +1,5 @@
+import { UserType } from "./User.type"
+
 export type PostType = {
     id: number,
     discussionId: number,
@@ -7,5 +9,10 @@ export type PostType = {
     createdAt: string,
     updatedAt: string,
     isPinned: boolean,
-    isAnnounce: boolean
+    isAnnounce: boolean,
+    member: {
+        id: number
+        userId: number
+        user: UserType
+    }
 }

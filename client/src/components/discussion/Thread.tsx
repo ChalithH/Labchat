@@ -7,7 +7,6 @@ import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 import { PostType } from '@/types/post.type'
 import { AxiosResponse } from 'axios'
 import api from '@/lib/api'
-import { UserType } from '@/types/User.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 import getUserFromSession from '@/lib/get_user'
 import { Loader2, Pencil, Trash } from 'lucide-react'
@@ -26,15 +25,6 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 	const [ role, setRole ] = useState<string>('')
   const [showPopup, setShowPopup] = useState<boolean>(false)
   const router = useRouter()
-  
-  const handleDeletePopup = () => {
-    setShowPopup(!showPopup)
-  }
-  
-  const handleDeleteThread = async () => {
-    const response: AxiosResponse = await api.delete(`/discussion/post/${ thread.id }`)
-    router.refresh()
-  }
 
 	useEffect(() => {
 		const getUser = async () => {
@@ -73,14 +63,22 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
     getUser()
   }, [])
 
+  const handleDeletePopup = () => {
+    setShowPopup(!showPopup)
+  }
+  
+  const handleDeleteThread = async () => {
+    const response: AxiosResponse = await api.delete(`/discussion/post/${ thread.id }`)
+    router.refresh()
+  }
+
   if (!author || !user) {
     return ( 
-    <div className="flex justify-center items-center gap-2 text-center p-4 border-1 play-font uppercase font-semibold text-xs border-gray-200 rounded-sm ">
-			<Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <p>Loading content...</p>
-    </div>
-    )
-  }
+      <div className="flex justify-center items-center gap-2 text-center p-4 border-1 play-font uppercase font-semibold text-xs border-gray-200 rounded-sm ">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p>Loading content...</p>
+      </div>
+  )}
 
 	return (
 		<div className="discussion-thread relative barlow-font cursor-pointer">
@@ -107,7 +105,6 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 						hour: '2-digit', minute: '2-digit', hour12: true
 					}) }</p>
 				</div>
-
 
         { author.id === user.id && 
           <div className='flex space-x-4 absolute top-2 right-2'>

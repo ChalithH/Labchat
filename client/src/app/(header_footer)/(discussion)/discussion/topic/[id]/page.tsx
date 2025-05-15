@@ -12,7 +12,7 @@ import { PostType } from '@/types/post.type'
 
 const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {
     const { id } = await params
-    setUsersLastViewed(`/discussion/topic/${ id }`)
+    await setUsersLastViewed(`/discussion/topic/${ id }`)
     
     const user = await getUserFromSessionServer()
     if (!user) {
