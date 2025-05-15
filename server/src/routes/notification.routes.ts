@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { sendNotifcation } from '../controllers/notification/notification.controller';
+import { deleteAllNotifications, deleteNotification, getUserNotifications, markNotificationRead, sendNotifcation } from '../controllers/notification/notification.controller';
 
 /**
  * @swagger
@@ -10,6 +10,11 @@ import { sendNotifcation } from '../controllers/notification/notification.contro
 const router = Router();
 
 
-router.post('/test/:id', sendNotifcation);
+router.post('/:id', sendNotifcation)
+router.get('/:id', getUserNotifications)
+router.delete('/:id', deleteNotification)
+router.put('/read/:id', markNotificationRead)
+router.delete('/clear-all/:userId', deleteAllNotifications)
 
-export default router;
+
+export default router

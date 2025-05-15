@@ -25,6 +25,7 @@ export const setupSocket= (io: Server) => {
 }
 
 export const notifyUser = (io: Server, userId: string, data: any) => {
+  // Try find user from map of online users and send notification
   const socketId = onlineUsers.get(userId)
   if (socketId)
     io.to(socketId).emit('notification', data)
