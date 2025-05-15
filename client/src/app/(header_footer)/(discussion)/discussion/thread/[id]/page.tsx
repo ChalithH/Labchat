@@ -7,14 +7,27 @@ import api from '@/lib/api'
 import ThreadClient from '../../../components/clients/ThreadClient'
 import { AxiosResponse } from 'axios'
 import { PostType } from '@/types/post.type'
-import { ReplyType } from '@/types/reply.type'
+// import { ReplyType } from '@/types/reply.type'
 import { UserType } from '@/types/User.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 
+type ReplyType = {
+  id: number
+  postId: number
+  memberId: number
+  content: string
+  createdAt: string
+  updatedAt: string
+  member: {
+    id: number
+    userId: number
+    user: UserType
+  }
+}
 
 const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
-    const { id } = await params
-    setUsersLastViewed(`/discussion/thread//${ id }`)
+    const { id } = params
+    await setUsersLastViewed(`/discussion/thread/${ id }`)
     
     const user = await getUserFromSessionServer()
     if (!user) {
@@ -37,26 +50,19 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     const userRole = await ResolveRoleName(user.roleId)
     const authorRole = await ResolveRoleName(author.roleId)
 
-    const replyUsers: UserType[] = await Promise.all(
-      replies.map(async (reply) => {
-        const res: AxiosResponse = await api.get(`/member/get/${ reply.memberId }`)
-        const user: AxiosResponse = await api.get(`/user/get/${ res.data.userId }`)
-        return user.data
-    }))
-
     const member = await api.get(`/member/get/user/${ user.id }`)
 
     return (
       <ThreadClient 
-        post={post} 
-        category={category.tag}
-        replies={replies} 
-        replyUsers={replyUsers}
-        author={author} 
-        authorRole={authorRole} 
-        user={user} 
-        userRole={userRole}
-        member={member.data}
+        post={ post } 
+        category={ category.tag }
+        replies={ replies } 
+        replyUsers={ replies.map(reply => reply.member.user) }
+        author={ author } 
+        authorRole={ authorRole } 
+        user={ user } 
+        userRole={ userRole }
+        member={ member.data }
       />
     )
   }

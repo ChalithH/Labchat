@@ -10,7 +10,7 @@ import api from '@/lib/api'
 import { UserType } from '@/types/User.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 import getUserFromSession from '@/lib/get_user'
-import { Pencil, Trash } from 'lucide-react'
+import { Loader2, Pencil, Trash } from 'lucide-react'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
@@ -75,8 +75,9 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
   if (!author || !user) {
     return ( 
-    <div className="text-center p-4 border-1 play-font uppercase font-semibold text-xs border-gray-200 rounded-sm ">
-      Loading content...
+    <div className="flex justify-center items-center gap-2 text-center p-4 border-1 play-font uppercase font-semibold text-xs border-gray-200 rounded-sm ">
+			<Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p>Loading content...</p>
     </div>
     )
   }

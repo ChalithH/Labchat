@@ -15,7 +15,7 @@ import api from '@/lib/api'
 
 
 const DiscussionHome = async () => {
-    setUsersLastViewed(`/discussion/home`)
+    await setUsersLastViewed(`/discussion/home`)
 
     const user = await getUserFromSessionServer()
     if (!user) {
@@ -30,8 +30,14 @@ const DiscussionHome = async () => {
 
     const posts: PostType[][] = await Promise.all(
       categories.map(async (category) => {
-        const response: AxiosResponse = await api.get(`/discussion/category-posts/${category.id}`)
-        return response.data
+        try {
+          const response: AxiosResponse = await api.get(`/discussion/category-posts/${ category.id }`)
+          return response.data
+
+        } catch (error) {
+          console.error(`Failed to fetch posts for category ${ category.id }`, error)
+          return []
+        }
       })
     )
 

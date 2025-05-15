@@ -73,22 +73,27 @@ export const getReplyById = async (req: Request, res: Response): Promise<void> =
  *         description: Server error
  */
 export const getRepliesByPost = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const postId = parseInt(req.params.id, 10);
-        if (isNaN(postId)) {
-            res.status(400).json({ error: 'Invalid post ID' });
-            return;
-        }
-        const replies = await prisma.discussionReply.findMany({
-            where: { postId },
-            orderBy: { createdAt: 'asc' },
-        });
-
-        res.json(replies);
-    } catch (error) {
-        console.error('Error fetching replies:', error);
-        res.status(500).json({ error: 'Failed to fetch replies' });
+  try {
+    const postId = parseInt(req.params.id, 10);
+    if (isNaN(postId)) {
+      res.status(400).json({ error: 'Invalid post ID' });
+      return;
     }
+
+    const replies = await prisma.discussionReply.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        member: { include: { user: true } }
+      }
+    })
+
+    res.json(replies);
+    
+  } catch (error) {
+    console.error('Error fetching replies:', error);
+    res.status(500).json({ error: 'Failed to fetch replies' });
+  }
 };
 
 /**
