@@ -15,18 +15,22 @@ const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {
     await setUsersLastViewed(`/discussion/topic/${ id }`)
     
     const user = await getUserFromSessionServer()
-    if (!user) {
+
+    const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
+    const userPermission = roleResponse.data.permissionLevel
+
+    const categoryRequest: AxiosResponse = await api.get(`/discussion/categories/${ id }`)
+    const category: CategoryType = categoryRequest.data
+
+    if (!user || (category.visiblePermission ?? 0 ) > userPermission) {
         redirect('/home')
     }
-
-    const categoryRequest: AxiosResponse = await api.get(`/discussion/tags/${ id }`)
-    const category: CategoryType = categoryRequest.data
 
     const postsRequest: AxiosResponse = await api.get(`/discussion/category-posts/${ id }`)
     const posts: PostType[] = postsRequest.data
 
     return (
-      <TopicClient params={ {id: `${ id }`} } category={ category } posts={ posts } />
+      <TopicClient params={ {id: `${ id }`} } user={ user } userPermission={ userPermission } category={ category } posts={ posts } />
     )
   }
 

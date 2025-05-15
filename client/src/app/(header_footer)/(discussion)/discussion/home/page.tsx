@@ -22,10 +22,13 @@ const DiscussionHome = async () => {
       redirect('/home')
     }
 
+    const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
+    const userPermission = roleResponse.data.permissionLevel
+
     const recentActivityRequest: AxiosResponse = await api.get('/discussion/recent/9')
     const recentActivity: PostType[] = recentActivityRequest.data
 
-    const categoriesRequest: AxiosResponse = await api.get('/discussion/tags')
+    const categoriesRequest: AxiosResponse = await api.get(`/discussion/categories/lab/1`)
     const categories: CategoryType[] = categoriesRequest.data
 
     const posts: PostType[][] = await Promise.all(
@@ -42,7 +45,7 @@ const DiscussionHome = async () => {
     )
 
     return (
-      <HomeClient recentActivity={ recentActivity } categories={ categories } posts={ posts }/>
+      <HomeClient user={ user } userPermission={ userPermission } recentActivity={ recentActivity } categories={ categories } posts={ posts }/>
     )
   }
 

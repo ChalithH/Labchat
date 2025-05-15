@@ -37,7 +37,7 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     const postResponse: AxiosResponse = await api.get(`/discussion/post/${ id }`)
     const post: PostType = postResponse.data
 
-    const categoryResponse: AxiosResponse = await api.get(`/discussion/tags/${ post.discussionId }`)
+    const categoryResponse: AxiosResponse = await api.get(`/discussion/categories/${ post.discussionId }`)
     const category = categoryResponse.data
 
     const replyResponse: AxiosResponse = await api.get(`/discussion/replies/post/${ id }`)
@@ -54,7 +54,7 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     return (
       <ThreadClient 
         post={ post } 
-        category={ category.tag }
+        category={ category.name }
         replies={ replies } 
         replyUsers={ replies.map(reply => reply.member.user) }
         author={ author } 

@@ -210,15 +210,33 @@ model LabItemTag {
   @@map("lab_item_tag")
 }
 
+
+
+enum DiscussionCategoryState {
+  OPEN
+  HIDDEN
+}
+
+enum DiscussionPostState {
+  REPLIES_OPEN      // Visible to all, open to replies
+  REPLIES_CLOSED    // Visible to all, replies closed
+
+  HIDDEN            // Visible to lab managers+, open to replies to those who can see
+  STICKY            // Stuck to top of category
+}
+
 // Discussion Board
 model Discussion {
-  id          Int              @id @default(autoincrement())
-  labId       Int
-  name        String
-  description String?
+  id                    Int              @id @default(autoincrement())
+  labId                 Int
+  name                  String
+  description           String?
+  
+  visiblePermission     Int?   // Permission to be able to see the category at all
+  postPermission        Int?   // Permission to be able to post within the category
 
   // Relationships
-  lab         Lab              @relation(fields: [labId], references: [id])
+  lab         Lab                        @relation(fields: [labId], references: [id])
   posts       DiscussionPost[]
 
   @@map("discussion")
@@ -234,6 +252,8 @@ model DiscussionPost {
   updatedAt               DateTime                 @updatedAt
   isPinned                Boolean                  @default(false)
   isAnnounce              Boolean                  @default(false)
+
+  state                   DiscussionPostState      @default(REPLIES_OPEN)
 
   // Relationships
   discussion              Discussion               @relation(fields: [discussionId], references: [id])
@@ -309,6 +329,9 @@ model DiscussionPostTag {
 
   @@map("discussion_post_tag")
 }
+
+
+
 
 // Equipment Management
 model Instrument {
