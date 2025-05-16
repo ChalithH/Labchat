@@ -6,10 +6,11 @@ import { redirect } from 'next/navigation'
 import api from '@/lib/api'
 import ThreadClient from '../../../components/clients/ThreadClient'
 import { AxiosResponse } from 'axios'
-import { PostType } from '@/types/post.type'
+import { DiscussionPostState, PostType } from '@/types/post.type'
 // import { ReplyType } from '@/types/reply.type'
 import { UserType } from '@/types/User.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
+import { PermissionConfig } from '@/config/permissions'
 
 type ReplyType = {
   id: number
@@ -43,7 +44,8 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`) 
     const userRole: string = roleResponse.data.name
 
-    if (!user || (category.visiblePermission ?? 0) > roleResponse.data.permissionLevel) {
+    if (!user || (category.visiblePermission ?? 0) > roleResponse.data.permissionLevel || 
+        post.state === DiscussionPostState.HIDDEN && ((PermissionConfig.SEE_HIDDEN_PERMISSION > roleResponse.data.permissionLevel && post.member.userId !== user.id))) {
       redirect('/home')
     }
 

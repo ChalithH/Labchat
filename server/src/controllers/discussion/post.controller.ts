@@ -322,7 +322,10 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
     }
 
     const posts: DiscussionPost[] | null = await prisma.discussionPost.findMany({ 
-      where: { discussionId: category_id }
+      where: { discussionId: category_id },
+      include: {
+        member: { include: { user: true } }
+      }
     })
 
     const sortedPosts = posts.sort((a, b) => {

@@ -30,7 +30,7 @@ const DiscussionHome = async () => {
     const recentActivity: PostType[] = recentActivityRequest.data
 
     const filteredActivity = recentActivity.filter(post => {
-      if (post.state !== 'HIDDEN') return true
+      if (post.state !== 'HIDDEN' || post.member.userId === user.id) return true
       return userPermission >= PermissionConfig.HIDDEN_PERMISSION
     })
 
@@ -44,7 +44,7 @@ const DiscussionHome = async () => {
           const rawPosts: PostType[] = response.data
 
           const filteredPosts = rawPosts.filter(post => {
-            if (post.state !== 'HIDDEN') return true
+            if (post.state !== 'HIDDEN' || post.member.userId === user.id) return true
             return userPermission >= PermissionConfig.HIDDEN_PERMISSION
           })
 

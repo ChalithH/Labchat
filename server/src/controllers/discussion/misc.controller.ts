@@ -19,6 +19,9 @@ export const getRecentPosts = async (req: Request, res: Response): Promise<void>
     const posts: DiscussionPost[] = await prisma.discussionPost.findMany({
       orderBy: { createdAt: 'desc' },
       take: amount,
+      include: {
+        member: { include: { user: true } }
+      }
     })
 
     res.status(200).json(posts)

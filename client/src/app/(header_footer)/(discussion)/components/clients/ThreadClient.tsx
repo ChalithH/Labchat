@@ -140,9 +140,11 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
       <div className="p-4 rounded-sm border border-gray-200 shadow-sm">
         <p>{post.content}</p>
       </div>
+
+      { post.replyState === DiscussionPostState.REPLIES_CLOSED && <p className=' barlow-font text-lg font-semibold my-4'>Post is closed for replies</p> }
         
-      { showReplyBox ? 
-        <div className="p-4 rounded-sm flex flex-col gap-4 my-8">
+      { showReplyBox && 
+        <div className="pb-8 rounded-sm flex flex-col gap-4">
           {error && <p className='play-font text-sm text-red-600'>{error}</p>}
           <textarea
             value={response}
@@ -155,8 +157,6 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
             <Button onClick={handlePostReply} variant="outline">Post Reply</Button>
           </div>
         </div>
-      :
-        <p className='my-4 barlow-font text-lg font-semibold'>Post is closed for responses</p> 
       }
 
       {replies.length > 0 && (

@@ -30,7 +30,7 @@ const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {
     const allPosts: PostType[] = postsRequest.data
 
     const posts = allPosts.filter(post => {
-      if (post.state !== 'HIDDEN') return true
+      if (post.state !== 'HIDDEN' || post.member.userId === user.id ) return true
       return userPermission >= PermissionConfig.HIDDEN_PERMISSION
     })
 
