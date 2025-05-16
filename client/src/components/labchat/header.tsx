@@ -19,6 +19,7 @@ import getUserFromSession from "@/lib/get_user";
 import { NotificationBell } from "./NotificationBell";
 import { MenuIcon } from "lucide-react";
 import frank from '/public/FrankIcon.svg';
+import React from "react";
 
 
 export default function Header() {
@@ -113,45 +114,54 @@ export default function Header() {
               </SheetClose>
               <SheetDescription className='hidden'>Description goes here</SheetDescription>
             </SheetHeader>
-              <div className="flex flex-col gap-10 p-10 text-center">
-                {/* Conditionally render navigation links based on login status */}
-                {isLoggedIn ? (
-                  // Render logged-in navigation links
-                  loggedInsiteConfig.navItems.map((item, index) => (
-                    <SheetClose key={index} asChild>
-                      <Link 
-                        href={`${item.href}`}
-                        className={`text-sm font-medium hover:text-muted-foreground hover:underline ${activeLink === item.href ? 'text-labchat-magenta-500' : ''}`} 
-                        prefetch={false} 
-                        onClick={() => handleLinkClick(item.href)}>
-                        {item.title}
-                      </Link>
-                    </SheetClose>
-                  ))
-                ) : (
-                  // Render logged-out navigation links
-                  loggedOutsiteConfig.navItems.map((item, index) => (
-                    <SheetClose key={index} asChild>
-                      <Link 
-                        href={`${item.href}`}
-                        className={`text-base font-medium hover:text-muted-foreground hover:underline ${activeLink === item.href ? 'text-labchat-magenta-500' : ''}`} 
-                        prefetch={false} 
-                        onClick={() => handleLinkClick(item.href)}>
-                          {item.title}
-                      </Link>
-                    </SheetClose>
-                  ))
-                )}
+              <div className="flex flex-col justify-between text-center items-center h-[100%]">
+                <div className="flex flex-col gap-4 w-[100%]">
+                  {/* Conditionally render navigation links based on login status */}
+                  {isLoggedIn ? (
+                    // Render logged-in navigation links
+                    loggedInsiteConfig.navItems.map((item, index) => (
+                      <SheetClose key={index} asChild>
+                        <Link 
+                          href={`${item.href}`}
+                          className={`text-sm font-medium hover:text-muted-foreground hover:underline ${activeLink === item.href ? 'text-labchat-magenta-500' : ''}`} 
+                          prefetch={false} 
+                          onClick={() => handleLinkClick(item.href)}>
+                            <Button variant='outline' className='w-[90%] cursor-pointer'>{item.title}</Button>
+                        </Link>
+                      </SheetClose>
+                    ))
+                  ) : (
+                    // Render logged-out navigation links
+                    loggedOutsiteConfig.navItems.map((item, index) => (
+                      <SheetClose key={index} asChild>
+                        <Link 
+                          href={`${item.href}`}
+                          className={`text-base font-medium hover:text-muted-foreground hover:underline ${activeLink === item.href ? 'text-labchat-magenta-500' : ''}`} 
+                          prefetch={false} 
+                          onClick={() => handleLinkClick(item.href)}>
+                            {item.title}
+                        </Link>
+                      </SheetClose>
+                    ))
+                  )}
+                </div>
                 
                 {/* Add logout button to the navigation menu if logged in */}
                 {isLoggedIn && (
-                  <SheetClose asChild>
-                    <button 
-                      className="text-sm font-medium text-red-500 hover:text-red-600 hover:underline"
-                      onClick={handleLogout}>
-                      Log out
-                    </button>
-                  </SheetClose>
+                  <div className='w-[100%]'>
+                    <Button variant='outline' className='mb-2 cursor-pointer w-[90%]' onClick={ handleProfile }>
+                      My Profile
+                    </Button>
+
+                    <SheetClose asChild>
+                      <Button 
+                        variant='destructive'
+                        className="w-[90%] cursor-pointer text-sm font-medium text-white hover:underline"
+                        onClick={handleLogout}>
+                        Log out
+                      </Button>
+                    </SheetClose>
+                  </div>
                 )}
               </div>
             </SheetContent>
