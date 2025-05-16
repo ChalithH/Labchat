@@ -53,6 +53,27 @@ export const getCategoryById = async (req: Request, res: Response): Promise<void
     }
 };
 
+export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id)) {
+            res.status(400).json({ error: 'Invalid post discussion category ID' });
+            return;
+        }
+
+        const existingTag = await prisma.discussion.findUnique({ where: { id } });
+        if (!existingTag) {
+            res.status(404).json({ error: 'Discussion category not found' });
+            return;
+        }
+
+        await prisma.postTag.delete({ where: { id } });
+        res.status(200).json({ message: 'Discussion category deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting discussion category:', error);
+        res.status(500).json({ error: 'Failed to delete discussion category' });
+    }
+};
 
 
 export const createTag = async (req: Request, res: Response): Promise<void> => {
@@ -75,6 +96,23 @@ export const createTag = async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ error: 'Failed to create post tag' });
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// All below need to be changed to Discussion model not Tag model
+
 
 export const editTag = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -103,29 +141,6 @@ export const editTag = async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ error: 'Failed to edit post tag' });
     }
 };
-
-export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const id = parseInt(req.params.id, 10);
-        if (isNaN(id)) {
-            res.status(400).json({ error: 'Invalid post discussion category ID' });
-            return;
-        }
-
-        const existingTag = await prisma.discussion.findUnique({ where: { id } });
-        if (!existingTag) {
-            res.status(404).json({ error: 'Discussion category not found' });
-            return;
-        }
-
-        await prisma.postTag.delete({ where: { id } });
-        res.status(200).json({ message: 'Discussion category deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting discussion category:', error);
-        res.status(500).json({ error: 'Failed to delete discussion category' });
-    }
-};
-
 // --- Functions for assigning tags to posts (using DiscussionPostTag) ---
 
 /**

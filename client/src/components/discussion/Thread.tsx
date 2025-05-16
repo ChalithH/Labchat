@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+import { MdPushPin } from "react-icons/md";
 import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
-import { PostType } from '@/types/post.type'
+import { DiscussionPostState, PostType } from '@/types/post.type'
 import { AxiosResponse } from 'axios'
 import api from '@/lib/api'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
@@ -16,13 +17,12 @@ import { useRouter } from 'next/navigation'
 import EditPost from '@/app/(header_footer)/(discussion)/components/EditPost'
 
 
-
 const BLURB_CHAR_LIMIT = 128
 
 const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: boolean }) => {
 	const [ author, setAuthor ] = useState<any>(null)
   const [ user, setUser ] = useState<any>()
-	const [ role, setRole ] = useState<string>('')
+	const [ role, setRole ] = useState<any>()
   const [showPopup, setShowPopup] = useState<boolean>(false)
   const router = useRouter()
 
@@ -45,8 +45,9 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 			if (!author) return
 
 			try {
-				const roleName = await ResolveRoleName(author.roleId)
-				setRole(roleName)
+				const response: AxiosResponse = await api.get(`/role/get/${ author.roleId }`) 
+        const role_obj = response.data				
+        setRole(role_obj)
 
 			} catch (err) {
 				console.error('Failed to resolve role name', err)
@@ -72,7 +73,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
     router.refresh()
   }
 
-  if (!author || !user) {
+  if (!author || !user || !role) {
     return ( 
       <div className="flex justify-center items-center gap-2 text-center p-4 border-1 play-font uppercase font-semibold text-xs border-gray-200 rounded-sm ">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -83,14 +84,19 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 	return (
 		<div className="discussion-thread relative barlow-font cursor-pointer">
 			<Link href={ `/discussion/thread/${ thread.id }` }>
+      <div className='flex items-center gap-1'>
+        { thread.state === DiscussionPostState.STICKY && <MdPushPin className='text-yellow-500 font-semibold text-lg' /> }
 				<h1 className="text-lg font-semibold leading-5">{ thread.title }</h1>
+
+        <p className='text-xs ml-4'>{ thread.state } | { thread.replyState }</p>
+      </div>
 			</Link>
 
 			{ b_show_blurb && <p className="my-2">{ thread.content.slice(0, BLURB_CHAR_LIMIT) }</p> }
 
 			<div className="mt-4 flex flex-col max-[400px]:flex-col sm:flex-row justify-between">
 				{ author ? (
-					<ThreadAuthorGroup role={ role } name={ author.displayName } size={ 42 } />
+					<ThreadAuthorGroup role={ role.name } name={ author.displayName } size={ 42 } />
 				) : (
 					<div className="text-sm italic">Loading author...</div>
 				)}
@@ -108,7 +114,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
         { author.id === user.id && 
           <div className='flex space-x-4 absolute top-2 right-2'>
-            <EditPost post={ thread }/>
+            <EditPost post={ thread } userPermission={ role.permissionLevel} />
             <Trash onClick={ handleDeletePopup } className='w-5 h-5 text-muted-foreground' />
           </div> }
 			</div>

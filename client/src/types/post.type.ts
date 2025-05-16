@@ -1,11 +1,13 @@
 import { UserType } from "./User.type"
 
-enum DiscussionPostState {
-  REPLIES_OPEN,      // Visible to all, open to replies
-  REPLIES_CLOSED,    // Visible to all, replies closed
+export enum DiscussionPostState {
+  DEFAULT = "DEFAULT",
 
-  HIDDEN,            // Visible to lab managers+, open to replies to those who can see
-  STICKY             // Stuck to top of category
+  REPLIES_OPEN = "REPLIES_OPEN",      // Visible to all, open to replies
+  REPLIES_CLOSED = "REPLIES_CLOSED",    // Visible to all, replies closed
+
+  HIDDEN = "HIDDEN",            // Visible to lab managers+, open to replies to those who can see
+  STICKY = "STICKY"             // Stuck to top of category
 }
 
 export type PostType = {
@@ -19,6 +21,7 @@ export type PostType = {
     isPinned: boolean,
     isAnnounce: boolean,
     state: DiscussionPostState
+    replyState: DiscussionPostState
     member: {
         id: number
         userId: number

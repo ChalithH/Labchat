@@ -39,12 +39,12 @@ const HomeClient = ({ user, userPermission, recentActivity, categories, posts }:
 
 						<div className="mt-2 space-y-6">
 							{posts.slice(0, THREADS_PER_TOPIC).map(post => (
-                <Thread key={post.id} thread={post} b_show_blurb={true} />
-              ))}
+								<Thread key={post.id} thread={post} b_show_blurb={true} />
+							))}
 
 							{posts.length === 0 && (
-                <div className="text-gray-500 italic">No posts in this category yet.</div>
-              )}
+								<div className="text-gray-500 italic">No posts in this category yet.</div>
+							)}
 						</div>
 					</div>
 				)}

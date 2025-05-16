@@ -11,6 +11,7 @@ import getUserFromSessionServer from '@/lib/get_user_server'
 
 import HomeClient from '../../components/clients/HomeClient'
 import api from '@/lib/api'
+import { PermissionConfig } from '@/config/permissions'
 
 
 
@@ -28,6 +29,11 @@ const DiscussionHome = async () => {
     const recentActivityRequest: AxiosResponse = await api.get('/discussion/recent/9')
     const recentActivity: PostType[] = recentActivityRequest.data
 
+    const filteredActivity = recentActivity.filter(post => {
+      if (post.state !== 'HIDDEN') return true
+      return userPermission >= PermissionConfig.HIDDEN_PERMISSION
+    })
+
     const categoriesRequest: AxiosResponse = await api.get(`/discussion/categories/lab/1`)
     const categories: CategoryType[] = categoriesRequest.data
 
@@ -35,7 +41,14 @@ const DiscussionHome = async () => {
       categories.map(async (category) => {
         try {
           const response: AxiosResponse = await api.get(`/discussion/category-posts/${ category.id }`)
-          return response.data
+          const rawPosts: PostType[] = response.data
+
+          const filteredPosts = rawPosts.filter(post => {
+            if (post.state !== 'HIDDEN') return true
+            return userPermission >= PermissionConfig.HIDDEN_PERMISSION
+          })
+
+          return filteredPosts
 
         } catch (error) {
           console.error(`Failed to fetch posts for category ${ category.id }`, error)
@@ -44,8 +57,9 @@ const DiscussionHome = async () => {
       })
     )
 
+
     return (
-      <HomeClient user={ user } userPermission={ userPermission } recentActivity={ recentActivity } categories={ categories } posts={ posts }/>
+      <HomeClient user={ user } userPermission={ userPermission } recentActivity={ filteredActivity } categories={ categories } posts={ posts }/>
     )
   }
 

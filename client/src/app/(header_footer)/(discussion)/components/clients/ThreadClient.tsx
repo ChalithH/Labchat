@@ -2,7 +2,7 @@
 
 import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 import { Button } from '@/components/ui/button'
-import { PostType } from '@/types/post.type'
+import { DiscussionPostState, PostType } from '@/types/post.type'
 import { ReplyType } from '@/types/reply.type'
 import { UserType } from '@/types/User.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
@@ -24,6 +24,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { PermissionConfig } from '@/config/permissions'
 
 type ThreadClientProps = {
   post: PostType,
@@ -34,10 +35,11 @@ type ThreadClientProps = {
   authorRole: string,
   user: any,
   userRole: string,
+  userPermission: number,
   member: any
 }
 
-const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole, user, userRole, member }: ThreadClientProps) => {
+const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole, user, userRole, userPermission, member }: ThreadClientProps) => {
   const [response, setResponse] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [showDeletePostPopup, setShowDeletePostPopup] = useState<boolean>(false)
@@ -84,6 +86,9 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
     }
   }
 
+  // True if,   Post has replies open    or    User has enough permission to override replies closd     or    User is the post owner    
+  const showReplyBox: boolean = post.replyState === DiscussionPostState.REPLIES_OPEN || userPermission >= PermissionConfig.FORCE_COMMENT_PERMISSION || author.id === user.id
+
   return (
     <main className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
       <Breadcrumb className='mb-4'>
@@ -108,38 +113,45 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
 
       <div className='flex justify-between items-center'>
         <h1 className="text-3xl font-bold play-font">{post.title}</h1>
-        {author.id === user.id &&
+        { author.id === (user as any).id &&
           <div className='flex space-x-4'>
-            <EditPost post={post} />
-            <Trash onClick={confirmDeleteThread} className='w-5 h-5 text-muted-foreground cursor-pointer' />
+            <EditPost post={ post } userPermission={ userPermission } />
+            <Trash onClick={ confirmDeleteThread } className='w-5 h-5 text-muted-foreground cursor-pointer' />
           </div>}
       </div>
 
       <div className="flex justify-between items-center">
         <ThreadAuthorGroup role={authorRole} name={author.displayName} size={48} />
-        <div className="text-right text-sm">
-          <p>Created {new Date(post.createdAt).toLocaleString('en-GB')}</p>
-          <p>Last Activity {new Date(post.updatedAt).toLocaleString('en-GB')}</p>
+
+        <div>
+          <div className="text-right text-sm">
+            <p>Created {new Date(post.createdAt).toLocaleString('en-GB')}</p>
+            <p>Last Activity {new Date(post.updatedAt).toLocaleString('en-GB')}</p>
+          </div>
         </div>
       </div>
 
       <div className="p-4 rounded-sm border border-gray-200 shadow-sm">
         <p>{post.content}</p>
       </div>
-
-      <div className="p-4 rounded-sm flex flex-col gap-4 my-8">
-        {error && <p className='play-font text-sm text-red-600'>{error}</p>}
-        <textarea
-          value={response}
-          onChange={(e) => setResponse(e.target.value)}
-          className="bg-white border p-4 w-full rounded-xl"
-          placeholder="Type a comment"
-        />
-        <div className="w-full flex justify-between items-center">
-          <ThreadAuthorGroup role={userRole} name={user.displayName} size={42} />
-          <Button onClick={handlePostReply} variant="outline">Post Reply</Button>
+        
+      { showReplyBox ? 
+        <div className="p-4 rounded-sm flex flex-col gap-4 my-8">
+          {error && <p className='play-font text-sm text-red-600'>{error}</p>}
+          <textarea
+            value={response}
+            onChange={(e) => setResponse(e.target.value)}
+            className="bg-white border p-4 w-full rounded-xl"
+            placeholder="Type a comment"
+          />
+          <div className="w-full flex justify-between items-center">
+            <ThreadAuthorGroup role={userRole} name={user.displayName} size={42} />
+            <Button onClick={handlePostReply} variant="outline">Post Reply</Button>
+          </div>
         </div>
-      </div>
+      :
+        <p className='my-4 barlow-font text-lg font-semibold'>Post is closed for responses</p> 
+      }
 
       {replies.length > 0 && (
         <h1 className="play-font w-full m-auto text-3xl font-bold pb-2">Replies</h1>

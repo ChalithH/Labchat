@@ -8,6 +8,7 @@ import { AxiosResponse } from 'axios'
 import api from '@/lib/api'
 import { CategoryType } from '@/types/category.type'
 import { PostType } from '@/types/post.type'
+import { PermissionConfig } from '@/config/permissions'
 
 
 const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {
@@ -27,7 +28,12 @@ const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {
     }
 
     const postsRequest: AxiosResponse = await api.get(`/discussion/category-posts/${ id }`)
-    const posts: PostType[] = postsRequest.data
+    const allPosts: PostType[] = postsRequest.data
+
+    const posts = allPosts.filter(post => {
+      if (post.state !== 'HIDDEN') return true
+      return userPermission >= PermissionConfig.HIDDEN_PERMISSION
+    })
 
     return (
       <TopicClient params={ {id: `${ id }`} } user={ user } userPermission={ userPermission } category={ category } posts={ posts } />

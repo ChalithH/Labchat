@@ -217,10 +217,13 @@ enum DiscussionCategoryState {
   HIDDEN
 }
 
-enum DiscussionPostState {
+enum DiscussionPostReplyState {
   REPLIES_OPEN      // Visible to all, open to replies
   REPLIES_CLOSED    // Visible to all, replies closed
+}
 
+enum DiscussionPostState {
+  DEFAULT
   HIDDEN            // Visible to lab managers+, open to replies to those who can see
   STICKY            // Stuck to top of category
 }
@@ -253,7 +256,8 @@ model DiscussionPost {
   isPinned                Boolean                  @default(false)
   isAnnounce              Boolean                  @default(false)
 
-  state                   DiscussionPostState      @default(REPLIES_OPEN)
+  replyState              DiscussionPostReplyState      @default(REPLIES_OPEN)
+  state                   DiscussionPostState           @default(DEFAULT)
 
   // Relationships
   discussion              Discussion               @relation(fields: [discussionId], references: [id])

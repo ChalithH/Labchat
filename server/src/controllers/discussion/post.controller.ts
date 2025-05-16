@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../..';
-import { DiscussionPost, LabMember } from '@prisma/client';
+import { DiscussionPost, DiscussionPostReplyState, LabMember } from '@prisma/client';
 
 
 /*
@@ -108,7 +108,7 @@ export const editPost = async (req: Request, res: Response): Promise<void> => {
       return
     }
 
-    const { title, content, updatedAt, isPinned, isAnnounce } = req.body
+    const { title, content, updatedAt, isPinned, isAnnounce, replyState, state } = req.body
 
     const updatedPost = await prisma.discussionPost.update({
       where: { id },
@@ -117,7 +117,9 @@ export const editPost = async (req: Request, res: Response): Promise<void> => {
         content: content ?? found_post.content,
         updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
         isPinned: isPinned ?? found_post.isPinned,
-        isAnnounce: isAnnounce ?? found_post.isAnnounce
+        isAnnounce: isAnnounce ?? found_post.isAnnounce,
+        state: state ?? 'DEFAULT',
+        replyState: replyState ?? 'REPLIES_OPEN'
       }
     })
 
@@ -322,7 +324,18 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
     const posts: DiscussionPost[] | null = await prisma.discussionPost.findMany({ 
       where: { discussionId: category_id }
     })
-    res.status(200).send(posts)
+
+    const sortedPosts = posts.sort((a, b) => {
+      const isASticky = a.state === 'STICKY'
+      const isBSticky = b.state === 'STICKY'
+
+      if (isASticky && !isBSticky) return -1
+      if (!isASticky && isBSticky) return 1
+
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    })
+
+    res.status(200).send(sortedPosts)
     return
 
   } catch(err: unknown) {
