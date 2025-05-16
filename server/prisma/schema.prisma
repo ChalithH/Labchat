@@ -42,6 +42,7 @@ model User {
   labMembers    LabMember[]
   contacts      Contact[]
   auditLogs     AuditLog[]
+  notifications Notification[]
   @@map("user")
 }
 
@@ -451,4 +452,16 @@ model AuditDetail {
 
   @@index([auditLogId])
   @@map("audit_detail")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  message   String
+  timestamp DateTime @default(now())
+  read      Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
