@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 import { MdPushPin } from "react-icons/md";
+import { EyeOff } from 'lucide-react'
 import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 import { DiscussionPostState, PostType } from '@/types/post.type'
 import { AxiosResponse } from 'axios'
@@ -86,9 +87,8 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 			<Link href={ `/discussion/thread/${ thread.id }` }>
       <div className='flex items-center gap-1'>
         { thread.state === DiscussionPostState.STICKY && <MdPushPin className='text-yellow-500 font-semibold text-lg' /> }
+        { thread.state === DiscussionPostState.HIDDEN && <EyeOff className="w-4 h-4 text-muted-foreground" /> }
 				<h1 className="text-lg font-semibold leading-5">{ thread.title }</h1>
-
-        <p className='text-xs ml-4'>{ thread.state } | { thread.replyState }</p>
       </div>
 			</Link>
 

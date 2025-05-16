@@ -8,7 +8,7 @@ import { UserType } from '@/types/User.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 import { useEffect, useState } from 'react'
 import EditPost from '../EditPost'
-import { Trash } from 'lucide-react'
+import { EyeOff, Trash } from 'lucide-react'
 import {
   Dialog, DialogClose, DialogContent, DialogDescription,
   DialogFooter, DialogHeader, DialogTitle
@@ -25,6 +25,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { PermissionConfig } from '@/config/permissions'
+import { MdPushPin } from 'react-icons/md'
 
 type ThreadClientProps = {
   post: PostType,
@@ -112,7 +113,12 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
       </Breadcrumb>
 
       <div className='flex justify-between items-center'>
-        <h1 className="text-3xl font-bold play-font">{post.title}</h1>
+        <div className='flex items-center gap-2'>
+          { post.state === DiscussionPostState.STICKY && <MdPushPin className='text-yellow-500 font-semibold text-lg' /> }
+          { post.state === DiscussionPostState.HIDDEN && <EyeOff className="w-4 h-4 text-muted-foreground" /> }
+          <h1 className="text-3xl font-bold play-font">{post.title}</h1>
+        </div>
+        
         { author.id === (user as any).id &&
           <div className='flex space-x-4'>
             <EditPost post={ post } userPermission={ userPermission } />

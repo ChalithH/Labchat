@@ -32,6 +32,7 @@ export const AddPostDialog = ({ discussionId, memberId }: AddPostDialogProps) =>
   const [replyState, setReplyState] = useState<string>(DiscussionPostState.REPLIES_OPEN.toString())
   const [state, setState] = useState<string>(DiscussionPostState.REPLIES_OPEN.toString())
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [role, setRole] = useState<any>()
 
@@ -45,6 +46,11 @@ export const AddPostDialog = ({ discussionId, memberId }: AddPostDialogProps) =>
   },[] )
 
   const handleCreatePost = async () => {
+    if (!title || !content || !state || !replyState) {
+      setError("Fill in the form before submitting")
+      return
+    }
+
     setIsLoading(true)
     const response: AxiosResponse = await api.post('/discussion/post', {discussionId,memberId,title,content,state,replyState})
 
@@ -74,6 +80,8 @@ export const AddPostDialog = ({ discussionId, memberId }: AddPostDialogProps) =>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create a New Post</DialogTitle>
+
+          { error && <p className='play-font text-sm text-red-600 text-center'>{ error }</p>}
         </DialogHeader>
 
         <div className="space-y-4">

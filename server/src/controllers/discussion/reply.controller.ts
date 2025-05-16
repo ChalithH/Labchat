@@ -82,7 +82,7 @@ export const getRepliesByPost = async (req: Request, res: Response): Promise<voi
 
     const replies = await prisma.discussionReply.findMany({
       where: { postId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
       include: {
         member: { include: { user: true } }
       }
