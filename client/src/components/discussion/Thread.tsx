@@ -16,6 +16,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
 import EditPost from '@/app/(header_footer)/(discussion)/components/EditPost'
+import { PermissionConfig } from '@/config/permissions';
 
 
 const BLURB_CHAR_LIMIT = 128
@@ -23,7 +24,8 @@ const BLURB_CHAR_LIMIT = 128
 const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: boolean }) => {
 	const [ author, setAuthor ] = useState<any>(null)
   const [ user, setUser ] = useState<any>()
-	const [ role, setRole ] = useState<any>()
+	const [ authorRole, setAuthorRole ] = useState<any>()
+	const [ userRole, setUserRole ] = useState<any>()
   const [showPopup, setShowPopup] = useState<boolean>(false)
   const router = useRouter()
 
@@ -31,8 +33,8 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 		const getUser = async () => {
 			try {
 				const response: AxiosResponse = await api.get(`/member/get/${ thread.memberId }`)
-				const user: AxiosResponse = await api.get(`/user/get/${ response.data.userId }`)
-				setAuthor(user.data)
+				const author: AxiosResponse = await api.get(`/user/get/${ response.data.userId }`)
+				setAuthor(author.data)
 
 			} catch (err) {
 				console.error('Failed to fetch author', err)
@@ -48,7 +50,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 			try {
 				const response: AxiosResponse = await api.get(`/role/get/${ author.roleId }`) 
         const role_obj = response.data				
-        setRole(role_obj)
+        setAuthorRole(role_obj)
 
 			} catch (err) {
 				console.error('Failed to resolve role name', err)
@@ -61,6 +63,9 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
     const getUser = async () => {
       const user = await getUserFromSession()
       setUser(user)
+
+      const userRoleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`) 
+      setUserRole(userRoleResponse.data)
     }
     getUser()
   }, [])
@@ -74,7 +79,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
     router.refresh()
   }
 
-  if (!author || !user || !role) {
+  if (!author || !user || !authorRole || !userRole) {
     return ( 
       <div className="flex justify-center items-center gap-2 text-center p-4 border-1 play-font uppercase font-semibold text-xs border-gray-200 rounded-sm ">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -96,7 +101,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
 			<div className="mt-4 flex flex-col max-[400px]:flex-col sm:flex-row justify-between">
 				{ author ? (
-					<ThreadAuthorGroup role={ role.name } name={ author.displayName } size={ 42 } />
+					<ThreadAuthorGroup role={ authorRole.name } name={ author.displayName } size={ 42 } />
 				) : (
 					<div className="text-sm italic">Loading author...</div>
 				)}
@@ -112,9 +117,9 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 					}) }</p>
 				</div>
 
-        { author.id === user.id && 
+        { (author.id === user.id || userRole.permissionLevel >= PermissionConfig.MODIFY_ALL_POSTS) && 
           <div className='flex space-x-4 absolute top-2 right-2'>
-            <EditPost post={ thread } userPermission={ role.permissionLevel} />
+            <EditPost post={ thread } userPermission={ userRole.permissionLevel} />
             <Trash onClick={ handleDeletePopup } className='w-5 h-5 text-muted-foreground' />
           </div> }
 			</div>
