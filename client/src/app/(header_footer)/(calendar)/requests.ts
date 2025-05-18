@@ -1,10 +1,61 @@
 import axios from "axios";
 import { CALENDAR_ITENS_MOCK, USERS_MOCK } from "@/calendar/mocks";
-import { IEvent } from "@/calendar/interfaces";
+import { IEvent, IEventType } from "@/calendar/interfaces";
 import { format } from 'date-fns-tz';
-import { eventTypeColors, transformApiEvent, transformAPIUser } from "./transform-api-event";
+import { 
+  ApiEventType, 
+  getColorForEventType, 
+  transformApiEvent, 
+  transformAPIUser 
+} from "./transform-api-event";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+// Global cache for event types
+let eventTypesCache: IEventType[] | null = null;
+
+// Function to fetch event types
+export const getEventTypes = async (): Promise<IEventType[]> => {
+  // Return cached types if available
+  if (eventTypesCache) {
+    return eventTypesCache;
+  }
+
+  try {
+    const response = await axios.get(`${API_URL}/calendar/getEventTypes`);
+    
+    if (response.status === 200) {
+      // Transform API event types to our format
+      const transformedTypes = response.data.map((type: ApiEventType) => ({
+        id: type.id,
+        name: type.name,
+        color: getColorForEventType(type.id, type.name)
+      }));
+      
+      // Cache the result
+      eventTypesCache = transformedTypes;
+      return transformedTypes;
+    }
+    
+    // Fallback to default types if API call succeeds but returns non-200 status
+    return getDefaultEventTypes();
+  } catch (error) {
+    console.error("Error fetching event types:", error);
+    // Fallback to default event types if API call fails
+    return getDefaultEventTypes();
+  }
+};
+
+// Default event types (fallback)
+const getDefaultEventTypes = (): IEventType[] => {
+  return [
+    { id: 1, name: "Booking", color: "blue" },
+    { id: 2, name: "Meeting", color: "green" },
+    { id: 3, name: "Training", color: "green" },
+    { id: 4, name: "Equipment", color: "blue" },
+    { id: 5, name: "Task", color: "purple" },
+  ];
+};
 
 export const getEvents = async (startDate: Date, endDate: Date): Promise<IEvent[]> => {
   try {
@@ -30,8 +81,8 @@ export const getEvents = async (startDate: Date, endDate: Date): Promise<IEvent[
 
 export const createEvent = async (event: Partial<IEvent>): Promise<IEvent | null> => {
   try {
-    // Determine the event type based on color
-    const eventType = Object.entries(eventTypeColors).find(([, color]) => color === event.color)?.[0] || "default";
+    // Get the type ID from the event, or default to 1
+    const typeId = event.type?.id || 1;
     
     // Transform the event data to match the API's expected format
     const apiEventData = {
@@ -42,7 +93,7 @@ export const createEvent = async (event: Partial<IEvent>): Promise<IEvent | null
       status: "scheduled", // Default status
       startTime: event.startDate,
       endTime: event.endDate,
-      typeId: eventType === "equipment" ? 2 : 1, // Default to rostering(1) or equipment(2)
+      typeId: typeId,
       assignedMembers: event.assignments?.map(a => a.memberId) || []
     };
     
@@ -61,8 +112,8 @@ export const createEvent = async (event: Partial<IEvent>): Promise<IEvent | null
 
 export const updateEvent = async (event: IEvent): Promise<IEvent | null> => {
   try {
-    // Determine the event type based on color
-    const eventType = Object.entries(eventTypeColors).find(([, color]) => color === event.color)?.[0] || "default";
+    // Get the type ID from the event, or default to 1
+    const typeId = event.type?.id || 1;
     
     // Transform the event data to match the API's expected format
     const apiEventData = {
@@ -74,7 +125,7 @@ export const updateEvent = async (event: IEvent): Promise<IEvent | null> => {
       status: event.status || "scheduled",
       startTime: event.startDate,
       endTime: event.endDate,
-      typeId: eventType === "equipment" ? 2 : 1,
+      typeId: typeId,
       instrumentId: event.instrument?.id || null,
       assignedMembers: event.assignments?.map(a => a.memberId) || []
     };
@@ -120,5 +171,5 @@ export const getUsers = async () => {
   }
 };
 
-// Re-export eventTypeColors from transform-api-event
-export { eventTypeColors } from "./transform-api-event";
+// Export color utilities
+export { getColorForEventType } from "./transform-api-event";

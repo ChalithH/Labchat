@@ -3,7 +3,7 @@
 import { createContext, useContext, useState } from "react";
 
 import type { Dispatch, SetStateAction } from "react";
-import type { IEvent, IUser } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType } from "@/calendar/interfaces";
 import type { TBadgeVariant, TVisibleHours, TWorkingHours } from "@/calendar/types";
 
 interface ICalendarContext {
@@ -11,9 +11,12 @@ interface ICalendarContext {
   setSelectedDate: (date: Date | undefined) => void;
   selectedUserId: IUser["id"] | "all";
   setSelectedUserId: (userId: IUser["id"] | "all") => void;
+  selectedTypeId: IEventType["id"] | "all";
+  setSelectedTypeId: (typeId: IEventType["id"] | "all") => void;
   badgeVariant: TBadgeVariant;
   setBadgeVariant: (variant: TBadgeVariant) => void;
   users: IUser[];
+  eventTypes: IEventType[];
   workingHours: TWorkingHours;
   setWorkingHours: Dispatch<SetStateAction<TWorkingHours>>;
   visibleHours: TVisibleHours;
@@ -39,10 +42,12 @@ const VISIBLE_HOURS = { from: 7, to: 18 };
 export function CalendarProvider({ 
   children, 
   users, 
+  eventTypes = [],
   initialEvents = [] 
 }: { 
   children: React.ReactNode; 
   users: IUser[]; 
+  eventTypes: IEventType[];
   initialEvents?: IEvent[] 
 }) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
@@ -51,6 +56,7 @@ export function CalendarProvider({
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">("all");
+  const [selectedTypeId, setSelectedTypeId] = useState<IEventType["id"] | "all">("all");
 
   // Initialize with server-provided data instead of empty array
   const [localEvents, setLocalEvents] = useState<IEvent[]>(initialEvents);
@@ -67,9 +73,12 @@ export function CalendarProvider({
         setSelectedDate: handleSelectDate,
         selectedUserId,
         setSelectedUserId,
+        selectedTypeId,
+        setSelectedTypeId,
         badgeVariant,
         setBadgeVariant,
         users,
+        eventTypes,
         visibleHours,
         setVisibleHours,
         workingHours,

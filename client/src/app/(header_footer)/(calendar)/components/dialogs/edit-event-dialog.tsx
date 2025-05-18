@@ -3,12 +3,13 @@
 import { parseISO } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Users, Microscope } from "lucide-react";
+import { AlertCircle, Users, Microscope, Plus, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { useUpdateEvent } from "@/calendar/hooks/use-update-event";
-import { eventTypeColors } from "@/calendar/requests";
+import { getEventTypes } from "@/calendar/requests";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { eventSchema } from "@/calendar/schemas";
 
-import type { IEvent } from "@/calendar/interfaces";
+import type { IEvent, IEventType, IAssignment } from "@/calendar/interfaces";
 import type { TimeValue } from "react-aria-components";
 import type { TEventFormData } from "@/calendar/schemas";
 
@@ -36,13 +37,48 @@ interface IProps {
 export function EditEventDialog({ children, event }: IProps) {
   const { isOpen, onClose, onToggle } = useDisclosure();
 
-  const { users } = useCalendar();
-
+  const { users, eventTypes: contextEventTypes } = useCalendar();
   const { updateEvent, isUpdating, error: updateError } = useUpdateEvent();
+  
+  // State for event types
+  const [eventTypes, setEventTypes] = useState<IEventType[]>([]);
+  const [loadingTypes, setLoadingTypes] = useState(false);
+  
+  // State for managing assigned members
+  const [selectedAssignees, setSelectedAssignees] = useState<IAssignment[]>(event.assignments || []);
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
 
-  // Find the event type based on color
-  // This must match one of the enum values: "rostering" | "equipment" | "default"
-  const eventType = (Object.entries(eventTypeColors).find(([, color]) => color === event.color)?.[0] || "default") as "rostering" | "equipment" | "default";
+  // Fetch event types when the component mounts or use context event types if available
+  useEffect(() => {
+    if (contextEventTypes && contextEventTypes.length > 0) {
+      setEventTypes(contextEventTypes);
+      return;
+    }
+    
+    const fetchEventTypes = async () => {
+      setLoadingTypes(true);
+      try {
+        const types = await getEventTypes();
+        setEventTypes(types);
+      } catch (error) {
+        console.error("Error fetching event types:", error);
+      } finally {
+        setLoadingTypes(false);
+      }
+    };
+    
+    fetchEventTypes();
+  }, [contextEventTypes]);
+
+  // Find the event type ID
+  const initialTypeId = event.type?.id.toString() || "1";
+  
+  // Initialize with existing assignments if any
+  useEffect(() => {
+    if (event.assignments && event.assignments.length > 0) {
+      setSelectedAssignees(event.assignments);
+    }
+  }, [event.assignments]);
 
   const form = useForm<TEventFormData>({
     resolver: zodResolver(eventSchema),
@@ -54,8 +90,7 @@ export function EditEventDialog({ children, event }: IProps) {
       startTime: { hour: parseISO(event.startDate).getHours(), minute: parseISO(event.startDate).getMinutes() },
       endDate: parseISO(event.endDate),
       endTime: { hour: parseISO(event.endDate).getHours(), minute: parseISO(event.endDate).getMinutes() },
-      type: eventType,
-      color: event.color,
+      type: initialTypeId,
     },
   });
 
@@ -70,19 +105,25 @@ export function EditEventDialog({ children, event }: IProps) {
     const endDateTime = new Date(values.endDate);
     endDateTime.setHours(values.endTime.hour, values.endTime.minute);
 
-    // Map type to color
-    const color = values.type && eventTypeColors[values.type] 
-      ? eventTypeColors[values.type]
-      : eventTypeColors.default;
+    // Find the selected event type
+    const selectedType = eventTypes.find(type => type.id.toString() === values.type);
+
+    // Prepare assignments with proper member IDs
+    const assignmentsWithMemberIds = selectedAssignees.map(assignee => ({
+      ...assignee,
+      memberId: typeof assignee.memberId === 'number' ? assignee.memberId : parseInt(assignee.memberId as unknown as string)
+    }));
 
     const result = await updateEvent({
       ...event,
       user,
       title: values.title,
       description: values.description,
-      color,
+      color: selectedType?.color || "green", // Use color from type or default to green
+      type: selectedType,
       startDate: startDateTime.toISOString(),
       endDate: endDateTime.toISOString(),
+      assignments: assignmentsWithMemberIds,
     });
 
     if (result) {
@@ -90,7 +131,50 @@ export function EditEventDialog({ children, event }: IProps) {
     }
   };
 
-  const hasAssignments = event.assignments && event.assignments.length > 0;
+  // Function to add an assignee
+  const handleAddAssignee = (userId: string) => {
+    setAssignmentError(null);
+    
+    // Find the user
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    
+    // Check if already assigned
+    const userIdAsNumber = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const alreadyAssigned = selectedAssignees.some(a => a.memberId === userIdAsNumber);
+    
+    if (alreadyAssigned) {
+      setAssignmentError("This user is already assigned");
+      return;
+    }
+    
+    // Add to assigned list
+    setSelectedAssignees([
+      ...selectedAssignees,
+      {
+        id: Date.now(), // Temporary ID
+        memberId: userIdAsNumber,
+        name: user.name
+      }
+    ]);
+  };
+  
+  // Function to remove an assignee
+  const handleRemoveAssignee = (id: number) => {
+    setSelectedAssignees(selectedAssignees.filter(a => a.id !== id));
+  };
+
+  // Get the current type ID
+  const currentTypeId = form.watch("type");
+  const currentType = eventTypes.find(t => t.id.toString() === currentTypeId);
+  const isEquipmentType = currentType?.name?.toLowerCase().includes("equipment") || 
+                           currentType?.name?.toLowerCase().includes("booking");
+
+  // Deal with empty users list case
+  const hasUsers = users && users.length > 0;
+  const firstUserId = hasUsers ? users[0]?.id : "";
+  
+  const hasAssignments = selectedAssignees && selectedAssignees.length > 0;
   const hasInstrument = !!event.instrument;
 
   return (
@@ -149,23 +233,105 @@ export function EditEventDialog({ children, event }: IProps) {
                   )}
                 />
 
-                {/* Display current assigned members as read-only info */}
-                {hasAssignments && (
-                  <div className="rounded-md border p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <p className="text-sm font-medium">Assigned Members</p>
+                {/* Event Type Selection */}
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel>Event Type</FormLabel>
+                      <FormControl>
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange}
+                          disabled={loadingTypes}
+                        >
+                          <SelectTrigger data-invalid={fieldState.invalid}>
+                            <SelectValue placeholder={loadingTypes ? "Loading types..." : "Select event type"} />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {eventTypes.map(type => (
+                              <SelectItem key={type.id} value={type.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                  <div className={`size-3.5 rounded-full bg-${type.color || 'green'}-600`} />
+                                  {type.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Assignees management section - only show for non-equipment events */}
+                {!isEquipmentType && hasUsers && (
+                  <div className="space-y-3 border rounded-md p-3">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-medium">Assigned Members</h3>
+                      <div className="flex gap-2 items-center">
+                        <Select onValueChange={handleAddAssignee}>
+                          <SelectTrigger className="w-[180px] h-8">
+                            <SelectValue placeholder="Add member" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {users.map(user => (
+                              <SelectItem key={user.id} value={user.id}>
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-5 w-5">
+                                    <AvatarFallback className="text-[10px]">{user.name[0]}</AvatarFallback>
+                                  </Avatar>
+                                  <span className="truncate">{user.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button 
+                          type="button" 
+                          size="sm" 
+                          variant="outline"
+                          className="h-8 px-2"
+                          onClick={() => handleAddAssignee(firstUserId)}
+                          disabled={!firstUserId}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="pl-6 space-y-2">
-                      {(event.assignments ?? []).map(assignment => (
-                        <div key={assignment.id} className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarFallback className="text-[10px]">{assignment.name[0]}</AvatarFallback>
-                          </Avatar>
-                          <p className="text-sm text-muted-foreground">{assignment.name}</p>
-                        </div>
-                      ))}
-                    </div>
+                    
+                    {assignmentError && (
+                      <p className="text-xs text-destructive">{assignmentError}</p>
+                    )}
+                    
+                    {selectedAssignees.length === 0 ? (
+                      <p className="text-xs text-muted-foreground italic">No members assigned yet</p>
+                    ) : (
+                      <div className="space-y-2 mt-2">
+                        {selectedAssignees.map(assignee => (
+                          <div key={assignee.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarFallback>{assignee.name[0]}</AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm">{assignee.name}</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={() => handleRemoveAssignee(assignee.id)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -270,47 +436,6 @@ export function EditEventDialog({ children, event }: IProps) {
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel>Event Type</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger data-invalid={fieldState.invalid}>
-                            <SelectValue placeholder="Select event type" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            <SelectItem value="rostering">
-                              <div className="flex items-center gap-2">
-                                <div className="size-3.5 rounded-full bg-blue-600" />
-                                Rostering
-                              </div>
-                            </SelectItem>
-
-                            <SelectItem value="equipment">
-                              <div className="flex items-center gap-2">
-                                <div className="size-3.5 rounded-full bg-green-600" />
-                                Equipment
-                              </div>
-                            </SelectItem>
-
-                            <SelectItem value="default">
-                              <div className="flex items-center gap-2">
-                                <div className="size-3.5 rounded-full bg-purple-600" />
-                                Other
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}

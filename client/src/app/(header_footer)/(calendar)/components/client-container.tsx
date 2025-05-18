@@ -21,7 +21,7 @@ interface IProps {
 }
 
 export function ClientContainer({ view }: IProps) {
-  const { selectedDate, selectedUserId, events } = useCalendar();
+  const { selectedDate, selectedUserId, selectedTypeId, events } = useCalendar();
   const { loading, error, setView, refreshEvents } = useFetchEvents();
 
   // Set the current view in our hook
@@ -40,7 +40,8 @@ export function ClientContainer({ view }: IProps) {
         const yearEnd = new Date(selectedDate.getFullYear(), 11, 31, 23, 59, 59, 999);
         const isInSelectedYear = eventStartDate <= yearEnd && eventEndDate >= yearStart;
         const isUserMatch = selectedUserId === "all" || event.user.id === selectedUserId;
-        return isInSelectedYear && isUserMatch;
+        const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
+        return isInSelectedYear && isUserMatch && isTypeMatch;
       }
 
       if (view === "month" || view === "agenda") {
@@ -48,7 +49,8 @@ export function ClientContainer({ view }: IProps) {
         const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
         const isInSelectedMonth = eventStartDate <= monthEnd && eventEndDate >= monthStart;
         const isUserMatch = selectedUserId === "all" || event.user.id === selectedUserId;
-        return isInSelectedMonth && isUserMatch;
+        const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
+        return isInSelectedMonth && isUserMatch && isTypeMatch;
       }
 
       if (view === "week") {
@@ -64,7 +66,8 @@ export function ClientContainer({ view }: IProps) {
 
         const isInSelectedWeek = eventStartDate <= weekEnd && eventEndDate >= weekStart;
         const isUserMatch = selectedUserId === "all" || event.user.id === selectedUserId;
-        return isInSelectedWeek && isUserMatch;
+        const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
+        return isInSelectedWeek && isUserMatch && isTypeMatch;
       }
 
       if (view === "day") {
@@ -72,12 +75,13 @@ export function ClientContainer({ view }: IProps) {
         const dayEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59);
         const isInSelectedDay = eventStartDate <= dayEnd && eventEndDate >= dayStart;
         const isUserMatch = selectedUserId === "all" || event.user.id === selectedUserId;
-        return isInSelectedDay && isUserMatch;
+        const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
+        return isInSelectedDay && isUserMatch && isTypeMatch;
       }
       
       return false;
     });
-  }, [selectedDate, selectedUserId, events, view]);
+  }, [selectedDate, selectedUserId, selectedTypeId, events, view]);
 
   // Memoize the separation of single and multi-day events
   const { singleDayEvents, multiDayEvents } = useMemo(() => {

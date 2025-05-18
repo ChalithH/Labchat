@@ -9,7 +9,6 @@ import { DeleteEventDialog } from "@/calendar/components/dialogs/delete-event-di
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { eventTypeColors } from "@/calendar/requests"; 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import type { IEvent } from "@/calendar/interfaces";
@@ -23,11 +22,15 @@ export function EventDetailsDialog({ event, children }: IProps) {
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
 
-  // Find the event type based on color
-  const eventType = Object.entries(eventTypeColors).find(([, color]) => color === event.color)?.[0] || "default";
+  // Get the type name with proper formatting
+  const typeName = event.type?.name || "Event";
   
-  // Format the type label for display
-  const typeLabel = eventType.charAt(0).toUpperCase() + eventType.slice(1);
+  // Determine the badge variant based on the event color
+  const getBadgeVariant = (color: string) => {
+    if (color === "blue") return "default";
+    if (color === "purple") return "secondary";
+    return "outline";
+  };
 
   return (
     <>
@@ -91,8 +94,8 @@ export function EventDetailsDialog({ event, children }: IProps) {
                 <Tag className="mt-1 size-4 shrink-0 text-primary" />
                 <div>
                   <p className="text-sm font-medium">Type</p>
-                  <Badge variant={eventType === "rostering" ? "default" : eventType === "equipment" ? "secondary" : "outline"}>
-                    {typeLabel}
+                  <Badge variant={getBadgeVariant(event.color)}>
+                    {typeName}
                   </Badge>
                 </div>
               </div>
