@@ -7,7 +7,6 @@ import { Clock, Text, User, Users, Microscope } from "lucide-react";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { EventDetailsDialog } from "@/calendar/components/dialogs/event-details-dialog";
 import { Badge } from "@/components/ui/badge";
-import { eventTypeColors } from "@/calendar/requests";
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
@@ -54,11 +53,15 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
 
-  // Find the event type based on color
-  const eventType = Object.entries(eventTypeColors).find(([, color]) => color === event.color)?.[0] || "default";
+  // Get the type name with proper formatting
+  const typeName = event.type?.name || "Event";
   
-  // Format the type label for display
-  const typeLabel = eventType.charAt(0).toUpperCase() + eventType.slice(1);
+  // Determine the badge variant based on the event color
+  const getBadgeVariant = (color: string) => {
+    if (color === "blue") return "default";
+    if (color === "purple") return "secondary";
+    return "outline";
+  };
 
   const color = (badgeVariant === "dot" ? `${event.color}-dot` : event.color) as VariantProps<typeof agendaEventCardVariants>["color"];
 
@@ -96,10 +99,10 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
               </p>
               
               <Badge 
-                variant={eventType === "rostering" ? "default" : eventType === "equipment" ? "secondary" : "outline"}
+                variant={getBadgeVariant(event.color)}
                 className="ml-1"
               >
-                {typeLabel}
+                {typeName}
               </Badge>
             </div>
           </div>
