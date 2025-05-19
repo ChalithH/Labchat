@@ -1,10 +1,40 @@
 import { Request, Response } from 'express';
-import { Event, Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { hashPassword } from '../../utils/hashing.util';
 
 const prisma = new PrismaClient();
 
-// get all labs GET
-export const getAllLabs = async (req: Request, res: Response) => {
+/**
+ * @swagger
+ * /admin/get-labs:
+ *   get:
+ *     summary: Get all labs
+ *     description: Retrieves a list of all labs in the system
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: List of labs fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: ID of the lab
+ *                   name:
+ *                     type: string
+ *                     description: Name of the lab
+ *                   location:
+ *                     type: string
+ *                     description: Location of the lab
+ *       500:
+ *         description: Internal server error
+ */
+
+export const getAllLabs = async (req: Request, res: Response): Promise<void> => {
     try {
         const labs = await prisma.lab.findMany();
         res.status(200).json(labs);
@@ -14,18 +44,56 @@ export const getAllLabs = async (req: Request, res: Response) => {
     }
 }
 
-// get lab by id GET
-export const getLabById = async (req: Request, res: Response) => {
+/**
+ * @swagger
+ * /admin/get-lab/{id}:
+ *   get:
+ *     summary: Get a lab by ID
+ *     description: Retrieves details of a lab by its ID
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab to fetch
+ *     responses:
+ *       200:
+ *         description: Lab details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: ID of the lab
+ *                 name:
+ *                   type: string
+ *                   description: Name of the lab
+ *                 location:
+ *                   type: string
+ *                   description: Location of the lab
+ *       400:
+ *         description: Invalid lab ID
+ *       404:
+ *         description: Lab not found
+ *       500:
+ *         description: Internal server error
+ */
+
+export const getLabById = async (req: Request, res: Response): Promise<void> => {
     const labId = parseInt(req.params.id);
     if (isNaN(labId)) {
-        return res.status(400).json({ error: 'Invalid lab ID' });
+        res.status(400).json({ error: 'Invalid lab ID' });
     }
     try {
         const lab = await prisma.lab.findUnique({
             where: { id: labId }
         });
         if (!lab) {
-            return res.status(404).json({ error: 'Lab not found' });
+            res.status(404).json({ error: 'Lab not found' });
         }
         res.status(200).json(lab);
     } catch (error) {
@@ -42,7 +110,7 @@ export const getLabById = async (req: Request, res: Response) => {
  *   post:
  *     summary: Create a new lab
  *     description: Adds a new lab to the system
- *     tags: [Lab Management]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -66,7 +134,7 @@ export const getLabById = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const createLab = async (req: Request, res: Response) => {
+export const createLab = async (req: Request, res: Response): Promise<void> => {
     const { name, location } = req.body;
     try {
         const newLab = await prisma.lab.create({
@@ -89,7 +157,7 @@ export const createLab = async (req: Request, res: Response) => {
  *   post:
  *     summary: Assign a user to a lab
  *     description: Adds an existing user to a lab with a specific role (regular or manager)
- *     tags: [Lab Management]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -121,20 +189,20 @@ export const createLab = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const assignUserToLab = async (req: Request, res: Response) => {
+export const assignUserToLab = async (req: Request, res: Response): Promise<void> => {
     const { labId, userId, role } = req.body;
     try {
         const lab = await prisma.lab.findUnique({
             where: { id: labId }
         });
         if (!lab) {
-            return res.status(404).json({ error: 'Lab not found' });
+            res.status(404).json({ error: 'Lab not found' });
         }
         const userExists = await prisma.user.findUnique({
             where: { id: userId }
         });
         if (userExists) {
-            return res.status(400).json({ error: 'User does not exist' });
+            res.status(400).json({ error: 'User does not exist' });
         }
 
         const userInLab = await prisma.labMember.findFirst({
@@ -145,7 +213,7 @@ export const assignUserToLab = async (req: Request, res: Response) => {
         });
 
         if (userInLab) {
-            return res.status(409).json({ error: 'User already in lab' });
+            res.status(409).json({ error: 'User already in lab' });
         }
 
         const labMember = await prisma.labMember.create({
@@ -168,7 +236,7 @@ export const assignUserToLab = async (req: Request, res: Response) => {
  *   put:
  *     summary: Change a user's role in a lab
  *     description: Promotes or changes a user's role in an existing lab
- *     tags: [Lab Management]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -187,7 +255,7 @@ export const assignUserToLab = async (req: Request, res: Response) => {
  *                 type: integer
  *                 description: ID of the user
  *               role:
- *                 type: string
+ *                 type: integer
  *                 description: New role for the user (e.g., "regular", "manager")
  *     responses:
  *       201:
@@ -198,20 +266,20 @@ export const assignUserToLab = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const updateRole = async (req: Request, res: Response) => {
+export const updateRole = async (req: Request, res: Response): Promise<void> => {
     const { labId, userId, role } = req.body;
     try {
         const lab = await prisma.lab.findUnique({
             where: { id: labId }
         });
         if (!lab) {
-            return res.status(404).json({ error: 'Lab not found' });
+            res.status(404).json({ error: 'Lab not found' });
         }
         const userExists = await prisma.user.findUnique({
             where: { id: userId }
         });
         if (userExists) {
-            return res.status(404).json({ error: 'User does not exist' });
+            res.status(404).json({ error: 'User does not exist' });
         }
 
         const userInLab = await prisma.labMember.findFirst({
@@ -222,7 +290,8 @@ export const updateRole = async (req: Request, res: Response) => {
         });
 
         if (!userInLab) {
-            return res.status(404).json({ error: 'User not in lab' });
+            res.status(404).json({ error: 'User not in lab' });
+            throw new Error('User not in lab');
         }
 
         const labMember = await prisma.labMember.update({
@@ -243,10 +312,10 @@ export const updateRole = async (req: Request, res: Response) => {
 /**
  * @swagger
  * /admin/reset-password:
- *   post:
+ *   put:
  *     summary: Reset a user's password
  *     description: Allows resetting a user's password
- *     tags: [User Management]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -272,19 +341,19 @@ export const updateRole = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const resetUserPassword = async (req: Request, res: Response) => {
+export const resetUserPassword = async (req: Request, res: Response): Promise<void> => {
     const { userId, newPassword } = req.body;
     try {
         const user = await prisma.user.findUnique({
             where: { id: userId }
         });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            res.status(404).json({ error: 'User not found' });
         }
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
-                loginPassword: newPassword // Hash the password before saving
+                loginPassword: await hashPassword(newPassword) 
             }
         });
         res.status(200).json(updatedUser);
@@ -302,7 +371,7 @@ export const resetUserPassword = async (req: Request, res: Response) => {
  *   post:
  *     summary: Remove a user from a lab
  *     description: Removes an existing user from a lab
- *     tags: [Lab Management]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -328,14 +397,14 @@ export const resetUserPassword = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const removeUserFromLab = async (req: Request, res: Response) => {
+export const removeUserFromLab = async (req: Request, res: Response): Promise<void> => {
     const { labId, userId } = req.body;
     try {
         const lab = await prisma.lab.findUnique({
             where: { id: labId }
         });
         if (!lab) {
-            return res.status(404).json({ error: 'Lab not found' });
+            res.status(404).json({ error: 'Lab not found' });
         }
         const userInLab = await prisma.labMember.findFirst({
             where: {
@@ -345,7 +414,8 @@ export const removeUserFromLab = async (req: Request, res: Response) => {
         });
 
         if (!userInLab) {
-            return res.status(404).json({ error: 'User not in lab' });
+            res.status(404).json({ error: 'User not in lab' });
+            throw new Error('User not in lab');
         }
 
         await prisma.labMember.delete({
@@ -366,7 +436,7 @@ export const removeUserFromLab = async (req: Request, res: Response) => {
  *   post:
  *     summary: Create a new discussion tag
  *     description: Adds a new tag for discussions
- *     tags: [Discussion]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -390,7 +460,7 @@ export const removeUserFromLab = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const createDiscussionTag = async (req: Request, res: Response) => {
+export const createDiscussionTag = async (req: Request, res: Response): Promise<void> => {
     const { tag, description } = req.body;
     try {
         const newTag = await prisma.postTag.create({
@@ -412,7 +482,7 @@ export const createDiscussionTag = async (req: Request, res: Response) => {
  *   post:
  *     summary: Create a new discussion category
  *     description: Adds a new category for discussions
- *     tags: [Discussion]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -442,7 +512,7 @@ export const createDiscussionTag = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const createDiscussionCategory = async (req: Request, res: Response) => {
+export const createDiscussionCategory = async (req: Request, res: Response): Promise<void> => {
     const { labId, name, description } = req.body;
 
     try {
@@ -450,7 +520,7 @@ export const createDiscussionCategory = async (req: Request, res: Response) => {
             where: { id: labId }
         });
         if (!lab) {
-            return res.status(404).json({ error: 'Lab not found' });
+            res.status(404).json({ error: 'Lab not found' });
         }
 
         const newCategory = await prisma.discussion.create({
@@ -473,7 +543,7 @@ export const createDiscussionCategory = async (req: Request, res: Response) => {
  *   post:
  *     summary: Create a new inventory tag
  *     description: Adds a new tag for inventory items
- *     tags: [Inventory]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -497,7 +567,7 @@ export const createDiscussionCategory = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const createInventoryTag = async (req: Request, res: Response) => {
+export const createInventoryTag = async (req: Request, res: Response): Promise<void> => {
     const { name, tagDescription } = req.body;
     try {
         const newTag = await prisma.itemTag.create({
@@ -519,7 +589,7 @@ export const createInventoryTag = async (req: Request, res: Response) => {
  *   post:
  *     summary: Create a new inventory item
  *     description: Adds a new item to the lab's inventory
- *     tags: [Inventory]
+ *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -559,8 +629,8 @@ export const createInventoryTag = async (req: Request, res: Response) => {
  *         description: Internal server error
  */
 
-export const createInventoryItem = async (req: Request, res: Response) => {
-    const { itemId, labId, location, itemUnit, currentStock, minStock } = req.body;
+export const createInventoryItem = async (req: Request, res: Response): Promise<void> => {
+    const { itemId, labId, location, itemUnit, currentStock, minStock, name, description, safetyInfo } = req.body;
     try {
         const newItem = await prisma.labInventoryItem.create({
             data: {
@@ -572,9 +642,18 @@ export const createInventoryItem = async (req: Request, res: Response) => {
                 minStock
             },
         });
-        res.status(201).json(newItem);
+
+        const inventoryItem = await prisma.item.create({
+            data: {
+                name,
+                description, 
+                safetyInfo,
+            }
+        });
+        res.status(201).json(newItem).json(inventoryItem);
     } catch (error) {
         console.error('Error creating inventory item:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
