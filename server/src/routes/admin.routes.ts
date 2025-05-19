@@ -15,18 +15,20 @@ import { requirePermission } from '../middleware/permission.middleware';
  */
 const router = Router();
 
+// Admin level: 
+// Lab Manager level: 60
 // /api/admin/
 router.get('/get-labs', requirePermission(60), getAllLabs);
-router.get('/get-lab{id}', getLabById);
-router.post('/create-lab', createLab);
-router.post('/assign-user', assignUserToLab);
-router.post('/update-role', updateRole);
-router.put('/reset-password', resetUserPassword);
-router.delete('/remove-user', removeUserFromLab);
-router.post('/create-discussion-tag', createDiscussionTag);
-router.post('/create-discussion-category', createDiscussionCategory);
-router.post('/create-inventory-tag', createInventoryTag);
-router.post('/create-inventory-item', createInventoryItem);
+router.get('/get-lab{id}', requirePermission(60), getLabById);
+router.post('/create-lab', requirePermission(170), createLab);
+router.post('/assign-user', requirePermission(170), assignUserToLab);
+router.post('/update-role', requirePermission(170), updateRole);
+router.put('/reset-password', requirePermission(170), resetUserPassword);
+router.delete('/remove-user', requirePermission(60), removeUserFromLab);
+router.post('/create-discussion-tag', requirePermission(60), createDiscussionTag);
+router.post('/create-discussion-category', requirePermission(60), createDiscussionCategory);
+router.post('/create-inventory-tag', requirePermission(60), createInventoryTag);
+router.post('/create-inventory-item', requirePermission(60), createInventoryItem);
 
 export default router;
 
