@@ -36,7 +36,36 @@ export const getLabById = async (req: Request, res: Response) => {
 
 // Admin:
 
-// Create a new lab POST
+/**
+ * @swagger
+ * /admin/create-lab:
+ *   post:
+ *     summary: Create a new lab
+ *     description: Adds a new lab to the system
+ *     tags: [Lab Management]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - location
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the lab
+ *               location:
+ *                 type: string
+ *                 description: Location of the lab
+ *     responses:
+ *       201:
+ *         description: Lab created successfully
+ *       500:
+ *         description: Internal server error
+ */
+
 export const createLab = async (req: Request, res: Response) => {
     const { name, location } = req.body;
     try {
@@ -54,8 +83,45 @@ export const createLab = async (req: Request, res: Response) => {
     }
 }
 
-// Assign a user to a lab (regular or manager) POST
-const assignUserToLab = async (req: Request, res: Response) => {
+/**
+ * @swagger
+ * /admin/assign-user:
+ *   post:
+ *     summary: Assign a user to a lab
+ *     description: Adds an existing user to a lab with a specific role (regular or manager)
+ *     tags: [Lab Management]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - labId
+ *               - userId
+ *               - role
+ *             properties:
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab
+ *               userId:
+ *                 type: integer
+ *                 description: ID of the user to be assigned
+ *               role:
+ *                 type: string
+ *                 description: Role assigned to the user (e.g., "regular", "manager")
+ *     responses:
+ *       201:
+ *         description: User assigned to lab successfully
+ *       404:
+ *         description: Lab not found or User does not exist
+ *       409:
+ *         description: User already in the lab
+ *       500:
+ *         description: Internal server error
+ */
+
+export const assignUserToLab = async (req: Request, res: Response) => {
     const { labId, userId, role } = req.body;
     try {
         const lab = await prisma.lab.findUnique({
@@ -96,8 +162,43 @@ const assignUserToLab = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }}
 
-// Change user role PUT
-export const promoteLabManager = async (req: Request, res: Response) => {
+/**
+ * @swagger
+ * /admin/update-role:
+ *   put:
+ *     summary: Change a user's role in a lab
+ *     description: Promotes or changes a user's role in an existing lab
+ *     tags: [Lab Management]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - labId
+ *               - userId
+ *               - role
+ *             properties:
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab
+ *               userId:
+ *                 type: integer
+ *                 description: ID of the user
+ *               role:
+ *                 type: string
+ *                 description: New role for the user (e.g., "regular", "manager")
+ *     responses:
+ *       201:
+ *         description: User role updated successfully
+ *       404:
+ *         description: Lab not found or User not in lab
+ *       500:
+ *         description: Internal server error
+ */
+
+export const updateRole = async (req: Request, res: Response) => {
     const { labId, userId, role } = req.body;
     try {
         const lab = await prisma.lab.findUnique({
@@ -139,7 +240,38 @@ export const promoteLabManager = async (req: Request, res: Response) => {
     }
 }
 
-// Reset user password POST
+/**
+ * @swagger
+ * /admin/reset-password:
+ *   post:
+ *     summary: Reset a user's password
+ *     description: Allows resetting a user's password
+ *     tags: [User Management]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - newPassword
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: ID of the user
+ *               newPassword:
+ *                 type: string
+ *                 description: New password for the user
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
 export const resetUserPassword = async (req: Request, res: Response) => {
     const { userId, newPassword } = req.body;
     try {
@@ -162,9 +294,40 @@ export const resetUserPassword = async (req: Request, res: Response) => {
     }
 }
 
-// Lab Mangers:
+// Lab Managers:
 
-//Remove members from a lab POST
+/**
+ * @swagger
+ * /admin/remove-user:
+ *   post:
+ *     summary: Remove a user from a lab
+ *     description: Removes an existing user from a lab
+ *     tags: [Lab Management]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - labId
+ *               - userId
+ *             properties:
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab
+ *               userId:
+ *                 type: integer
+ *                 description: ID of the user to be removed
+ *     responses:
+ *       200:
+ *         description: User removed from lab
+ *       404:
+ *         description: Lab or User not found
+ *       500:
+ *         description: Internal server error
+ */
+
 export const removeUserFromLab = async (req: Request, res: Response) => {
     const { labId, userId } = req.body;
     try {
@@ -197,7 +360,36 @@ export const removeUserFromLab = async (req: Request, res: Response) => {
     }
 }
 
-// Create new tags for discussion POST
+/**
+ * @swagger
+ * /admin/create-discussion-tag:
+ *   post:
+ *     summary: Create a new discussion tag
+ *     description: Adds a new tag for discussions
+ *     tags: [Discussion]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tag
+ *             properties:
+ *               tag:
+ *                 type: string
+ *                 description: Name of the tag
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional description of the tag
+ *     responses:
+ *       201:
+ *         description: Tag created successfully
+ *       500:
+ *         description: Internal server error
+ */
+
 export const createDiscussionTag = async (req: Request, res: Response) => {
     const { tag, description } = req.body;
     try {
@@ -214,7 +406,42 @@ export const createDiscussionTag = async (req: Request, res: Response) => {
     }
 }
 
-// Create new categories for discussion POST
+/**
+ * @swagger
+ * /admin/create-discussion-category:
+ *   post:
+ *     summary: Create a new discussion category
+ *     description: Adds a new category for discussions
+ *     tags: [Discussion]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - labId
+ *               - name
+ *             properties:
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab
+ *               name:
+ *                 type: string
+ *                 description: Name of the discussion category
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional description of the category
+ *     responses:
+ *       201:
+ *         description: Category created successfully
+ *       404:
+ *         description: Lab not found
+ *       500:
+ *         description: Internal server error
+ */
+
 export const createDiscussionCategory = async (req: Request, res: Response) => {
     const { labId, name, description } = req.body;
 
@@ -240,7 +467,36 @@ export const createDiscussionCategory = async (req: Request, res: Response) => {
     }
 }
 
-// Create new tags for inventory POST
+/**
+ * @swagger
+ * /admin/create-inventory-tag:
+ *   post:
+ *     summary: Create a new inventory tag
+ *     description: Adds a new tag for inventory items
+ *     tags: [Inventory]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the tag
+ *               tagDescription:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional description of the tag
+ *     responses:
+ *       201:
+ *         description: Tag created successfully
+ *       500:
+ *         description: Internal server error
+ */
+
 export const createInventoryTag = async (req: Request, res: Response) => {
     const { name, tagDescription } = req.body;
     try {
@@ -257,7 +513,52 @@ export const createInventoryTag = async (req: Request, res: Response) => {
     }
 }
 
-// Create new items for inventory POST
+/**
+ * @swagger
+ * /admin/create-inventory-item:
+ *   post:
+ *     summary: Create a new inventory item
+ *     description: Adds a new item to the lab's inventory
+ *     tags: [Inventory]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - itemId
+ *               - labId
+ *               - location
+ *               - itemUnit
+ *               - currentStock
+ *               - minStock
+ *             properties:
+ *               itemId:
+ *                 type: integer
+ *                 description: ID of the item being added
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab to which the item is being added
+ *               location:
+ *                 type: string
+ *                 description: Location of the item within the lab
+ *               itemUnit:
+ *                 type: string
+ *                 description: Unit of the item (e.g., "kg", "liters")
+ *               currentStock:
+ *                 type: integer
+ *                 description: Current stock level of the item
+ *               minStock:
+ *                 type: integer
+ *                 description: Minimum stock level to trigger restocking
+ *     responses:
+ *       201:
+ *         description: Inventory item created successfully
+ *       500:
+ *         description: Internal server error
+ */
+
 export const createInventoryItem = async (req: Request, res: Response) => {
     const { itemId, labId, location, itemUnit, currentStock, minStock } = req.body;
     try {
