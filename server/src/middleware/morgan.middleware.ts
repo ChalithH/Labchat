@@ -161,6 +161,6 @@ const morganMiddleware = morgan(function (tokens, req, res) {
 
 export const setupLogger = (app: Application): void => {
     // Add request/response body capture middleware BEFORE morgan
-    app.use(captureRequestResponseBody);
+    //app.use(captureRequestResponseBody);
     app.use(morganMiddleware);
 };
