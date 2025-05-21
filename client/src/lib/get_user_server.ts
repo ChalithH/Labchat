@@ -12,12 +12,15 @@ const getUserFromSessionServer = async () => {
     const cookieStore = await cookies()
     const cookieHeader = cookieStore.toString()
 
+    console.log('cookieHeader', cookieHeader)
+
     const status_response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/status`, {
       headers: {
         cookie: cookieHeader,
       },
     })
 
+    console.log('status_response', status_response)
     if (status_response.status !== 200) return false
 
     const userId = await status_response.json()
@@ -27,6 +30,8 @@ const getUserFromSessionServer = async () => {
         cookie: cookieHeader,
       },
     })
+
+    console.log('user_response', user_response)
 
     if (user_response.status !== 200) return false
 
