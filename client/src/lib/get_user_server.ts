@@ -9,7 +9,7 @@ import { cookies } from 'next/headers'
 
 const getUserFromSessionServer = async () => {
   try {
-    const cookieStore = await cookies()
+    const cookieStore = cookies() // Remove 'await' here
     const cookieHeader = cookieStore.toString()
 
     console.log('cookieHeader', cookieHeader)
