@@ -8,8 +8,8 @@ export const eventSchema = z.object({
   startTime: z.object({ hour: z.number(), minute: z.number() }, { required_error: "Start time is required" }),
   endDate: z.date({ required_error: "End date is required" }),
   endTime: z.object({ hour: z.number(), minute: z.number() }, { required_error: "End time is required" }),
-  color: z.enum(["blue", "green", "red", "yellow", "purple", "orange", "gray"], { required_error: "Color is required" }),
-  type: z.enum(["rostering", "equipment", "default"], { required_error: "Event type is required" }),
+  // Updated type field - now a string representing the type ID
+  type: z.string({ required_error: "Event type is required" }),
 });
 
 export type TEventFormData = z.infer<typeof eventSchema>;

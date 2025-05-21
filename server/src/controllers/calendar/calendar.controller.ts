@@ -1104,3 +1104,43 @@ export const getEventTypes = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({ error: 'Failed to retrieve event types' });
     }
 }
+
+/**
+ * @swagger
+ * /calendar/get-instruments:
+ *   get:
+ *     summary: Get all instruments
+ *     tags: [Calendar]
+ *     responses:
+ *       200:
+ *         description: A list of all instruments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                     description: Name of the instrument
+ *                 example:
+ *                   id: 1
+ *                   name: "Microscope"
+ */
+export const getInstruments = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const instruments = await prisma.instrument.findMany({
+            select: {
+                id: true,
+                name: true,
+            }
+        });
+        res.json(instruments);
+    } catch (error) {
+        console.error('Error retrieving instruments:', error);
+        res.status(500).json({ error: 'Failed to retrieve instruments' });
+    }
+};

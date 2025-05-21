@@ -8,19 +8,20 @@ import { ChangeBadgeVariantInput } from "@/calendar/components/change-badge-vari
 import { ChangeVisibleHoursInput } from "@/calendar/components/change-visible-hours-input";
 import { ChangeWorkingHoursInput } from "@/calendar/components/change-working-hours-input";
 
-import type { IEvent, IUser } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType } from "@/calendar/interfaces";
 import type { TCalendarView } from "@/calendar/types";
 
 interface CalendarClientProps {
   view: TCalendarView;
   initialEvents: IEvent[];
   users: IUser[];
+  eventTypes: IEventType[];
 }
 
-export function CalendarClient({ view, initialEvents, users }: CalendarClientProps) {
+export function CalendarClient({ view, initialEvents, users, eventTypes }: CalendarClientProps) {
   return (
     <>
-      <CalendarProvider users={users} initialEvents={initialEvents}>
+      <CalendarProvider users={users} eventTypes={eventTypes} initialEvents={initialEvents}>
         <ClientContainer view={view} />
         
         <Accordion type="single" collapsible>
