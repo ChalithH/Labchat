@@ -12,8 +12,10 @@ import { DiscussionPostState } from '@/types/post.type'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import getUserFromSession from '@/lib/get_user'
-import ResolveRoleName from '@/lib/resolve_role_name.util'
 import { PermissionConfig } from '@/config/permissions'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Checkbox } from '@/components/ui/checkbox'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 type AddPostDialogProps = {
   discussionId: number
@@ -33,6 +35,8 @@ export const AddPostDialog = ({ discussionId, memberId }: AddPostDialogProps) =>
   const [state, setState] = useState<string>(DiscussionPostState.REPLIES_OPEN.toString())
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [tags, setTags] = useState<any[]>([])
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
 
   const [role, setRole] = useState<any>()
 
@@ -43,16 +47,28 @@ export const AddPostDialog = ({ discussionId, memberId }: AddPostDialogProps) =>
       setRole(getrole.data)
     }
     getUser()
+
+    const fetchTags = async () => {
+      const res = await api.get('/discussion/tags/')
+      setTags(res.data)
+    }
+    fetchTags()
   },[] )
 
+  const toggleTag = (id: number) => {
+    setSelectedTagIds(prev => prev.includes(id) ? prev.filter(tagId => tagId !== id) : [...prev, id])
+  }
+
   const handleCreatePost = async () => {
+    console.log(selectedTagIds)
+
     if (!title || !content || !state || !replyState) {
       setError("Fill in the form before submitting")
       return
     }
 
     setIsLoading(true)
-    const response: AxiosResponse = await api.post('/discussion/post', {discussionId,memberId,title,content,state,replyState})
+    const response: AxiosResponse = await api.post('/discussion/post', {discussionId,memberId,title,content,state,replyState,selectedTagIds})
 
     if (response.status === 200) {
       setTitle('')
@@ -127,6 +143,36 @@ export const AddPostDialog = ({ discussionId, memberId }: AddPostDialogProps) =>
             </Select>
           </>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="mb-1">Tags</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start">
+                {selectedTagIds.length > 0
+                  ? `${selectedTagIds.length} tag(s) selected`
+                  : 'Select tags'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="min-w-[100%] max-h-60 overflow-y-auto p-2"
+              align="start"
+            >
+                {tags.map(tag => (
+                  <div key={tag.id} className="flex items-center space-x-2 py-1">
+                    <Checkbox
+                      id={`tag-${tag.id}`}
+                      checked={selectedTagIds.includes(tag.id)}
+                      onCheckedChange={() => toggleTag(tag.id)}
+                    />
+                    <label htmlFor={`tag-${tag.id}`} className="text-sm">
+                      {tag.tag}
+                    </label>
+                  </div>
+                ))}
+            </PopoverContent>
+          </Popover>
         </div>
 
         <DialogFooter>

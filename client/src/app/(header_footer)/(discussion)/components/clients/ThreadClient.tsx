@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { PermissionConfig } from '@/config/permissions'
 import { MdPushPin } from 'react-icons/md'
+import { Badge } from '@/components/ui/badge'
 
 type ThreadClientProps = {
   post: PostType,
@@ -111,6 +112,12 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      { post.tags && post.tags.length > 0 &&
+      <div className="flex flex-wrap gap-2 mb-[-8px]">
+        { post.tags.map(tag => <Badge key={ tag.id } className={ tag.colour || '' }>{ tag.tag }</Badge>) }
+      </div>
+      }
 
       <div className='flex justify-between items-center'>
         <div className='flex items-center gap-2'>

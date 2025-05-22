@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import api from "@/lib/api"
@@ -29,6 +29,9 @@ import { Input } from "@/components/ui/input"
 import { Pencil } from "lucide-react"
 import { DiscussionPostState, PostType } from "@/types/post.type"
 import { PermissionConfig } from "@/config/permissions"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 const HIDDEN_PERMISSION = PermissionConfig.HIDDEN_PERMISSION
 const STICKY_PERMISSION = PermissionConfig.STICKY_PERMISSION
@@ -47,8 +50,30 @@ const EditPost = ({ post, userPermission }: { post: PostType, userPermission: nu
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
+  const [tags, setTags] = useState<any[]>([])
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>(post.tags?.map((tag: any) => tag.id) || [])
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const res = await api.get('/discussion/tags/')
+        setTags(res.data)
+      } catch (err) {
+        console.error("Failed to load tags", err)
+      }
+    }
+
+    fetchTags()
+  }, [])
+
+  const toggleTag = (id: number) => {
+    setSelectedTagIds(prev =>
+      prev.includes(id) ? prev.filter(tagId => tagId !== id) : [...prev, id]
+    )
+  }
+
   const confirmUpdate = async () => {
-    const newPost = { ...post, title, content: contents, replyState, state}
+    const newPost = { ...post, title, content: contents, replyState, state, selectedTagIds}
     await api.put(`/discussion/post/${ post.id }`, newPost)
   
     setIsConfirmOpen(false)
@@ -121,7 +146,7 @@ const EditPost = ({ post, userPermission }: { post: PostType, userPermission: nu
 
           { userPermission >= Math.max(HIDDEN_PERMISSION, STICKY_PERMISSION) &&
             <>
-            <Label htmlFor="state" className="mb-[-8px]">State</Label>
+            <Label htmlFor="state" className="mb-[-8px]">Post State</Label>
               <Select value={ state.toString() } onValueChange={ setState }>
                 <SelectTrigger className="w-full text-sm">
                   <SelectValue placeholder="Select a state" />
@@ -134,6 +159,37 @@ const EditPost = ({ post, userPermission }: { post: PostType, userPermission: nu
               </Select>
             </>
           }
+
+          <div className="space-y-2">
+            <Label className="mb-1">Tags</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  {selectedTagIds.length > 0
+                    ? `${selectedTagIds.length} tag(s) selected`
+                    : 'Select tags'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="min-w-[100%] max-h-60 overflow-y-auto p-2"
+                align="start"
+              >
+                  {tags.map(tag => (
+                    <div key={tag.id} className="flex items-center space-x-2 py-1">
+                      <Checkbox
+                        id={`tag-${tag.id}`}
+                        checked={selectedTagIds.includes(tag.id)}
+                        onCheckedChange={() => toggleTag(tag.id)}
+                      />
+                      <label htmlFor={`tag-${tag.id}`} className="text-sm">
+                        {tag.tag}
+                      </label>
+                    </div>
+                  ))}
+                
+              </PopoverContent>
+            </Popover>
+          </div>
 
           <DialogFooter>
             <DialogClose asChild>
