@@ -10,6 +10,13 @@ export enum DiscussionPostState {
   STICKY = "STICKY"             // Stuck to top of category
 }
 
+type TagType = {
+  id: number,
+  description: string,
+  tag: string,
+  colour: string
+}
+
 export type PostType = {
     id: number,
     discussionId: number,
@@ -26,5 +33,6 @@ export type PostType = {
         id: number
         userId: number
         user: UserType
-    }
+    },
+    tags: TagType[]
 }

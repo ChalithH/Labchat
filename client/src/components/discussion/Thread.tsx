@@ -17,6 +17,7 @@ import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
 import EditPost from '@/app/(header_footer)/(discussion)/components/EditPost'
 import { PermissionConfig } from '@/config/permissions';
+import { Badge } from '../ui/badge';
 
 
 const BLURB_CHAR_LIMIT = 128
@@ -89,6 +90,14 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
 	return (
 		<div className="discussion-thread relative barlow-font cursor-pointer">
+      { thread.tags && thread.tags.length > 0 &&
+        <div className="flex flex-wrap gap-2 mb-2">
+          { thread.tags.map(tag => 
+            <Badge key={ tag.id } className={ tag.colour || '' }>{ tag.tag }</Badge>) 
+          }
+        </div>
+      }
+
 			<Link href={ `/discussion/thread/${ thread.id }` }>
       <div className='flex items-center gap-1'>
         { thread.state === DiscussionPostState.STICKY && <MdPushPin className='text-yellow-500 font-semibold text-lg' /> }
