@@ -93,8 +93,10 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
       { thread.tags && thread.tags.length > 0 &&
         <div className="flex flex-wrap gap-2 mb-2">
           { thread.tags.map(tag => 
-            <Badge key={ tag.id } className={ tag.colour || '' }>{ tag.tag }</Badge>) 
-          }
+            <Badge key={ tag.id } className="text-white" style={{ backgroundColor: tag.colour }}>
+              {tag.tag}
+            </Badge>
+          )}
         </div>
       }
 

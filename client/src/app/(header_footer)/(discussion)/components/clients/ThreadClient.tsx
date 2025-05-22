@@ -114,9 +114,13 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
       </Breadcrumb>
 
       { post.tags && post.tags.length > 0 &&
-      <div className="flex flex-wrap gap-2 mb-[-8px]">
-        { post.tags.map(tag => <Badge key={ tag.id } className={ tag.colour || '' }>{ tag.tag }</Badge>) }
-      </div>
+        <div className="flex items-center gap-2">
+          { post.tags.map(tag => 
+          <Badge key={ tag.id } className="text-white" style={{ backgroundColor: tag.colour }}>
+            {tag.tag}
+          </Badge>) }
+        </div>
+        
       }
 
       <div className='flex justify-between items-center'>

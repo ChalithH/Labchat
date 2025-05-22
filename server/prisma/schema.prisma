@@ -316,6 +316,7 @@ model PostTag {
   id          Int                 @id @default(autoincrement())
   tag         String
   description String?             @db.Text
+  colour      String?             @db.Text
 
   // Relationships
   postTags    DiscussionPostTag[]
