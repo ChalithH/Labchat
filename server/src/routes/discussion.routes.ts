@@ -1,10 +1,6 @@
 import { Router } from 'express'
 import { createPost, deletePost, editPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller'
 import {
-    createTag,
-    editTag,
-    assignTagToPost, 
-    removeTagFromPost,
     getAllCategoriesByLab,
     getAllCategories,
     getCategoryById,
@@ -12,6 +8,8 @@ import {
 } from '../controllers/discussion/category.controller'; 
 import { getReplyById, getRepliesByPost, createReply, editReply, deleteReply,} from '../controllers/discussion/reply.controller'
 import { getMixedPosts, getPopularPosts, getRecentPosts } from '../controllers/discussion/misc.controller'
+import { assignTagToPost, createTag, deleteTag, editTag, getAllTags, getTagById, getTagsForPost, removeTagFromPost } from '../controllers/discussion/tag.controller';
+
 /**
  * @swagger
  * tags:
@@ -52,6 +50,15 @@ router.post('/reply', createReply)
 router.put('/reply/:id', editReply)
 router.delete('/reply/:id', deleteReply)
 
+// tag controller routes
+router.get('/tags', getAllTags); 
+router.get('/tags/:id', getTagById);
+router.get('/tags/post/:id', getTagsForPost);
+router.post('/tags', createTag); 
+router.put('/tags/:id', editTag); 
+router.delete('/tags/:id', deleteTag); 
+router.post('/posts/:postId/tags', assignTagToPost);
+router.delete('/posts/:postId/tags/:tagAssignmentId', removeTagFromPost);
 
 // misc controller routes
 router.get('/recent/:id', getRecentPosts)

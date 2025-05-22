@@ -321,10 +321,11 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
       return
     }
 
-    const posts: DiscussionPost[] | null = await prisma.discussionPost.findMany({ 
+    const posts = await prisma.discussionPost.findMany({
       where: { discussionId: category_id },
       include: {
-        member: { include: { user: true } }
+        member: { include: { user: true } },
+        tags: { include: { postTag: true } }
       }
     })
 
@@ -338,7 +339,12 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
       return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     })
 
-    res.status(200).send(sortedPosts)
+    const postsWithTags = sortedPosts.map(post => ({
+      ...post,
+      tags: post.tags.map(tag => tag.postTag)
+    }))
+
+    res.status(200).send(postsWithTags)
     return
 
   } catch(err: unknown) {
