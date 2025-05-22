@@ -29,9 +29,8 @@ export default async function ProfilePage(props:{ params: Params}) {
   const user_id: number = parseInt(user.id, 10)
   const role_id: number = parseInt(user.roleId, 10)
   
-  console.log('user', user)
   // Check if user has permission to view this page
-  if (user) {
+  if (!user) {
     redirect('/home')
   }
 

@@ -7,7 +7,7 @@ import { PostType } from '@/types/post.type'
 import { CategoryType } from '@/types/category.type'
 
 import setUsersLastViewed from '@/lib/set_last_viewed'
-import getUserFromSession from '@/lib/get_user' 
+import getUserFromSessionServer from '@/lib/get_user_server' 
 
 import HomeClient from '../../components/clients/HomeClient'
 import api from '@/lib/api'
@@ -17,7 +17,7 @@ import api from '@/lib/api'
 const DiscussionHome = async () => {
     setUsersLastViewed(`/discussion/home`)
 
-    const user = await getUserFromSession()
+    const user = await getUserFromSessionServer()
     if (!user) {
       redirect('/home')
     }

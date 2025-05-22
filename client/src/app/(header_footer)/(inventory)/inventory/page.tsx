@@ -7,7 +7,7 @@ const Inventory: React.FC = async () => {
   setUsersLastViewed(`/inventory`)
   const user = await getUserFromSessionServer()
   console.log('user', user); 
-  if (user) {
+  if (!user) {
     redirect('/home')
   }
 
