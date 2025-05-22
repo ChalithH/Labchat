@@ -17,6 +17,17 @@ type TagType = {
   colour: string
 }
 
+type ReactionType = {
+  id: number,
+  postId: number,
+  memberId: number,
+  reaction: {
+    reaction: string,
+    reactionName: string
+  }
+}
+
+
 export type PostType = {
     id: number,
     discussionId: number,
@@ -34,5 +45,6 @@ export type PostType = {
         userId: number
         user: UserType
     },
-    tags: TagType[]
+    tags: TagType[],
+    reactions: ReactionType[]
 }

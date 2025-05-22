@@ -57,6 +57,7 @@ const DiscussionHome = async () => {
       })
     )
 
+    console.log(filteredActivity)
 
     return (
       <HomeClient user={ user } userPermission={ userPermission } recentActivity={ filteredActivity } categories={ categories } posts={ posts }/>

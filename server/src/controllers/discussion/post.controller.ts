@@ -377,7 +377,8 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
       where: { discussionId: category_id },
       include: {
         member: { include: { user: true } },
-        tags: { include: { postTag: true } }
+        tags: { include: { postTag: true } },
+        reactions: { include: { reaction: true } }
       }
     })
 

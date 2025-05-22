@@ -9,6 +9,7 @@ import {
 import { getReplyById, getRepliesByPost, createReply, editReply, deleteReply,} from '../controllers/discussion/reply.controller'
 import { getMixedPosts, getPopularPosts, getRecentPosts } from '../controllers/discussion/misc.controller'
 import { assignTagToPost, createTag, deleteTag, editTag, getAllTags, getTagById, getTagsForPost, removeTagFromPost } from '../controllers/discussion/tag.controller';
+import { getAllPostReactions, getReactionsForPost } from '../controllers/discussion/reaction.controller';
 
 /**
  * @swagger
@@ -59,6 +60,10 @@ router.put('/tags/:id', editTag);
 router.delete('/tags/:id', deleteTag); 
 router.post('/posts/:postId/tags', assignTagToPost);
 router.delete('/posts/:postId/tags/:tagAssignmentId', removeTagFromPost);
+
+// reaction controller routes
+router.get('/reactions', getAllPostReactions);
+router.get('/reactions/:id', getReactionsForPost);
 
 // misc controller routes
 router.get('/recent/:id', getRecentPosts)

@@ -2,16 +2,14 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-
 import { MdPushPin } from "react-icons/md";
 import { EyeOff } from 'lucide-react'
 import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 import { DiscussionPostState, PostType } from '@/types/post.type'
 import { AxiosResponse } from 'axios'
 import api from '@/lib/api'
-import ResolveRoleName from '@/lib/resolve_role_name.util'
 import getUserFromSession from '@/lib/get_user'
-import { Loader2, Pencil, Trash } from 'lucide-react'
+import { Loader2, Trash } from 'lucide-react'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
@@ -80,6 +78,12 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
     router.refresh()
   }
 
+  const reactionSummary = thread.reactions?.reduce((acc: Record<string, number>, curr: any) => {
+    const key = curr.reaction.reaction + ' ' + curr.reaction.reactionName
+    acc[key] = (acc[key] || 0) + 1
+    return acc
+  }, {})
+
   if (!author || !user || !authorRole || !userRole) {
     return ( 
       <div className="flex justify-center items-center gap-2 text-center p-4 border-1 play-font uppercase font-semibold text-xs border-gray-200 rounded-sm ">
@@ -134,6 +138,14 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
             <Trash onClick={ handleDeletePopup } className='w-5 h-5 text-muted-foreground' />
           </div> }
 			</div>
+
+      { reactionSummary && Object.entries(reactionSummary).length > 0 && 
+        <div className="flex gap-2 mt-4 flex-wrap">
+          {Object.entries(reactionSummary).map(([label, count]) => (
+            <p key={label} className="play-font text-sm">{label} x {count}</p>
+          ))}
+        </div>
+      }
 
       <Dialog open={ showPopup } onOpenChange={ setShowPopup }>
         <DialogContent>

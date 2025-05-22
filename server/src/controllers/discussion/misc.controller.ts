@@ -22,7 +22,8 @@ export const getRecentPosts = async (req: Request, res: Response): Promise<void>
       take: amount,
       include: {
         member: { include: { user: true } },
-        tags: { include: { postTag: true } }
+        tags: { include: { postTag: true } },
+        reactions: { include: { reaction: true } }
       }
     })
 
