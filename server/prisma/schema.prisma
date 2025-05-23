@@ -36,9 +36,11 @@ model User {
   bio           String?
   dateJoined    DateTime   @default(now())
   lastViewed    String?
+  lastViewedLabId Int?
 
   // Relationships
   role          Role       @relation(fields: [roleId], references: [id])
+  lastViewedLab Lab?       @relation("LastViewedLab", fields: [lastViewedLabId], references: [id])
   labMembers    LabMember[]
   contacts      Contact[]
   auditLogs     AuditLog[]
@@ -94,6 +96,7 @@ model Lab {
   status         String
 
   // Relationships
+  usersLastViewed User[]     @relation("LastViewedLab")
   labMembers     LabMember[]
   inventoryItems LabInventoryItem[]
   discussions    Discussion[]
