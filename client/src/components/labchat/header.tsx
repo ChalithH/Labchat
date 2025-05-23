@@ -32,7 +32,7 @@ export default function Header() {
   };
 
 
-  useEffect( () => {
+  useEffect(() => {
     const getUser = async () => {
       const user = await getUserFromSession()
 
@@ -59,114 +59,116 @@ export default function Header() {
   const handleProfile = async () => {
     if (isLoggedIn) {
       const user = await getUserFromSession()
-      redirect(`/profile/${ user.id }`)
+      redirect(`/profile/${user.id}`)
     }
   }
 
-    return (
-      <header className="sticky top-0 z-50 w-full bg-zinc-200/70 dark:bg-zinc-900/70 shadow-sm border-b-[1px] ">
-        <div className="container mx-auto flex h-24 items-center justify-between px-8">
-          <div className="flex flex-col sm:flex-row items-center gap-1 md:gap-4 ">
+  return (
+    <header className="sticky top-0 z-50 w-full bg-zinc-200/70 dark:bg-zinc-900/70 shadow-sm border-b-[1px] ">
+      <div className="container mx-auto flex h-24 items-center justify-between px-8">
+        <div>
+          <Link href={isLoggedIn ? "/dashboard" : "/home"} className="flex flex-col sm:flex-row items-center gap-1 md:gap-4 ">
             <Image
-              src={ frank.src }
+              src={frank.src}
               alt="Frank the Flask"
               height={48}
               width={48}
               className=""
             />
             <h1 className="text-labchat-blue-500 text-xl md:text-3xl font-bold play-font text-center sm:text-left">Labchat</h1>
-          </div>
+          </Link>
+        </div>
 
-          
-          <div className="flex items-center gap-4">    
-            <ModeSwitch />
 
-            <Sheet>
-              <SheetTitle className='hidden'>Menu</SheetTitle>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="w-12 h-12">
-                  <MenuIcon className="h-12 w-12" />
-                  <span className="sr-only">Toggle navigation menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[350px] py-10">
+        <div className="flex items-center gap-4">
+          <ModeSwitch />
+
+          <Sheet>
+            <SheetTitle className='hidden'>Menu</SheetTitle>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="w-12 h-12">
+                <MenuIcon className="h-12 w-12" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[350px] py-10">
               <SheetHeader className='flex items-center justify-center'>
                 <SheetClose asChild>
-                  { isLoggedIn ?
+                  {isLoggedIn ?
                     <div className='flex items-center space-x-2'>
-                        <Button onClick={ handleProfile } variant="outline" className="w-12 h-12 overflow-hidden">
-                          <img src="/default_pfp.svg" className='scale-420' alt="" />
-                        </Button>
-                        <div className='flex flex-col items-center justify-between'>
-                          <Badge>{ userData.role }</Badge>
-                          <p className="font-semibold play-font">{ userData.username }</p>
-                        </div>
+                      <Button onClick={handleProfile} variant="outline" className="w-12 h-12 overflow-hidden">
+                        <img src="/default_pfp.svg" className='scale-420' alt="" />
+                      </Button>
+                      <div className='flex flex-col items-center justify-between'>
+                        <Badge>{userData.role}</Badge>
+                        <p className="font-semibold play-font">{userData.username}</p>
+                      </div>
                     </div>
-                  :
+                    :
                     <Link href="#" className="flex items-center gap-2" prefetch={false}>
                       <span className="text-2xl font-bold play-font text-labchat-blue-500">Labchat Navigation</span>
                     </Link>
                   }
-                  
+
 
                 </SheetClose>
                 <SheetDescription className='hidden'>Description goes here</SheetDescription>
               </SheetHeader>
-                <div className="flex flex-col gap-10 p-10 text-center">
-                  {/* Conditionally render navigation links based on login status */}
-                  {isLoggedIn ? (
-                    // Render logged-in navigation links
-                    loggedInsiteConfig.navItems.map((item, index) => (
-                      <SheetClose key={index} asChild>
-                        <Link 
-                          href={`${item.href}`}
-                          className={`text-sm font-medium hover:text-muted-foreground hover:underline ${activeLink === item.href ? 'text-labchat-magenta-500' : ''}`} 
-                          prefetch={false} 
-                          onClick={() => handleLinkClick(item.href)}>
-                          {item.title}
-                        </Link>
-                      </SheetClose>
-                    ))
-                  ) : (
-                    // Render logged-out navigation links
-                    loggedOutsiteConfig.navItems.map((item, index) => (
-                      <SheetClose key={index} asChild>
-                        <Link 
-                          href={`${item.href}`}
-                          className={`text-base font-medium hover:text-muted-foreground hover:underline ${activeLink === item.href ? 'text-labchat-magenta-500' : ''}`} 
-                          prefetch={false} 
-                          onClick={() => handleLinkClick(item.href)}>
-                          {item.title}
-                        </Link>
-                      </SheetClose>
-                    ))
-                  )}
-                  
-                  {/* Add logout button to the navigation menu if logged in */}
-                  {isLoggedIn && (
-                    <SheetClose asChild>
-                      <button 
-                        className="text-sm font-medium text-red-500 hover:text-red-600 hover:underline"
-                        onClick={handleLogout}>
-                        Log out
-                      </button>
+              <div className="flex flex-col gap-10 p-10 text-center">
+                {/* Conditionally render navigation links based on login status */}
+                {isLoggedIn ? (
+                  // Render logged-in navigation links
+                  loggedInsiteConfig.navItems.map((item, index) => (
+                    <SheetClose key={index} asChild>
+                      <Link
+                        href={`${item.href}`}
+                        className={`text-sm font-medium hover:text-muted-foreground hover:underline ${activeLink === item.href ? 'text-labchat-magenta-500' : ''}`}
+                        prefetch={false}
+                        onClick={() => handleLinkClick(item.href)}>
+                        {item.title}
+                      </Link>
                     </SheetClose>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-            
-            {/* User profile and logout buttons - only shown when logged in */}
-            {isLoggedIn && 
-              <div className="flex items-center justify-between gap-4 mt-2">
-                {/* <button 
+                  ))
+                ) : (
+                  // Render logged-out navigation links
+                  loggedOutsiteConfig.navItems.map((item, index) => (
+                    <SheetClose key={index} asChild>
+                      <Link
+                        href={`${item.href}`}
+                        className={`text-base font-medium hover:text-muted-foreground hover:underline ${activeLink === item.href ? 'text-labchat-magenta-500' : ''}`}
+                        prefetch={false}
+                        onClick={() => handleLinkClick(item.href)}>
+                        {item.title}
+                      </Link>
+                    </SheetClose>
+                  ))
+                )}
+
+                {/* Add logout button to the navigation menu if logged in */}
+                {isLoggedIn && (
+                  <SheetClose asChild>
+                    <button
+                      className="text-sm font-medium text-red-500 hover:text-red-600 hover:underline"
+                      onClick={handleLogout}>
+                      Log out
+                    </button>
+                  </SheetClose>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* User profile and logout buttons - only shown when logged in */}
+          {isLoggedIn &&
+            <div className="flex items-center justify-between gap-4 mt-2">
+              {/* <button 
                   className="cursor-pointer bg-sky-500 text-white p-2 rounded-md"
                   onClick={handleProfile}>
                     <strong>Profile</strong><br />{userData.displayName}</button>  */}
-              </div>
-            }
-          </div>
-        </div>    
-      </header>
-    )
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+  )
 }
