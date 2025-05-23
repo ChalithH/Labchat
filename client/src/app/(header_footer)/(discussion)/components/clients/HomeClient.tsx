@@ -7,17 +7,19 @@ import Title from '@/app/(header_footer)/(discussion)/components/Title'
 import RecentActivity from '@/app/(header_footer)/(discussion)/components/RecentActivity'
 import Thread from '@/components/discussion/Thread'
 
+import DiscussionSearchFilter from '@/app/(header_footer)/(discussion)/components/DiscussionSearchFilter'
+
 
 const THREADS_PER_TOPIC = 3
 
-const HomeClient = ({ recentActivity, categories, posts }:{ recentActivity: PostType[], categories: CategoryType[], posts: PostType[][] }): React.ReactNode => {
-  return (
-  	<main>
-      <section className='mb-8'>
-        <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Browse Recent Discussions</h1>
-        <RecentActivity posts={ recentActivity }/>
-      </section>
-
+const HomeClient = ({ recentActivity, categories, posts }: { recentActivity: PostType[], categories: CategoryType[], posts: PostType[][] }): React.ReactNode => {
+	return (
+		<main>
+			<section className='mb-8'>
+				<h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Browse Recent Discussions</h1>
+				<RecentActivity posts={recentActivity} />
+			</section>
+			{/* 
 			<section className="w-[90dvw] m-auto">
 				{ categories.map( (category, index) => (
 					<div key={ category.id } className="mb-12">
@@ -37,9 +39,16 @@ const HomeClient = ({ recentActivity, categories, posts }:{ recentActivity: Post
 						</div>
 					</div>
 				))}
+			</section> */}
+			<section className="w-[90dvw] m-auto">
+				<DiscussionSearchFilter
+					categories={categories}
+					posts={posts}
+					threadsPerCategory={3}
+				/>
 			</section>
-    </main>
-  )
+		</main>
+	)
 }
 
 export default HomeClient
