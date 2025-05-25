@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { assignMember, createEvent, updateEvent, removeMember, deleteEvent, getLabEvents, getEventTypes, getMemberEvents }  from '../controllers/calendar/calendar.controller';
+import { assignMember, createEvent, updateEvent, removeMember, deleteEvent, getLabEvents, getEventTypes, getMemberEvents, getInstruments }  from '../controllers/calendar/calendar.controller';
 
 /**
  * @swagger

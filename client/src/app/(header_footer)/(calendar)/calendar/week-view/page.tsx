@@ -2,9 +2,17 @@ import { getUsers, getEvents, getEventTypes } from "@/calendar/requests";
 import { startOfWeek, endOfWeek } from 'date-fns';
 import { CalendarClient } from "@/calendar/components/calendar-client";
 import setUsersLastViewed from '@/lib/set_last_viewed';
+import getUserFromSessionServer from "@/lib/get_user_server";
+import { redirect } from "next/navigation";
 
 export default async function WeekViewPage() {
   setUsersLastViewed('/calendar/week-view');
+
+    const user = await getUserFromSessionServer()
+
+  if (!user) {
+    redirect('/home')
+  }
 
   const currentDate = new Date();
   const startDate = startOfWeek(currentDate);
