@@ -2,8 +2,11 @@ import { Router } from 'express';
 
 import  {getAllLabs, getLabById, createLab, assignUserToLab,
          updateRole, resetUserPassword, removeUserFromLab,
-          createDiscussionTag, createDiscussionCategory, createInventoryTag,
-           createInventoryItem} from '../controllers/admin/admin.controller';
+          createDiscussionTag, createDiscussionCategory, getAllItems, createInventoryTag,
+           createInventoryItem,
+           createGlobalItem,
+           updateItem,
+           deleteItem} from '../controllers/admin/admin.controller';
 
 import { requirePermission } from '../middleware/permission.middleware';
 
@@ -27,6 +30,11 @@ router.put('/reset-password', requirePermission(170), resetUserPassword);
 router.delete('/remove-user', requirePermission(60), removeUserFromLab);
 router.post('/create-discussion-tag', requirePermission(60), createDiscussionTag);
 router.post('/create-discussion-category', requirePermission(60), createDiscussionCategory);
+
+router.get('/get-all-items', requirePermission(100), getAllItems);
+router.post('/create-global-item', requirePermission(100), createGlobalItem); 
+router.put("/update-item/:id", updateItem);
+router.delete("/delete-item/:id", deleteItem);
 router.post('/create-inventory-tag', requirePermission(60), createInventoryTag);
 router.post('/create-inventory-item', requirePermission(60), createInventoryItem);
 

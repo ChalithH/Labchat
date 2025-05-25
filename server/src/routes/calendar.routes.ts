@@ -18,5 +18,6 @@ router.delete('/remove-member', removeMember);
 router.get('/events/:labId', getLabEvents);
 router.get('/member-events/:labId/:memberId', getMemberEvents);
 router.get('/getEventTypes', getEventTypes)
+router.get('/get-instruments', getInstruments)
 
 export default router;

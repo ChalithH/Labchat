@@ -4,6 +4,7 @@ import { Columns, List, Plus, Grid2x2, CalendarRange, RefreshCw, Loader2  } from
 import { Button } from "@/components/ui/button";
 
 import { UserSelect } from "@/calendar/components/header/user-select";
+import { EventTypeSelect } from "@/calendar/components/header/event-type-select"; 
 import { TodayButton } from "@/calendar/components/header/today-button";
 import { DateNavigator } from "@/calendar/components/header/date-navigator";
 import { AddEventDialog } from "@/calendar/components/dialogs/add-event-dialog";
@@ -22,7 +23,7 @@ export function CalendarHeader({ view, events, onRefresh, isLoading  }: IProps) 
   return (
     <div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center gap-3">
-        <TodayButton />
+        <TodayButton disabled={isLoading} />
         <DateNavigator 
           view={view} 
           events={events} 
@@ -37,8 +38,9 @@ export function CalendarHeader({ view, events, onRefresh, isLoading  }: IProps) 
             onClick={onRefresh} 
             className="ml-2"
             title="Refresh events"
+            disabled={isLoading}
           >
-                        {isLoading ? (
+            {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <RefreshCw className="h-4 w-4" />
@@ -101,11 +103,14 @@ export function CalendarHeader({ view, events, onRefresh, isLoading  }: IProps) 
             </Button>
           </div>
 
-          <UserSelect onRefresh={onRefresh} isLoading={isLoading} />
+          <div className="flex space-x-2">
+            <UserSelect onRefresh={onRefresh} isLoading={isLoading} />
+            <EventTypeSelect onRefresh={onRefresh} isLoading={isLoading} />
+          </div>
         </div>
 
         <AddEventDialog>
-          <Button className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto" disabled={isLoading}>
             <Plus />
             Add Event
           </Button>

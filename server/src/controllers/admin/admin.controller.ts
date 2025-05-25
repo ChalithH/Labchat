@@ -657,3 +657,259 @@ export const createInventoryItem = async (req: Request, res: Response): Promise<
     }
 }
 
+
+
+// Inventory related endpoints
+/**
+ * @swagger
+ * /admin/get-all-items:
+ *   get:
+ *     summary: Get all inventory items
+ *     description: Retrieves a list of all inventory items with their details
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: A list of inventory items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: The item ID
+ *                   name:
+ *                     type: string
+ *                     description: The item name
+ *                   description:
+ *                     type: string
+ *                     nullable: true
+ *                     description: The item description
+ *                   safetyInfo:
+ *                     type: string
+ *                     nullable: true
+ *                     description: Safety information about the item
+ *                   approval:
+ *                     type: boolean
+ *                     description: Whether the item is approved
+ *                   labInventory:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/LabInventoryItem'
+ *       500:
+ *         description: Internal server error
+ */
+export const getAllItems = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const items = await prisma.item.findMany({
+            include: {
+                labInventory: false
+            },
+            orderBy: {
+                id: 'asc'
+            }
+        });
+        res.status(200).json(items);
+    } catch (error) {
+        console.error('Error fetching items:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+// Inventory related endpoints
+/**
+ * @swagger
+ * /admin/create-global-item:
+ *   post:
+ *     summary: Create a new inventory item
+ *     description: Adds a new item to the inventory
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the item
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Description of the item
+ *               safetyInfo:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Safety information
+ *               approval:
+ *                 type: boolean
+ *                 description: Approval status
+ *     responses:
+ *       201:
+ *         description: Item created successfully
+ *       400:
+ *         description: Bad request (missing required fields)
+ *       500:
+ *         description: Internal server error
+ */
+export const createGlobalItem = async (req: Request, res: Response): Promise<void> => {
+    const { name, description, safetyInfo, approval } = req.body;
+    
+    if (!name) {
+        res.status(400).json({ error: 'Name is required' });
+        return;
+    }
+
+    try {
+        const newItem = await prisma.item.create({
+            data: {
+                id: undefined, // Prisma will auto-generate the ID
+                name,
+                description: description || null,
+                safetyInfo: safetyInfo || null,
+                approval: approval || false
+            }
+        });
+        res.status(201).json(newItem);
+    } catch (error) {
+        console.error('Error creating inventory item:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+/**
+ * @swagger
+ * /admin/update-item/{id}:
+ *   put:
+ *     summary: Update an existing inventory item
+ *     description: Updates the name, description, safety info, or approval status of an item
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the item to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *               safetyInfo:
+ *                 type: string
+ *                 nullable: true
+ *               approval:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Item updated successfully
+ *       400:
+ *         description: Invalid request or missing fields
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal server error
+ */
+export const updateItem = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { name, description, safetyInfo, approval } = req.body;
+
+  try {
+    const itemId = parseInt(id);
+    if (isNaN(itemId)) {
+      res.status(400).json({ error: 'Invalid item ID' });
+      return;
+    }
+
+    const existingItem = await prisma.item.findUnique({
+      where: { id: itemId },
+    });
+
+    if (!existingItem) {
+      res.status(404).json({ error: 'Item not found' });
+      return;
+    }
+
+    const updatedItem = await prisma.item.update({
+      where: { id: itemId },
+      data: {
+        name: name ?? existingItem.name,
+        description: description ?? existingItem.description,
+        safetyInfo: safetyInfo ?? existingItem.safetyInfo,
+        approval: approval ?? existingItem.approval,
+      },
+    });
+
+    res.status(200).json(updatedItem);
+  } catch (error) {
+    console.error('Error updating item:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * @swagger
+ * /admin/delete-item/{id}:
+ *   delete:
+ *     summary: Delete an inventory item
+ *     description: Permanently deletes an item from the inventory
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the item to delete
+ *     responses:
+ *       200:
+ *         description: Item deleted successfully
+ *       400:
+ *         description: Invalid item ID
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal server error
+ */
+export const deleteItem = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    const itemId = parseInt(id);
+    if (isNaN(itemId)) {
+      res.status(400).json({ error: 'Invalid item ID' });
+      return;
+    }
+
+    const existingItem = await prisma.item.findUnique({
+      where: { id: itemId },
+    });
+
+    if (!existingItem) {
+      res.status(404).json({ error: 'Item not found' });
+      return;
+    }
+
+    await prisma.item.delete({
+      where: { id: itemId },
+    });
+
+    res.status(200).json({ message: 'Item deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

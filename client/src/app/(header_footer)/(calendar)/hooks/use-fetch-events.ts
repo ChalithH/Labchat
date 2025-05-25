@@ -19,11 +19,12 @@ type FetchCache = {
   endDate: string;
   view: TCalendarView;
   userId: string;
+  typeId: string;
   events: IEvent[];
 };
 
 export const useFetchEvents = () => {
-  const { selectedDate, selectedUserId, setLocalEvents } = useCalendar();
+  const { selectedDate, selectedUserId, selectedTypeId, setLocalEvents } = useCalendar();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<TCalendarView>('month');
@@ -60,7 +61,7 @@ export const useFetchEvents = () => {
     return { startDate, endDate };
   }, []);
   
-  const fetchEventsForDateRange = useCallback(async (date: Date, viewType: TCalendarView, userId: string, force = false) => {
+  const fetchEventsForDateRange = useCallback(async (date: Date, viewType: TCalendarView, userId: string, typeId: string, force = false) => {
     const { startDate, endDate } = getDateRange(date, viewType);
     
     // Create a cache key
@@ -74,7 +75,8 @@ export const useFetchEvents = () => {
       fetchCacheRef.current.startDate === startKey &&
       fetchCacheRef.current.endDate === endKey &&
       fetchCacheRef.current.view === viewType && 
-      fetchCacheRef.current.userId === userId
+      fetchCacheRef.current.userId === userId &&
+      fetchCacheRef.current.typeId === typeId
     ) {
       return;
     }
@@ -87,16 +89,31 @@ export const useFetchEvents = () => {
       
       const fetchedEvents = await getEvents(startDate, endDate);
       
+      // Filter events by user if needed
+      let filteredEvents = fetchedEvents;
+      
+      if (userId !== "all") {
+        filteredEvents = filteredEvents.filter(event => event.user.id === userId);
+      }
+      
+      // Filter events by type if needed
+      if (typeId !== "all") {
+        filteredEvents = filteredEvents.filter(event => 
+          event.type && event.type.id.toString() === typeId
+        );
+      }
+      
       // Store in cache
       fetchCacheRef.current = {
         startDate: startKey,
         endDate: endKey,
         view: viewType,
         userId,
-        events: fetchedEvents
+        typeId,
+        events: filteredEvents
       };
       
-      setLocalEvents(fetchedEvents);
+      setLocalEvents(filteredEvents);
     } catch (err) {
       console.error("Error fetching events:", err);
       setError("Failed to fetch events. Please try again later.");
@@ -107,14 +124,14 @@ export const useFetchEvents = () => {
   
   // Fetch events when selected parameters change
   useEffect(() => {
-    fetchEventsForDateRange(selectedDate, view, selectedUserId);
-  }, [selectedDate, view, selectedUserId, fetchEventsForDateRange]);
+    fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId));
+  }, [selectedDate, view, selectedUserId, selectedTypeId, fetchEventsForDateRange]);
   
   return {
     loading,
     error,
     view,
     setView,
-    refreshEvents: () => fetchEventsForDateRange(selectedDate, view, selectedUserId, true)
+    refreshEvents: () => fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId), true)
   };
 };
