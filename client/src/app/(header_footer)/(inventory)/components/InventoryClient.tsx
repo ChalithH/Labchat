@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getInventoryItems, replenishInventoryItem, takeInventoryItem } from '@/lib/inventoryService';
 import InventoryItem from '../components/InventoryItem';
-import SearchFilterBar from '../components/SearchFilter';
+import SearchFilterBar from '@/components/labchat/SearchFilter'
 
 import {
   Select,
@@ -31,7 +31,7 @@ type InventoryItemData = {
   location: string;
   item: {
     name: string;
-    description: string;  
+    description: string;
   };
   itemTags: Tag[];
 };
@@ -72,7 +72,7 @@ const InventoryClient: React.FC = () => {
         },
         itemTags: item.itemTags,
       }));
-      
+
       const sortedItems = [...items].sort((a, b) =>
         a.item.name.localeCompare(b.item.name)
       );
@@ -100,10 +100,10 @@ const InventoryClient: React.FC = () => {
     .filter((item) => {
       // Handle search query filtering
       const matchesSearch = item.item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       // Handle category filtering
       let matchesFilter = true;
-      
+
       if (filterCategory === 'low-stock') {
         // Filter for low stock items
         matchesFilter = item.currentStock <= item.minStock;
@@ -149,9 +149,16 @@ const InventoryClient: React.FC = () => {
       <SearchFilterBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        filterCategory={filterCategory}
-        setFilterCategory={setFilterCategory}
-        availableTags={availableTags}
+        filterOptions={[
+          { label: 'All Items', value: '' },
+          { label: 'Low Stock', value: 'low-stock' },
+          ...availableTags.map(tag => ({
+            label: tag.name,
+            value: `tag:${tag.id}`,
+          })),
+        ]}
+        filterValue={filterCategory}
+        setFilterValue={setFilterCategory}
       />
       <div className="w-full max-w-2xl mx-auto mt-4 px-4 flex justify-center">
         <div className="flex items-center space-x-2">
