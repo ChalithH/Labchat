@@ -144,7 +144,7 @@ const ManageInventoryClient: React.FC = () => {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/admin">Admin Dashboard</BreadcrumbLink>
+                <BreadcrumbLink href="/admin/dashboard">Admin Dashboard</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
