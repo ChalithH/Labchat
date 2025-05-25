@@ -5,8 +5,8 @@ import { redirect } from "next/navigation"
 import setUsersLastViewed from "@/lib/set_last_viewed"
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 
-const Dashboard: React.FC = async () => {
-    setUsersLastViewed(`/admin/dashboard`)
+const ManageInventory: React.FC = async () => {
+    setUsersLastViewed(`/admin/manage-inventory`)
     const user = await getUserFromSessionServer()
     const role_id: number = parseInt(user.roleId, 10)
 
@@ -24,4 +24,4 @@ const Dashboard: React.FC = async () => {
     return <ManageInventoryClient />
 }
 
-export default Dashboard
+export default ManageInventory
