@@ -1,8 +1,11 @@
 import { getUsers, getEvents, getEventTypes } from "@/calendar/requests";
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { CalendarClient } from "@/calendar/components/calendar-client";
+import setUsersLastViewed from '@/lib/set_last_viewed';
 
 export default async function MonthViewPage() {
+  setUsersLastViewed('/calendar/month-view');
+
   const currentDate = new Date();
   const startDate = startOfMonth(currentDate);
   const endDate = endOfMonth(currentDate);

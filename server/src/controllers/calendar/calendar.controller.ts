@@ -1105,42 +1105,151 @@ export const getEventTypes = async (req: Request, res: Response): Promise<void> 
     }
 }
 
+
 /**
  * @swagger
- * /calendar/get-instruments:
+ * /calendar/member-events/{labId}/{memberId}:
  *   get:
- *     summary: Get all instruments
+ *     summary: Get all events within a lab where the member is assigned
  *     tags: [Calendar]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Positive integer Id of the lab to retrieve events from
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Positive integer Id of the lab member assigned to the events
+ *       - in: query
+ *         name: start
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Start boundary (inclusive) for events (ISO 8601 UTC date-time string; if missing timezone, UTC is assumed) 
+ *       - in: query
+ *         name: end
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: End boundary (inclusive) for events (ISO 8601 UTC date-time string; if missing timezone, UTC is assumed) 
  *     responses:
  *       200:
- *         description: A list of all instruments
+ *         description: A list of events where the lab member is assigned
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   name:
- *                     type: string
- *                     description: Name of the instrument
- *                 example:
- *                   id: 1
- *                   name: "Microscope"
+ *                 $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: labId/memberId is missing or invalid (must be positive integers)
+ *       500:
+ *         description: Failed to retrieve events
  */
-export const getInstruments = async (req: Request, res: Response): Promise<void> => {
+
+export const getMemberEvents = async (req: Request, res: Response): Promise<void> => {
+    const { labId, memberId } = req.params;
+    const { start, end } = req.query;
+
+    if (!labId || !memberId) {
+        res.status(400).json({error: 'Both labId and memberId are required'});
+        return;
+    }
+    
+    if(!isValidLabId(labId)) { 
+        res.status(400).json({error: 'labId must be a positive integer'});
+        return;
+    }
+    
+    if(!isValidLabId(memberId)) { 
+        res.status(400).json({error: 'memberId must be a positive integer'});
+        return;
+    }
+
+    const { errors, startDate, endDate } = validateStartEndDates(start, end);
+
+    if (errors.length > 0) {
+        res.status(400).json({ error: errors });
+        return;
+    }
+
     try {
-        const instruments = await prisma.instrument.findMany({
-            select: {
-                id: true,
-                name: true,
+        const labIdNum = Number(labId);
+        const memberIdNum = Number(memberId);
+
+        // Get events where the member is assigned (in eventAssignments)
+        const events = await prisma.event.findMany({
+            where: {
+              labId: labIdNum,
+              startTime: { lte: endDate },
+              endTime: { gte: startDate },
+              eventAssignments: {
+                some: {
+                  memberId: memberIdNum,
+                },
+              },
+            },
+            include: {
+                lab: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                type: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                assigner: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                displayName: true
+                            }
+                        }
+                    }
+                },
+                instrument: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                eventAssignments: {
+                    select: {
+                        id: true,
+                        memberId: true,
+                        member: {
+                            select: {
+                                user: {
+                                    select: {
+                                        displayName: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         });
-        res.json(instruments);
+        
+        // Use the imported transformation function
+        const transformedEvents = transformEvents(events);
+        
+        res.json(transformedEvents);
     } catch (error) {
-        console.error('Error retrieving instruments:', error);
-        res.status(500).json({ error: 'Failed to retrieve instruments' });
+        res.status(500).json({ error: 'Failed to retrieve events'});
     }
-};
+}
