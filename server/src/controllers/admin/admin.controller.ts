@@ -8,12 +8,12 @@ const prisma = new PrismaClient();
  * @swagger
  * /admin/get-labs:
  *   get:
- *     summary: Get all labs
- *     description: Retrieves a list of all labs in the system
+ *     summary: Get all labs with their managers
+ *     description: Retrieves a list of all labs in the system with their associated managers
  *     tags: [Admin]
  *     responses:
  *       200:
- *         description: List of labs fetched successfully
+ *         description: List of labs with managers fetched successfully
  *         content:
  *           application/json:
  *             schema:
@@ -30,14 +30,69 @@ const prisma = new PrismaClient();
  *                   location:
  *                     type: string
  *                     description: Location of the lab
+ *                   status:
+ *                     type: string
+ *                     description: Status of the lab
+ *                   managers:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                           description: User ID of the manager
+ *                         name:
+ *                           type: string
+ *                           description: Display name of the manager
+ *                         role:
+ *                           type: string
+ *                           description: Role of the manager in the lab
  *       500:
  *         description: Internal server error
  */
-
 export const getAllLabs = async (req: Request, res: Response): Promise<void> => {
     try {
-        const labs = await prisma.lab.findMany();
-        res.status(200).json(labs);
+        const labs = await prisma.lab.findMany({
+            include: {
+                labMembers: {
+                    where: {
+                        labRole: {
+                            permissionLevel: {
+                                gte: 70,  // Only managers with role permission >= 70
+                            },
+                        }
+                    },
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                displayName: true
+                            }
+                        },
+                        labRole: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Format the response to include managers in a cleaner way
+        const formattedLabs = labs.map(lab => ({
+            id: lab.id,
+            name: lab.name,
+            location: lab.location,
+            status: lab.status,
+            managers: lab.labMembers.map(member => ({
+                id: member.user.id,
+                name: member.user.displayName,
+                role: member.labRole.name
+            }))
+        }));
+
+        res.status(200).json(formattedLabs);
     } catch (error) {
         console.error('Error fetching labs:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -220,7 +275,7 @@ export const assignUserToLab = async (req: Request, res: Response): Promise<void
             data: {
                 labId,
                 userId,
-                labRoleId: role, 
+                labRoleId: role,
             }
         });
         res.status(201).json(labMember);
@@ -228,7 +283,8 @@ export const assignUserToLab = async (req: Request, res: Response): Promise<void
     } catch (error) {
         console.error('Error assigning user to lab:', error);
         res.status(500).json({ error: 'Internal server error' });
-    }}
+    }
+}
 
 /**
  * @swagger
@@ -299,7 +355,7 @@ export const updateRole = async (req: Request, res: Response): Promise<void> => 
                 id: userInLab.id
             },
             data: {
-                labRoleId: role, 
+                labRoleId: role,
             }
         });
         res.status(201).json(labMember);
@@ -353,7 +409,7 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
-                loginPassword: await hashPassword(newPassword) 
+                loginPassword: await hashPassword(newPassword)
             }
         });
         res.status(200).json(updatedUser);
@@ -646,7 +702,7 @@ export const createInventoryItem = async (req: Request, res: Response): Promise<
         const inventoryItem = await prisma.item.create({
             data: {
                 name,
-                description, 
+                description,
                 safetyInfo,
             }
         });
@@ -759,7 +815,7 @@ export const getAllItems = async (req: Request, res: Response): Promise<void> =>
  */
 export const createGlobalItem = async (req: Request, res: Response): Promise<void> => {
     const { name, description, safetyInfo, approval } = req.body;
-    
+
     if (!name) {
         res.status(400).json({ error: 'Name is required' });
         return;
@@ -824,40 +880,40 @@ export const createGlobalItem = async (req: Request, res: Response): Promise<voi
  *         description: Internal server error
  */
 export const updateItem = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { name, description, safetyInfo, approval } = req.body;
+    const { id } = req.params;
+    const { name, description, safetyInfo, approval } = req.body;
 
-  try {
-    const itemId = parseInt(id);
-    if (isNaN(itemId)) {
-      res.status(400).json({ error: 'Invalid item ID' });
-      return;
+    try {
+        const itemId = parseInt(id);
+        if (isNaN(itemId)) {
+            res.status(400).json({ error: 'Invalid item ID' });
+            return;
+        }
+
+        const existingItem = await prisma.item.findUnique({
+            where: { id: itemId },
+        });
+
+        if (!existingItem) {
+            res.status(404).json({ error: 'Item not found' });
+            return;
+        }
+
+        const updatedItem = await prisma.item.update({
+            where: { id: itemId },
+            data: {
+                name: name ?? existingItem.name,
+                description: description ?? existingItem.description,
+                safetyInfo: safetyInfo ?? existingItem.safetyInfo,
+                approval: approval ?? existingItem.approval,
+            },
+        });
+
+        res.status(200).json(updatedItem);
+    } catch (error) {
+        console.error('Error updating item:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-
-    const existingItem = await prisma.item.findUnique({
-      where: { id: itemId },
-    });
-
-    if (!existingItem) {
-      res.status(404).json({ error: 'Item not found' });
-      return;
-    }
-
-    const updatedItem = await prisma.item.update({
-      where: { id: itemId },
-      data: {
-        name: name ?? existingItem.name,
-        description: description ?? existingItem.description,
-        safetyInfo: safetyInfo ?? existingItem.safetyInfo,
-        approval: approval ?? existingItem.approval,
-      },
-    });
-
-    res.status(200).json(updatedItem);
-  } catch (error) {
-    console.error('Error updating item:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
 };
 
 /**
@@ -885,31 +941,31 @@ export const updateItem = async (req: Request, res: Response): Promise<void> => 
  *         description: Internal server error
  */
 export const deleteItem = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
+    const { id } = req.params;
 
-  try {
-    const itemId = parseInt(id);
-    if (isNaN(itemId)) {
-      res.status(400).json({ error: 'Invalid item ID' });
-      return;
+    try {
+        const itemId = parseInt(id);
+        if (isNaN(itemId)) {
+            res.status(400).json({ error: 'Invalid item ID' });
+            return;
+        }
+
+        const existingItem = await prisma.item.findUnique({
+            where: { id: itemId },
+        });
+
+        if (!existingItem) {
+            res.status(404).json({ error: 'Item not found' });
+            return;
+        }
+
+        await prisma.item.delete({
+            where: { id: itemId },
+        });
+
+        res.status(200).json({ message: 'Item deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting item:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-
-    const existingItem = await prisma.item.findUnique({
-      where: { id: itemId },
-    });
-
-    if (!existingItem) {
-      res.status(404).json({ error: 'Item not found' });
-      return;
-    }
-
-    await prisma.item.delete({
-      where: { id: itemId },
-    });
-
-    res.status(200).json({ message: 'Item deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting item:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
 };
