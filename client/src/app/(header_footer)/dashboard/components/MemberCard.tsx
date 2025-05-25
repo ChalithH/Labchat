@@ -14,9 +14,8 @@ const getStatusColor = (status: string) => {
       return "bg-yellow-500 text-white";
     case "outside":
       return "bg-purple-500 text-white";
-    
     default:
-      return "bg-gray-200 text-gray-800";
+      return "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
   }
 };
 
@@ -24,7 +23,7 @@ export default function MemberCard({ member }: { member: Member }) { // Added ty
   const getInitials = (name: string) => name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="flex items-center justify-between w-full py-2">
+    <div className="flex items-center justify-between w-full py-2 bg-card text-card-foreground rounded-md">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full overflow-hidden"> 
           <Avatar className="w-full h-full"> 
@@ -33,11 +32,11 @@ export default function MemberCard({ member }: { member: Member }) { // Added ty
           </Avatar>
         </div>
         <div className="flex flex-col items-start">
-          <Badge>{member.role}</Badge> 
+          <Badge>{member.role}</Badge>
           <div className="text-sm font-medium tracking-tighter">
             {member.name}
             {member.permissionLevel >= 70 && member.clockIn && (
-              <span className="ml-2 text-xs text-blue-600">Signed in at: {new Date(member.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              <span className="ml-2 text-xs text-blue-600 dark:text-blue-300">Signed in at: {new Date(member.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             )}
           </div>
         </div>

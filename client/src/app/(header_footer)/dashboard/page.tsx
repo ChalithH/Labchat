@@ -29,11 +29,24 @@ export default async function DashboardPage() {
     : null;
   const userPrimaryStatusName = userActiveStatus ? userActiveStatus.status.statusName : "No Status";
 
+  let memberId = sessionUser.memberId;
+
+  if (!memberId && sessionUser.id) {
+    try {
+      const memberRes = await api.get(`/member/get/user/${sessionUser.id}`);
+      memberId = memberRes.data.id;
+    } catch (error) {
+      console.error('Error fetching member data:', error);
+      memberId = null;
+    }
+  }
+
   const dashboardUser = {
     firstName: sessionUser.firstName,
     image: sessionUser.image,
     role: userRoleName,
     statusName: userPrimaryStatusName,
+    memberID: memberId,
   };
 
   // Fetch posts from the Announcements topic (topic 1)
@@ -85,18 +98,7 @@ export default async function DashboardPage() {
   }));
 
   const initialMembers: Member[] = []; 
-  let memberId = sessionUser.memberId;
   
-  if (!memberId && sessionUser.id) {
-    try {
-      const memberRes = await api.get(`/member/get/user/${sessionUser.id}`);
-      memberId = memberRes.data.id;
-    } catch (error) {
-      console.error('Error fetching member data:', error);
-      memberId = null;
-    }
-  }
-
   // Fetch all events for the lab (from today to a month from now)
   const startDate = new Date();
   const endDate = new Date();
@@ -112,7 +114,7 @@ export default async function DashboardPage() {
       return isAssigned && eventStart >= startDate;
     })
     .sort((a: any, b: any) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
-    .slice(0, 3);
+    // .slice(0, 5);
 
   const jobs = userEvents.map((event: any) => ({
     name: event.title,
@@ -128,9 +130,25 @@ export default async function DashboardPage() {
         name: item.item.name,
         remaining: item.currentStock,
         minStock: item.minStock,
+        tags: item.itemTags
+          ? item.itemTags.map((apiTag: any) => ({
+              name: apiTag.name,
+              description: apiTag.description
+            }))
+          : [],
       }));
   } catch (error) {
     console.error('Error fetching inventory data:', error);
+  }
+
+  let currentUserMember = null;
+  if (memberId) {
+    try {
+      const memberRes = await api.get(`/member/get/${memberId}`);
+      currentUserMember = memberRes.data;
+    } catch (error) {
+      console.error('Error fetching current user member data:', error);
+    }
   }
 
   return (
