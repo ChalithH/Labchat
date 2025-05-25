@@ -8,6 +8,7 @@ import discussionRoutes from './discussion.routes';
 import calendarRoutes from './calendar.routes';
 import labRoutes from './lab.routes';
 import memberRoutes from './member.routes';
+import attendanceRoutes from './attendance.routes';
 
 
 const router = Router();
@@ -48,6 +49,7 @@ router.use('/lab', labRoutes);
 router.use('/user', userRoutes);
 router.use('/member', memberRoutes);
 router.use('/role', roleRoutes);
+router.use('/attendance', attendanceRoutes);
 
 
 export default router;

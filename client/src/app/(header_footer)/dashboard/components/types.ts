@@ -8,8 +8,11 @@ export interface Announcement {
 
 export interface Member {
   name: string;
-  title: string;
+  role: string;
   image?: string;
+  statusName: string;
+  permissionLevel: number;
+  clockIn: string;
 }
 
 export interface Job {
@@ -21,4 +24,4 @@ export interface InventoryItem {
   name: string;
   remaining: number;
   minStock: number;
-} 
+}
