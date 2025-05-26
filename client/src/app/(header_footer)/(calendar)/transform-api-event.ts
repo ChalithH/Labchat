@@ -1,11 +1,34 @@
 import { IEvent } from "@/calendar/interfaces";
 import { TEventColor } from "@/calendar/types";
 
-// Map event types to colors for consistency
+// Define an interface for event types from the API
+export interface ApiEventType {
+  id: number;
+  name: string;
+}
+
+// Map specific event types to colors
+// Only "Equipment" and "Task" have specific colors, everything else uses the default green
 export const eventTypeColors: Record<string, TEventColor> = {
-  rostering: "blue",
-  equipment: "green",
-  default: "purple",
+  equipment: "blue",
+  task: "purple",
+  default: "green"
+};
+
+// Function to get color based on event type
+export const getColorForEventType = (typeId: number, typeName: string = ""): TEventColor => {
+  const normalizedName = typeName.toLowerCase();
+  
+  // Check for specific type mappings
+  if (normalizedName.includes("equipment") || normalizedName.includes("booking")) {
+    return eventTypeColors.equipment;
+  }
+  if (normalizedName.includes("task")) {
+    return eventTypeColors.task;
+  }
+  
+  // Return default color
+  return eventTypeColors.default;
 };
 
 // API Event interface that matches the backend response
@@ -56,15 +79,8 @@ export interface ApiUser {
 
 // Transform API event format to our application event format
 export const transformApiEvent = (apiEvent: ApiEvent): IEvent => {
-  // Determine the color based on event type
-  const typeName = apiEvent.type?.name?.toLowerCase() || "";
-  let color: TEventColor = eventTypeColors.default;
-  
-  if (typeName.includes("rostering") || typeName === "rostering") {
-    color = eventTypeColors.rostering;
-  } else if (typeName.includes("equipment") || typeName === "equipment") {
-    color = eventTypeColors.equipment;
-  }
+  // Get the color based on the event type
+  const color = getColorForEventType(apiEvent.type.id, apiEvent.type.name);
 
   return {
     id: apiEvent.id,
@@ -79,6 +95,10 @@ export const transformApiEvent = (apiEvent: ApiEvent): IEvent => {
       name: apiEvent.assigner.name,
       picturePath: null,
     },
+    type: {
+      id: apiEvent.type.id,
+      name: apiEvent.type.name
+    },
     instrument: apiEvent.instrument,
     lab: apiEvent.lab,
     assignments: apiEvent.eventAssignments,
@@ -92,4 +112,4 @@ export const transformAPIUser = (apiUser: ApiUser): IEvent["user"] => {
     name: apiUser.displayName,
     picturePath: null,
   };
-}
+};

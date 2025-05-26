@@ -48,8 +48,8 @@ const HomeClient = ({ user, userPermission, recentActivity, categories, posts }:
 					</div>
 				)}
 			</section>
-    </main>
-  )
+		</main>
+	)
 }
 
 export default HomeClient

@@ -2,7 +2,6 @@ import { Users, Microscope } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { eventTypeColors } from "@/calendar/requests";
 import type { IEvent } from "@/calendar/interfaces";
 
 interface CompactEventInfoProps {
@@ -12,11 +11,15 @@ interface CompactEventInfoProps {
 }
 
 export function CompactEventInfo({ event, className, showBadges = true }: CompactEventInfoProps) {
-  // Find the event type based on color
-  const eventType = Object.entries(eventTypeColors).find(([, color]) => color === event.color)?.[0] || "default";
+  // Get the type name with proper formatting
+  const typeName = event.type?.name || "Event";
   
-  // Format the type label for display
-  const typeLabel = eventType.charAt(0).toUpperCase() + eventType.slice(1);
+  // Determine the badge variant based on the event color
+  const getBadgeVariant = (color: string) => {
+    if (color === "blue") return "default";
+    if (color === "purple") return "secondary";
+    return "outline";
+  };
   
   const hasAssignments = event.assignments && event.assignments.length > 0;
   const hasInstrument = !!event.instrument;
@@ -34,14 +37,14 @@ export function CompactEventInfo({ event, className, showBadges = true }: Compac
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <Badge 
-                variant={eventType === "rostering" ? "default" : eventType === "equipment" ? "secondary" : "outline"}
+                variant={getBadgeVariant(event.color)}
                 className="px-1 py-0 h-4 text-[10px]"
               >
-                {typeLabel}
+                {typeName}
               </Badge>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
-              {typeLabel} Event
+              {typeName} Event
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

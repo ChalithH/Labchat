@@ -58,7 +58,7 @@ export default function Header() {
   const handleProfile = async () => {
     if (isLoggedIn) {
       const user = await getUserFromSession()
-      redirect(`/profile/${ user.id }`)
+      redirect(`/profile/${user.id}`)
     }
   }
   

@@ -3,12 +3,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { useAddEvent } from "@/calendar/hooks/use-add-event";
-import { eventTypeColors } from "@/calendar/requests";
+import { getEventTypes } from "@/calendar/requests";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,7 @@ import { eventSchema } from "@/calendar/schemas";
 
 import type { TimeValue } from "react-aria-components";
 import type { TEventFormData } from "@/calendar/schemas";
-import type { IAssignment } from "@/calendar/interfaces";
+import type { IAssignment, IEventType } from "@/calendar/interfaces";
 
 interface IProps {
   children: React.ReactNode;
@@ -35,14 +35,39 @@ interface IProps {
 }
 
 export function AddEventDialog({ children, startDate, startTime }: IProps) {
-  const { users } = useCalendar();
+  const { users, eventTypes: contextEventTypes } = useCalendar();
   const { addEvent, isAdding, error: addError } = useAddEvent();
-
   const { isOpen, onClose, onToggle } = useDisclosure();
+  
+  // State for managing event types
+  const [eventTypes, setEventTypes] = useState<IEventType[]>([]);
+  const [loadingTypes, setLoadingTypes] = useState(false);
   
   // State for managing assigned members
   const [selectedAssignees, setSelectedAssignees] = useState<IAssignment[]>([]);
   const [assignmentError, setAssignmentError] = useState<string | null>(null);
+
+  // Fetch event types on component mount or use context event types if available
+  useEffect(() => {
+    if (contextEventTypes && contextEventTypes.length > 0) {
+      setEventTypes(contextEventTypes);
+      return;
+    }
+    
+    const fetchEventTypes = async () => {
+      setLoadingTypes(true);
+      try {
+        const types = await getEventTypes();
+        setEventTypes(types);
+      } catch (error) {
+        console.error("Error fetching event types:", error);
+      } finally {
+        setLoadingTypes(false);
+      }
+    };
+    
+    fetchEventTypes();
+  }, [contextEventTypes]);
 
   const form = useForm<TEventFormData>({
     resolver: zodResolver(eventSchema),
@@ -60,8 +85,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
             minute: startTime.minute 
           } 
         : undefined,
-      type: "rostering", // Default type
-      color: "blue" // Default color for rostering
+      type: "1", // Default type ID as string
     },
   });
 
@@ -75,19 +99,24 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     const user = users.find(user => user.id === values.user);
     if (!user) throw new Error("User not found");
 
-    // Map type to color
-    const color = values.type && eventTypeColors[values.type] 
-      ? eventTypeColors[values.type]
-      : eventTypeColors.default;
+    // Find the selected event type
+    const selectedType = eventTypes.find(type => type.id.toString() === values.type);
+
+    // Prepare assignments with proper member IDs
+    const assignmentsWithMemberIds = selectedAssignees.map(assignee => ({
+      ...assignee,
+      memberId: typeof assignee.memberId === 'number' ? assignee.memberId : parseInt(assignee.memberId as unknown as string)
+    }));
 
     const result = await addEvent({
       title: values.title,
       description: values.description,
-      color,
+      color: selectedType?.color || "green", // Use color from type or default to green
       user,
+      type: selectedType,
       startDate: startDateTime.toISOString(),
       endDate: endDateTime.toISOString(),
-      assignments: selectedAssignees,
+      assignments: assignmentsWithMemberIds,
     });
 
     if (result) {
@@ -106,7 +135,9 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     if (!user) return;
     
     // Check if already assigned
-    const alreadyAssigned = selectedAssignees.some(a => a.memberId === parseInt(user.id));
+    const userIdAsNumber = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const alreadyAssigned = selectedAssignees.some(a => a.memberId === userIdAsNumber);
+    
     if (alreadyAssigned) {
       setAssignmentError("This user is already assigned");
       return;
@@ -117,7 +148,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
       ...selectedAssignees,
       {
         id: Date.now(), // Temporary ID
-        memberId: parseInt(user.id),
+        memberId: userIdAsNumber,
         name: user.name
       }
     ]);
@@ -128,8 +159,11 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     setSelectedAssignees(selectedAssignees.filter(a => a.id !== id));
   };
 
-  // Get value of currently selected type for conditional rendering
-  const currentType = form.watch("type");
+  // Get currently selected type ID
+  const currentTypeId = form.watch("type");
+  const currentType = eventTypes.find(t => t.id.toString() === currentTypeId);
+  const isEquipmentType = currentType?.name?.toLowerCase().includes("equipment") || 
+                         currentType?.name?.toLowerCase().includes("booking");
   
   // Reset assignments when dialog closes
   const handleOpenChange = (open: boolean) => {
@@ -138,6 +172,10 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     }
     onToggle();
   };
+
+  // Deal with empty users list case
+  const hasUsers = users && users.length > 0;
+  const firstUserId = hasUsers ? users[0]?.id : "";
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -195,8 +233,42 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   )}
                 />
 
-                {/* Assignees section - only show for rostering events */}
-                {currentType === "rostering" && (
+                {/* Event Type Selection */}
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel>Event Type (Required)</FormLabel>
+                      <FormControl>
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange} 
+                          disabled={loadingTypes}
+                        >
+                          <SelectTrigger data-invalid={fieldState.invalid}>
+                            <SelectValue placeholder={loadingTypes ? "Loading types..." : "Select event type"} />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {eventTypes.map(type => (
+                              <SelectItem key={type.id} value={type.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                  <div className={`size-3.5 rounded-full bg-${type.color || 'green'}-600`} />
+                                  {type.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Assignees section - only show for non-equipment events */}
+                {!isEquipmentType && hasUsers && (
                   <div className="space-y-3 border rounded-md p-3">
                     <div className="flex justify-between items-center">
                       <h3 className="text-sm font-medium">Assigned Members</h3>
@@ -223,7 +295,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                           size="sm" 
                           variant="outline"
                           className="h-8 px-2"
-                          onClick={() => handleAddAssignee(users[0]?.id)}
+                          onClick={() => handleAddAssignee(firstUserId)}
+                          disabled={!firstUserId}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -263,7 +336,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                 )}
 
                 {/* Instrument selector would go here for equipment events */}
-                {currentType === "equipment" && (
+                {isEquipmentType && (
                   <div className="border rounded-md p-3">
                     <h3 className="text-sm font-medium mb-2">Instrument</h3>
                     <p className="text-xs text-muted-foreground italic">
@@ -364,47 +437,6 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel>Event Type (Required)</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger data-invalid={fieldState.invalid}>
-                            <SelectValue placeholder="Select event type" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            <SelectItem value="rostering">
-                              <div className="flex items-center gap-2">
-                                <div className="size-3.5 rounded-full bg-blue-600" />
-                                Rostering
-                              </div>
-                            </SelectItem>
-
-                            <SelectItem value="equipment">
-                              <div className="flex items-center gap-2">
-                                <div className="size-3.5 rounded-full bg-green-600" />
-                                Equipment
-                              </div>
-                            </SelectItem>
-
-                            <SelectItem value="default">
-                              <div className="flex items-center gap-2">
-                                <div className="size-3.5 rounded-full bg-purple-600" />
-                                Other
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}

@@ -22,6 +22,12 @@ export interface IAssignment {
   name: string;
 }
 
+export interface IEventType {
+  id: number;
+  name: string;
+  color?: TEventColor;
+}
+
 export interface IEvent {
   id: number;
   startDate: string;
@@ -31,6 +37,7 @@ export interface IEvent {
   description: string;
   status?: string | null;
   user: IUser;  // This is the assigner
+  type?: IEventType;
   instrument?: IInstrument | null;
   lab?: ILab;
   assignments?: IAssignment[];
