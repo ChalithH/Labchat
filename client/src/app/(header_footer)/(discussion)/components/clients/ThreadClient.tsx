@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/dialog'
 import api from '@/lib/api'
 import { useRouter } from 'next/navigation'
-import EditReply from '../EditReply'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +26,24 @@ import {
 import { PermissionConfig } from '@/config/permissions'
 import { MdPushPin } from 'react-icons/md'
 import { Badge } from '@/components/ui/badge'
+import { ReplyItem } from '../ReplyItem'
+import ReactionBar from '../ReactionBar'
+import ReactMarkdown from 'react-markdown'
+import rehypeSanitize from 'rehype-sanitize'
+import { defaultSchema } from 'hast-util-sanitize'
+
+
+const schema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    a: [
+      ...(defaultSchema.attributes?.a || []),
+      'href', 'title', 'target', 'rel'
+    ],
+    span: ['className'],
+  },
+}
 
 type ThreadClientProps = {
   post: PostType,
@@ -44,11 +61,13 @@ type ThreadClientProps = {
 const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole, user, userRole, userPermission, member }: ThreadClientProps) => {
   const [response, setResponse] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
+  const [resolvedRoles, setResolvedRoles] = useState<string[]>([])
+  const [replyToDelete, setReplyToDelete] = useState<ReplyType | null>(null)
   const [showDeletePostPopup, setShowDeletePostPopup] = useState<boolean>(false)
   const [showDeleteReplyPopup, setShowDeleteReplyPopup] = useState<boolean>(false)
-  const [replyToDelete, setReplyToDelete] = useState<ReplyType | null>(null)
-  const [resolvedRoles, setResolvedRoles] = useState<string[]>([])
+
   const router = useRouter()
+  const showReplyBox: boolean = post.replyState === DiscussionPostState.REPLIES_OPEN || userPermission >= PermissionConfig.FORCE_COMMENT_PERMISSION || author.id === user.id
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -68,11 +87,17 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
     router.refresh()
   }
 
-  const confirmDeleteThread = () => setShowDeletePostPopup(true)
+  const handlePostChildReply = async (parentId: number, content: string) => {
+    if (!content.trim()) return
 
-  const confirmDeleteReply = (reply: ReplyType) => {
-    setReplyToDelete(reply)
-    setShowDeleteReplyPopup(true)
+    await api.post('/discussion/reply', {
+      postId: post.id,
+      memberId: member.id,
+      content,
+      parentId
+    })
+
+    router.refresh()
   }
 
   const handleDeleteThread = async () => {
@@ -88,8 +113,12 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
     }
   }
 
-  // True if,   Post has replies open    or    User has enough permission to override replies closd     or    User is the post owner    
-  const showReplyBox: boolean = post.replyState === DiscussionPostState.REPLIES_OPEN || userPermission >= PermissionConfig.FORCE_COMMENT_PERMISSION || author.id === user.id
+  const confirmDeleteThread = () => setShowDeletePostPopup(true)
+
+  const confirmDeleteReply = (reply: ReplyType) => {
+    setReplyToDelete(reply)
+    setShowDeleteReplyPopup(true)
+  }
 
   return (
     <main className="m-auto w-[90dvw] barlow-font flex flex-col gap-3">
@@ -116,11 +145,10 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
       { post.tags && post.tags.length > 0 &&
         <div className="flex items-center gap-2">
           { post.tags.map(tag => 
-          <Badge key={ tag.id } className="text-white" style={{ backgroundColor: tag.colour }}>
+          <Badge key={ tag.id } className="text-[14px] text-white" style={{ backgroundColor: tag.colour }}>
             {tag.tag}
           </Badge>) }
         </div>
-        
       }
 
       <div className='flex justify-between items-center'>
@@ -130,7 +158,7 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
           <h1 className="text-3xl font-bold play-font">{post.title}</h1>
         </div>
         
-        { author.id === (user as any).id &&
+        { (author.id === (user as any).id || userPermission >= PermissionConfig.MODIFY_ALL_POSTS_REPLIES) &&
           <div className='flex space-x-4'>
             <EditPost post={ post } userPermission={ userPermission } />
             <Trash onClick={ confirmDeleteThread } className='w-5 h-5 text-muted-foreground cursor-pointer' />
@@ -141,26 +169,32 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
         <ThreadAuthorGroup role={authorRole} name={author.displayName} size={48} />
 
         <div>
-          <div className="text-right text-sm">
+          <div className="text-right text-xs play-font">
             <p>Created {new Date(post.createdAt).toLocaleString('en-GB')}</p>
             <p>Last Activity {new Date(post.updatedAt).toLocaleString('en-GB')}</p>
           </div>
         </div>
       </div>
 
-      <div className="p-4 rounded-sm border border-gray-200 shadow-sm">
-        <p>{post.content}</p>
+      <div className="p-4 rounded-sm border border-gray-200">
+        <div className="prose prose-sm max-w-none">
+          <ReactMarkdown rehypePlugins={[[rehypeSanitize, schema]]}>
+            {post.content}
+          </ReactMarkdown>
+        </div>
       </div>
 
-      { post.replyState === DiscussionPostState.REPLIES_CLOSED && <p className=' barlow-font text-lg font-semibold my-4'>Post is closed for replies</p> }
-        
+      <ReactionBar type='post' id={ post.id } currentUserId={ user.id } />
+
+      { post.replyState === DiscussionPostState.REPLIES_CLOSED && <p className='mt-16 barlow-font text-lg font-semibold'>Post is closed for further replies</p> }
+      
       { showReplyBox && 
         <div className="pb-8 rounded-sm flex flex-col gap-4">
           {error && <p className='play-font text-sm text-red-600'>{error}</p>}
           <textarea
             value={response}
             onChange={(e) => setResponse(e.target.value)}
-            className="bg-white border p-4 w-full rounded-xl"
+            className="bg-white border p-4 w-full rounded-sm"
             placeholder="Type a comment"
           />
           <div className="w-full flex justify-between items-center">
@@ -170,30 +204,21 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
         </div>
       }
 
-      {replies.length > 0 && (
+      { replies.length > 0 && 
         <h1 className="play-font w-full m-auto text-3xl font-bold pb-2">Replies</h1>
-      )}
+      }
 
-      {replies.map((reply, index) => {
-        const replyUser = replyUsers[index]
-        const role = resolvedRoles[index] || 'Loading'
-
+      { replies.map(reply => {
         return (
-          <div key={reply.id} className="p-4 barlow-font bg-white border rounded-xl flex flex-col gap-4 mb-4">
-            <div className="flex justify-between items-start">
-              <ThreadAuthorGroup role={role} name={replyUser.displayName} size={42} />
-              <div className='flex flex-col space-y-2 items-end'>
-                {reply.memberId === member.id &&
-                  <div className='flex space-x-4'>
-                    <EditReply reply={reply} />
-                    <Trash onClick={() => confirmDeleteReply(reply)} className='w-5 h-5 text-muted-foreground' />
-                  </div>}
-                <p className="text-sm">
-                  Posted {new Date(reply.createdAt).toLocaleString('en-GB')}
-                </p>
-              </div>
-            </div>
-            <p>{reply.content}</p>
+          <div key={ reply.id }>
+            <ReplyItem
+              reply={ reply }
+              postId={ post.id }
+              currentMemberId={ member.id }
+              onReply={ handlePostChildReply }
+              confirmDeleteReply={ confirmDeleteReply }
+              userPermission={ userPermission }
+            />
           </div>
         )
       })}

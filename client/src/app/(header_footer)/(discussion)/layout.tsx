@@ -7,7 +7,9 @@ const DiscussionLayout = ({ children } : Readonly<{ children: React.ReactNode }>
     <>
       <Searchbar />
 
-      { children }
+      <div className='mb-4'>
+        { children }
+      </div>
     </>
   )
 }

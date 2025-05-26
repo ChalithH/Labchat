@@ -10,6 +10,7 @@ import { CategoryType } from '@/types/category.type'
 import { PostType } from '@/types/post.type'
 import { PermissionConfig } from '@/config/permissions'
 
+
 const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {
     const { id } = await params
     await setUsersLastViewed(`/discussion/topic/${ id }`)

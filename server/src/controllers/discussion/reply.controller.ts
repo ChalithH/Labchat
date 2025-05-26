@@ -1,6 +1,24 @@
 import { Request, Response } from 'express';
 import { prisma } from '../..';
 
+
+async function getReplyWithChildren(reply: any): Promise<any> {
+  const children = await prisma.discussionReply.findMany({
+    where: { parentId: reply.id },
+    orderBy: { createdAt: 'asc' },
+    include: {
+      member: { include: { user: true } }
+    }
+  });
+
+  const nestedChildren = await Promise.all(children.map(getReplyWithChildren));
+
+  return {
+    ...reply,
+    children: nestedChildren
+  };
+}
+
 /**
  * @swagger
  * /discussion/reply/{id}:
@@ -80,21 +98,25 @@ export const getRepliesByPost = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const replies = await prisma.discussionReply.findMany({
-      where: { postId },
+    const topLevelReplies = await prisma.discussionReply.findMany({
+      where: { postId, parentId: null },
       orderBy: { createdAt: 'desc' },
       include: {
         member: { include: { user: true } }
       }
-    })
+    });
 
-    res.json(replies);
-    
+    const nestedReplies = await Promise.all(
+      topLevelReplies.map(getReplyWithChildren)
+    );
+
+    res.json(nestedReplies);
   } catch (error) {
     console.error('Error fetching replies:', error);
     res.status(500).json({ error: 'Failed to fetch replies' });
   }
 };
+
 
 /**
  * @swagger
@@ -128,7 +150,7 @@ export const getRepliesByPost = async (req: Request, res: Response): Promise<voi
  *         description: Server error
  */
 export const createReply = async (req: Request, res: Response): Promise<void> => {
-    const { postId, memberId, content } = req.body;
+    const { postId, memberId, content, parentId } = req.body;
     if (!postId || !memberId || !content) {
         res.status(400).json({ error: 'Missing required fields' });
         return;
@@ -139,6 +161,7 @@ export const createReply = async (req: Request, res: Response): Promise<void> =>
                 postId,
                 memberId,
                 content,
+                parentId: parentId ?? null
             }
         });
         res.status(201).json(reply);

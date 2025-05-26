@@ -31,7 +31,10 @@ import { DiscussionPostState, PostType } from "@/types/post.type"
 import { PermissionConfig } from "@/config/permissions"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Textarea } from "@/components/ui/textarea"
+import ReactMarkdown from 'react-markdown'
+import ContentTabs from "./ContentTabs"
+import remarkGfm from 'remark-gfm';
 
 const HIDDEN_PERMISSION = PermissionConfig.HIDDEN_PERMISSION
 const STICKY_PERMISSION = PermissionConfig.STICKY_PERMISSION
@@ -95,7 +98,7 @@ const EditPost = ({ post, userPermission }: { post: PostType, userPermission: nu
   }
 
   return (
-    <>
+    <ScrollArea>
       <Dialog open={ isEditOpen } onOpenChange={ setIsEditOpen }>
         <DialogTrigger asChild>
           <Pencil className="w-5 h-5 cursor-pointer text-muted-foreground" /> 
@@ -120,16 +123,22 @@ const EditPost = ({ post, userPermission }: { post: PostType, userPermission: nu
               onChange={ e => setTitle(e.target.value)} />
           </div>
 
-          <div>
-            <Label htmlFor="contents" className='mb-1'>Contents</Label>
-            <Input 
-              id='contents' 
-              type="text" 
-              className='text-sm' 
-              placeholder="Enter the contents of the post"
-              value={ contents }
-              onChange={ e => setContents(e.target.value)} />
-          </div>
+          {/* <div>
+            <div>
+              <Label htmlFor="contents" className='mb-1'>Contents</Label>
+              <Textarea 
+                id='contents' 
+                className='text-sm' 
+                placeholder="Enter the contents of the post"
+                value={ contents }
+                onChange={ e => setContents(e.target.value)} />
+            </div>
+
+            <div className="mt-4 border rounded p-2 max-h-48 overflow-auto bg-gray-50">
+              <ReactMarkdown>{contents}</ReactMarkdown>
+            </div>
+          </div> */}
+          <ContentTabs setContents={ setContents } contents={ contents }/>
 
           <div>
             <Label htmlFor="replyState" className="mb-1">Allow Replies</Label>
@@ -160,35 +169,22 @@ const EditPost = ({ post, userPermission }: { post: PostType, userPermission: nu
             </>
           }
 
-          <div className="space-y-2">
+          <div>
             <Label className="mb-1">Tags</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  {selectedTagIds.length > 0
-                    ? `${selectedTagIds.length} tag(s) selected`
-                    : 'Select tags'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="min-w-[100%] max-h-60 overflow-y-auto p-2"
-                align="start"
-              >
-                  {tags.map(tag => (
-                    <div key={tag.id} className="flex items-center space-x-2 py-1">
-                      <Checkbox
-                        id={`tag-${tag.id}`}
-                        checked={selectedTagIds.includes(tag.id)}
-                        onCheckedChange={() => toggleTag(tag.id)}
-                      />
-                      <label htmlFor={`tag-${tag.id}`} className="text-sm">
-                        {tag.tag}
-                      </label>
-                    </div>
-                  ))}
-                
-              </PopoverContent>
-            </Popover>
+            <ScrollArea className="border rounded-md p-2 h-50 w-100 overflow-y-hidden">
+              {tags.map(tag => (
+                <div key={tag.id} className="flex items-center space-x-2 py-1">
+                  <Checkbox
+                    id={`tag-${tag.id}`}
+                    checked={selectedTagIds.includes(tag.id)}
+                    onCheckedChange={() => toggleTag(tag.id)}
+                  />
+                  <label htmlFor={`tag-${tag.id}`} className="text-sm">
+                    {tag.tag}
+                  </label>
+                </div>
+              ))}
+            </ScrollArea>
           </div>
 
           <DialogFooter>
@@ -218,7 +214,7 @@ const EditPost = ({ post, userPermission }: { post: PostType, userPermission: nu
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </ScrollArea>
   )
 }
 

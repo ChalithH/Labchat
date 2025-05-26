@@ -247,7 +247,8 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
       where: { id },
       include: {
         member: { include: { user: true } },
-        tags: { include: { postTag: true } }
+        tags: { include: { postTag: true } },
+        reactions: { include: { reaction: true }}
       }
     })
     

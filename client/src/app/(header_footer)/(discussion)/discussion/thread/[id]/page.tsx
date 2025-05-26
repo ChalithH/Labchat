@@ -7,24 +7,10 @@ import api from '@/lib/api'
 import ThreadClient from '../../../components/clients/ThreadClient'
 import { AxiosResponse } from 'axios'
 import { DiscussionPostState, PostType } from '@/types/post.type'
-// import { ReplyType } from '@/types/reply.type'
-import { UserType } from '@/types/User.type'
+import { ReplyType } from '@/types/reply.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 import { PermissionConfig } from '@/config/permissions'
 
-type ReplyType = {
-  id: number
-  postId: number
-  memberId: number
-  content: string
-  createdAt: string
-  updatedAt: string
-  member: {
-    id: number
-    userId: number
-    user: UserType
-  }
-}
 
 const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     const { id } = await params
@@ -45,12 +31,11 @@ const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
     const userRole: string = roleResponse.data.name
 
     if (!user || (category.visiblePermission ?? 0) > roleResponse.data.permissionLevel || 
-        post.state === DiscussionPostState.HIDDEN && ((PermissionConfig.SEE_HIDDEN_PERMISSION > roleResponse.data.permissionLevel && post.member.userId !== user.id))) {
+      post.state === DiscussionPostState.HIDDEN && ((PermissionConfig.SEE_HIDDEN_PERMISSION > roleResponse.data.permissionLevel && post.member.userId !== user.id))) {
       redirect('/home')
     }
 
     const authorRole = await ResolveRoleName(post.member.user.roleId)
-
     const member = await api.get(`/member/get/user/${ user.id }`)
 
     return (

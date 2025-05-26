@@ -134,6 +134,7 @@ model LabMember {
   discussionPosts         DiscussionPost[]
   discussionReplies       DiscussionReply[]
   discussionPostReactions DiscussionPostReaction[]
+  discussionReplyReactions DiscussionReplyReaction[]
   events                  Event[]
   eventAssignments        EventAssignment[]
 
@@ -277,10 +278,14 @@ model DiscussionReply {
   content   String    @db.Text
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  parentId  Int?
 
   // Relationships
-  post      DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  member    LabMember      @relation(fields: [memberId], references: [id])
+  post      DiscussionPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  member    LabMember          @relation(fields: [memberId], references: [id])
+  parent    DiscussionReply?  @relation("ReplyToReply", fields: [parentId], references: [id])
+  children  DiscussionReply[] @relation("ReplyToReply")
+  reactions DiscussionReplyReaction[]
 
   @@map("discussion_reply")
 }
@@ -309,6 +314,33 @@ model DiscussionPostReaction {
   reaction   PostReaction   @relation(fields: [reactionId], references: [id], onDelete: Cascade)
 
   @@map("discussion_post_reaction")
+}
+
+// Reply Reaction
+model ReplyReaction {
+  id            Int         @id @default(autoincrement())
+  reactionName  String      @db.VarChar(64)
+  reaction      String      @db.VarChar(64)
+
+  // Relationships
+  replyReactions DiscussionReplyReaction[]
+
+  @@map("reply_reaction")
+}
+
+model DiscussionReplyReaction {
+  id          Int           @id @default(autoincrement())
+  replyId     Int
+  memberId    Int
+  reactionId  Int
+
+  // Relationships
+  reply       DiscussionReply   @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  member      LabMember         @relation(fields: [memberId], references: [id])
+  reaction    ReplyReaction     @relation(fields: [reactionId], references: [id], onDelete: Cascade)
+
+  @@map("discussion_reply_reaction")
+  @@unique([replyId, memberId, reactionId])
 }
 
 // Post Tag System

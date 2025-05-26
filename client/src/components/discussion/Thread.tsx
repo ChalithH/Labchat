@@ -16,6 +16,9 @@ import { useRouter } from 'next/navigation'
 import EditPost from '@/app/(header_footer)/(discussion)/components/EditPost'
 import { PermissionConfig } from '@/config/permissions';
 import { Badge } from '../ui/badge';
+import ReactionBar from '@/app/(header_footer)/(discussion)/components/ReactionBar';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 
 const BLURB_CHAR_LIMIT = 128
@@ -78,11 +81,6 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
     router.refresh()
   }
 
-  const reactionSummary = thread.reactions?.reduce((acc: Record<string, number>, curr: any) => {
-    const key = curr.reaction.reaction + ' ' + curr.reaction.reactionName
-    acc[key] = (acc[key] || 0) + 1
-    return acc
-  }, {})
 
   if (!author || !user || !authorRole || !userRole) {
     return ( 
@@ -95,12 +93,16 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 	return (
 		<div className="discussion-thread relative barlow-font cursor-pointer">
       { thread.tags && thread.tags.length > 0 &&
-        <div className="flex flex-wrap gap-2 mb-2">
-          { thread.tags.map(tag => 
-            <Badge key={ tag.id } className="text-white" style={{ backgroundColor: tag.colour }}>
-              {tag.tag}
-            </Badge>
-          )}
+        <div className='flex justify-between items-center mb-2'>
+          <div className="flex flex-wrap gap-2">
+            { thread.tags.map(tag => 
+              <Badge key={ tag.id } className="text-white" style={{ backgroundColor: tag.colour }}>
+                {tag.tag}
+              </Badge>
+            )}
+          </div>
+
+          <ReactionBar type='post' id={ thread.id } currentUserId={ user.id } variant='readonly' />
         </div>
       }
 
@@ -112,7 +114,11 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
       </div>
 			</Link>
 
-			{ b_show_blurb && <p className="my-2">{ thread.content.slice(0, BLURB_CHAR_LIMIT) }</p> }
+			{ b_show_blurb && 
+        <div className='max-h-20 overflow-hidden'>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{ thread.content.slice(0, BLURB_CHAR_LIMIT) }</ReactMarkdown>
+        </div>
+      }
 
 			<div className="mt-4 flex flex-col max-[400px]:flex-col sm:flex-row justify-between">
 				{ author ? (
@@ -121,7 +127,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 					<div className="text-sm italic">Loading author...</div>
 				)}
 
-				<div className="text-[12px] mt-2 sm:mt-auto sm:text-right max-[400px]:text-left">
+				<div className="text-xs play-font mt-2 sm:mt-auto sm:text-right max-[400px]:text-left">
 					<p>Created { new Date(thread.createdAt).toLocaleString('en-GB', {
 						day: '2-digit', month: 'short', year: 'numeric',
 						hour: '2-digit', minute: '2-digit', hour12: true
@@ -132,20 +138,14 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 					}) }</p>
 				</div>
 
-        { (author.id === user.id || userRole.permissionLevel >= PermissionConfig.MODIFY_ALL_POSTS) && 
+        { (author.id === user.id || userRole.permissionLevel >= PermissionConfig.MODIFY_ALL_POSTS_REPLIES) && 
           <div className='flex space-x-4 absolute top-2 right-2'>
             <EditPost post={ thread } userPermission={ userRole.permissionLevel} />
             <Trash onClick={ handleDeletePopup } className='w-5 h-5 text-muted-foreground' />
           </div> }
 			</div>
 
-      { reactionSummary && Object.entries(reactionSummary).length > 0 && 
-        <div className="flex gap-2 mt-4 flex-wrap">
-          {Object.entries(reactionSummary).map(([label, count]) => (
-            <p key={label} className="play-font text-sm">{label} x {count}</p>
-          ))}
-        </div>
-      }
+      
 
       <Dialog open={ showPopup } onOpenChange={ setShowPopup }>
         <DialogContent>

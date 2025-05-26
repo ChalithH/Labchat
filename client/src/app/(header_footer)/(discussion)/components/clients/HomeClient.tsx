@@ -31,7 +31,6 @@ const HomeClient = ({ user, userPermission, recentActivity, categories, posts }:
 							user={ user }
 							category={ category }
 							
-							// Is the user able to post in this category 
 							perm_to_add={ userPermission >= (category.postPermission ?? 0) ? true : false } 
 							b_view_all={ true } 
 							b_categories={ true } 

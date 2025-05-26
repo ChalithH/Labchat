@@ -14,7 +14,6 @@ import api from '@/lib/api'
 import { PermissionConfig } from '@/config/permissions'
 
 
-
 const DiscussionHome = async () => {
     await setUsersLastViewed(`/discussion/home`)
 
@@ -56,8 +55,6 @@ const DiscussionHome = async () => {
         }
       })
     )
-
-    console.log(filteredActivity)
 
     return (
       <HomeClient user={ user } userPermission={ userPermission } recentActivity={ filteredActivity } categories={ categories } posts={ posts }/>
