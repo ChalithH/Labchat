@@ -18,6 +18,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<number | null>(null)
+  const [selectedRoles, setSelectedRoles] = useState<{[key: number]: number}>({})
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -26,7 +27,17 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
         if (response.status !== 200) {
           throw new Error("Failed to fetch admission requests")
         }
-        setRequests(response.data)
+        const requestsData = response.data
+        setRequests(requestsData)
+        
+        const initialSelectedRoles: {[key: number]: number} = {}
+        requestsData.forEach((request: AdmissionRequest) => {
+          if (request.roleId) {
+            initialSelectedRoles[request.id] = request.roleId
+          }
+        })
+        setSelectedRoles(initialSelectedRoles)
+        
       } catch (err) {
         setError("Failed to load admission requests. Please try again later.")
         console.error(err)
@@ -38,7 +49,6 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
     fetchRequests()
   }, [labId])
 
-  // Fetch lab roles for approval dropdown
   useEffect(() => {
     const fetchLabRoles = async () => {
       try {
@@ -51,6 +61,18 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
 
     fetchLabRoles()
   }, [])
+
+  const handleRoleChange = (requestId: number, roleId: number | null) => {
+    setSelectedRoles(prev => {
+      const updated = { ...prev }
+      if (roleId) {
+        updated[requestId] = roleId
+      } else {
+        delete updated[requestId]
+      }
+      return updated
+    })
+  }
 
   const handleApprove = async (requestId: number, roleId: number) => {
     setProcessingId(requestId)
@@ -65,6 +87,12 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
             : req
         )
       )
+
+      setSelectedRoles(prev => {
+        const updated = { ...prev }
+        delete updated[requestId]
+        return updated
+      })
     } catch (err) {
       console.error('Failed to approve request:', err)
       // You might want to show a toast notification here
@@ -86,6 +114,8 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
             : req
         )
       )
+
+
     } catch (err) {
       console.error('Failed to reject request:', err)
     } finally {
@@ -93,7 +123,6 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
     }
   }
 
-  // Filter requests based on search and status
   const filteredRequests = requests.filter((request) => {
     const matchesSearch = 
       request.user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,7 +135,6 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
     return matchesSearch && matchesStatus
   })
 
-  // Sort requests: pending first, then by creation date
   const sortedRequests = filteredRequests.sort((a, b) => {
     if (a.status === 'PENDING' && b.status !== 'PENDING') return -1
     if (a.status !== 'PENDING' && b.status === 'PENDING') return 1
@@ -133,6 +161,8 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
             onApprove={handleApprove}
             onReject={handleReject}
             isProcessing={processingId === request.id}
+            selectedRole={selectedRoles[request.id] || null}
+            onRoleChange={(roleId) => handleRoleChange(request.id, roleId)}
           />
         ))}
       </div>
@@ -147,18 +177,6 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 Applicant
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Job Title
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Office
               </th>
               <th
                 scope="col"
@@ -195,6 +213,8 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
                 onApprove={handleApprove}
                 onReject={handleReject}
                 isProcessing={processingId === request.id}
+                selectedRole={selectedRoles[request.id] || null}
+                onRoleChange={(roleId) => handleRoleChange(request.id, roleId)}
               />
             ))}
           </tbody>
