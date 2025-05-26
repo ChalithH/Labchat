@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient, AdmissionStatus } from '@prisma/client';
+import { PrismaClient, AdmissionStatus, MemberStatus } from '@prisma/client';
 
 
 const prisma = new PrismaClient();
@@ -245,6 +245,21 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
             return;
         }
 
+        const userFirstContact = await prisma.contact.findFirst({
+            where: { 
+                userId: admissionRequest.userId,
+                // Optional: filter by type if you want specifically email contacts
+                // type: 'email'
+            },
+            orderBy: { id: 'asc' } // Get the first contact created (lowest ID)
+        });
+
+        if (!userFirstContact) {
+            res.status(400).json({ error: 'User has no contact information' });
+            return;
+        }
+
+
         // Use transaction to ensure both operations succeed or fail together
         const result = await prisma.$transaction(async (tx) => {
             // Update admission request status to APPROVED
@@ -308,7 +323,27 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 }
             });
 
-            return { updatedAdmission, newLabMember };
+            const onlineStatus: MemberStatus = await tx.memberStatus.create({
+                data: {
+                    description: 'Default online status',
+                    contactId: userFirstContact.id,
+                    memberId: newLabMember.id,
+                    isActive: false,
+                    statusId: 1, 
+                }
+            });
+             const offlineStatus: MemberStatus = await tx.memberStatus.create({
+                data: {
+                    description: 'Default offline status',
+                    contactId: userFirstContact.id,
+                    memberId: newLabMember.id,
+                    isActive: true,
+                    statusId: 3, 
+                }
+            });
+
+
+            return { updatedAdmission, newLabMember, onlineStatus, offlineStatus };
         });
 
         res.status(200).json({

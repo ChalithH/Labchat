@@ -169,14 +169,16 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
         loginPassword: hashed_password 
       }
     })
-
+    
+    /*
+    Removed since we are no longer automatically adding users to the default lab.
     await prisma.labMember.create({
       data: {
         userId: user.id,
         labId: 1,       
         labRoleId: 1 
       }
-    });
+    }); */
 
     res.status(201).json(user)
     return

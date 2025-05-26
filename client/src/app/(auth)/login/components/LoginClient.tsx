@@ -8,7 +8,7 @@ import { Link } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
-const DEFAULT_REDIRECT_ROUTE = 'dashboard'
+const DEFAULT_REDIRECT_ROUTE = 'admission'
 
 const LoginClient = () => {
     const router = useRouter()
