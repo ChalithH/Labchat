@@ -423,7 +423,6 @@ export const getUserLabs = async (req: Request, res: Response): Promise<void> =>
    try {  
     const { userId } = req.params;
 
-    // Check if user exists
     const user = await prisma.user.findUnique({
       where: { id: Number(userId) }
     });
@@ -433,7 +432,6 @@ export const getUserLabs = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Fetch user's lab memberships
     const memberships = await prisma.labMember.findMany({
       where: { userId: Number(userId) },
       select : { labId: true }
