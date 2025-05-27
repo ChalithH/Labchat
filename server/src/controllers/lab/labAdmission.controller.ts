@@ -283,7 +283,7 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 where: { id: Number(admissionId) },
                 data: { 
                     roleId: roleId,
-                    // need to store PCI status in the admission request
+                    isPCI: isPCI,
                     status: AdmissionStatus.APPROVED,
                     updatedAt: new Date()
                 },
@@ -631,15 +631,7 @@ export const getLabAdmissionRequests = async (req: Request, res: Response): Prom
                         lastName: true,
                         displayName: true,
                         jobTitle: true,
-                        office: true,
-                        labMembers: {
-                            where: {
-                                labId: Number(labId)
-                            },
-                            select: {
-                                isPCI: true,
-                            }
-                        }
+                        office: true
                     }
                 },
                 role: {
@@ -660,20 +652,8 @@ export const getLabAdmissionRequests = async (req: Request, res: Response): Prom
                 createdAt: 'desc'
             }
         });
-
-        const flattenedRequests = admissionRequests.map(request => ({
-            ...request,
-            user: {
-                id: request.user.id,
-                firstName: request.user.firstName,
-                lastName: request.user.lastName,
-                displayName: request.user.displayName,
-                jobTitle: request.user.jobTitle,
-                office: request.user.office,
-            }
-        }));
  
-        res.status(200).json(flattenedRequests);
+        res.status(200).json(admissionRequests);
      } catch (error) {
         console.error("Error retrieving lab admission requests:", error);
         res.status(500).json({ error: 'Failed to retrieve admission requests' });

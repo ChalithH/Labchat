@@ -30,6 +30,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
         }
         const requestsData = response.data
         setRequests(requestsData)
+        console.log(requestsData)
         const initialSelectedRoles: { [key: number]: number } = {}
         const initialSelectedPciUsers: { [key: number]: boolean | null } = {}
 
@@ -37,8 +38,8 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
           if (request.roleId) {
             initialSelectedRoles[request.id] = request.roleId
           }
-          if (request.user.isPCI !== undefined) {
-            initialSelectedPciUsers[request.id] = request.user.isPCI
+          if (request.isPCI !== undefined) {
+            initialSelectedPciUsers[request.id] = request.isPCI
           }
         })
 
@@ -99,7 +100,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
 
       // Update local state
       setRequests((prev) =>
-        prev.map((req) => (req.id === requestId ? { ...req, status: "APPROVED" as const, roleId, pciUser } : req)),
+        prev.map((req) => (req.id === requestId ? { ...req, status: "APPROVED" as const, roleId, pciUser: true } : req)),
       )
 
       setSelectedRoles((prev) => {

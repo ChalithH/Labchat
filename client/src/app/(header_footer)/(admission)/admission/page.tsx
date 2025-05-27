@@ -23,7 +23,7 @@ const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
   const view = searchParams.view || 'requests'
   
   // You might want to get the current lab ID from user session or route params
-  const labId = 2 // Replace with actual lab ID logic
+  const labId = 1 // Replace with actual lab ID logic
 
   return (
     <div>

@@ -6,13 +6,13 @@ export interface AdmissionRequest {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
   createdAt: string;
   updatedAt: string;
+  isPCI: boolean;
   user: {
     firstName: string;
     lastName: string;
     displayName: string;
     jobTitle?: string;
     office?: string;
-    isPCI: boolean;
   };
   role?: {
     name: string;

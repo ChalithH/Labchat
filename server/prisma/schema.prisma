@@ -139,6 +139,7 @@ model LabAdmission {
   userId          Int
   roleId          Int
   status          AdmissionStatus  @default(PENDING)
+  isPCI           Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 

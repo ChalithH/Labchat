@@ -61,7 +61,7 @@ export function MobileRow({
           <span className="font-medium">Requested Role:</span> {request.role ? request.role.name : "Not specified"}
         </p>
         <p>
-          <span className="font-medium">PCI User:</span> {getPciUserDisplay(request.user.isPCI)}
+          <span className="font-medium">PCI User:</span> {getPciUserDisplay(request.isPCI)}
         </p>
         <p>
           <span className="font-medium">Date Requested:</span> {formatDate(request.createdAt)}
@@ -178,7 +178,7 @@ export function DesktopRow({
             label=""
           />
         ) : (
-          <span className="text-sm">{getPciUserDisplay(request.user.isPCI)}</span>
+          <span className="text-sm">{getPciUserDisplay(request.isPCI)}</span>
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(request.createdAt)}</td>
