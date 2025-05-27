@@ -37,11 +37,12 @@ model User {
   dateJoined    DateTime   @default(now())
   lastViewed    String?
   lastViewedLabId Int?
-
+  profilePic    String? 
   // Relationships
   role          Role       @relation(fields: [roleId], references: [id])
   lastViewedLab Lab?       @relation("LastViewedLab", fields: [lastViewedLabId], references: [id])
   labMembers    LabMember[]
+  LabAdmission LabAdmission[]
   contacts      Contact[]
   auditLogs     AuditLog[]
   @@map("user")
@@ -94,17 +95,19 @@ model Lab {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   status         String
+  labPic         String?
 
   // Relationships
   usersLastViewed User[]     @relation("LastViewedLab")
+  LabAdmission LabAdmission[]
   labMembers     LabMember[]
   inventoryItems LabInventoryItem[]
   discussions    Discussion[]
   events         Event[]
   instruments    Instrument[]
   auditLogs      AuditLog[]
-
   @@map("lab")
+  
 }
 
 model LabRole {
@@ -115,9 +118,38 @@ model LabRole {
 
   // Relationships
   labMembers      LabMember[]
+  LabAdmission LabAdmission[]
 
   @@map("lab_role")
 }
+
+
+
+enum AdmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+// Updated model using the enum
+model LabAdmission { 
+  id              Int              @id @default(autoincrement())
+  labId           Int
+  userId          Int
+  roleId          Int
+  status          AdmissionStatus  @default(PENDING)
+  isPCI           Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relationships
+  lab             Lab              @relation(fields: [labId], references: [id])
+  user            User             @relation(fields: [userId], references: [id])
+  role            LabRole          @relation(fields: [roleId], references: [id])
+  @@map("lab_admission")
+}
+
 
 model LabMember {
   id                      Int                      @id @default(autoincrement())
@@ -127,6 +159,7 @@ model LabMember {
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   inductionDone           Boolean                  @default(false)
+  isPCI                   Boolean                  @default(false)
 
   // Relationships
   user                    User                     @relation(fields: [userId], references: [id])
@@ -181,6 +214,7 @@ model LabInventoryItem {
   currentStock    Int
   minStock        Int
   updatedAt       DateTime     @updatedAt
+  itemPic       String?
 
   // Relationships
   item            Item         @relation(fields: [itemId], references: [id])
