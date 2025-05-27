@@ -163,7 +163,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
   return (
     <div className="overflow-hidden border rounded-lg shadow bg-white">
       {/* Mobile view (hidden on md and larger screens) */}
-      <div className="md:hidden divide-y">
+      <div className="lg:hidden divide-y">
         {sortedRequests.map((request) => (
           <MobileRow
             key={request.id}
@@ -181,7 +181,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
       </div>
 
       {/* Desktop view (hidden on smaller than md screens) */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
