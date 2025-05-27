@@ -37,7 +37,7 @@ model User {
   dateJoined    DateTime   @default(now())
   lastViewed    String?
   lastViewedLabId Int?
-
+  profilePic    String? 
   // Relationships
   role          Role       @relation(fields: [roleId], references: [id])
   lastViewedLab Lab?       @relation("LastViewedLab", fields: [lastViewedLabId], references: [id])
@@ -95,6 +95,7 @@ model Lab {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   status         String
+  labPic         String?
 
   // Relationships
   usersLastViewed User[]     @relation("LastViewedLab")
@@ -157,6 +158,7 @@ model LabMember {
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   inductionDone           Boolean                  @default(false)
+  isPCI                   Boolean                  @default(false)
 
   // Relationships
   user                    User                     @relation(fields: [userId], references: [id])
@@ -211,6 +213,7 @@ model LabInventoryItem {
   currentStock    Int
   minStock        Int
   updatedAt       DateTime     @updatedAt
+  itemPic       String?
 
   // Relationships
   item            Item         @relation(fields: [itemId], references: [id])

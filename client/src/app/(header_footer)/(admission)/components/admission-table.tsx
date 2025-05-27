@@ -1,16 +1,16 @@
 "use client"
-import axios from "axios";
+import axios from "axios"
 import { useState, useEffect } from "react"
 import type { AdmissionRequest, LabRole } from "@/app/(header_footer)/(admission)/types"
-import { MobileRow, DesktopRow } from "@/app/(header_footer)/(admission)/components/admission-row"
+import { MobileRow, DesktopRow } from "./admission-row"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 type Props = {
-  labId: number;
-  searchQuery: string;
-  statusFilter: string;
-};
+  labId: number
+  searchQuery: string
+  statusFilter: string
+}
 
 export default function AdmissionTable({ labId, searchQuery, statusFilter }: Props) {
   const [requests, setRequests] = useState<AdmissionRequest[]>([])
@@ -18,7 +18,8 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<number | null>(null)
-  const [selectedRoles, setSelectedRoles] = useState<{[key: number]: number}>({})
+  const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: number }>({})
+  const [selectedPciUsers, setSelectedPciUsers] = useState<{ [key: number]: boolean | null }>({})
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -29,15 +30,20 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
         }
         const requestsData = response.data
         setRequests(requestsData)
-        
-        const initialSelectedRoles: {[key: number]: number} = {}
+        const initialSelectedRoles: { [key: number]: number } = {}
+        const initialSelectedPciUsers: { [key: number]: boolean | null } = {}
+
         requestsData.forEach((request: AdmissionRequest) => {
           if (request.roleId) {
             initialSelectedRoles[request.id] = request.roleId
           }
+          if (request.user.isPCI !== undefined) {
+            initialSelectedPciUsers[request.id] = request.user.isPCI
+          }
         })
+
         setSelectedRoles(initialSelectedRoles)
-        
+        setSelectedPciUsers(initialSelectedPciUsers)
       } catch (err) {
         setError("Failed to load admission requests. Please try again later.")
         console.error(err)
@@ -55,7 +61,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
         const response = await axios.get(`${API_URL}/lab/roles`)
         setLabRoles(response.data)
       } catch (err) {
-        console.error('Failed to fetch lab roles:', err)
+        console.error("Failed to fetch lab roles:", err)
       }
     }
 
@@ -63,7 +69,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
   }, [])
 
   const handleRoleChange = (requestId: number, roleId: number | null) => {
-    setSelectedRoles(prev => {
+    setSelectedRoles((prev) => {
       const updated = { ...prev }
       if (roleId) {
         updated[requestId] = roleId
@@ -74,28 +80,41 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
     })
   }
 
-  const handleApprove = async (requestId: number, roleId: number) => {
+  const handlePciUserChange = (requestId: number, pciUser: boolean | null) => {
+    setSelectedPciUsers((prev) => ({
+      ...prev,
+      [requestId]: pciUser,
+    }))
+  }
+
+  const handleApprove = async (requestId: number, roleId: number, pciUser?: boolean) => {
     setProcessingId(requestId)
     try {
-      await axios.put(`${API_URL}/labAdmission/approve/${requestId}`, { roleId })
-      
+
+      const payload: any = { 
+        roleId: roleId, 
+        isPCI: pciUser ?? selectedPciUsers[requestId] 
+      }
+      await axios.put(`${API_URL}/labAdmission/approve/${requestId}`, payload)
+
       // Update local state
-      setRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { ...req, status: 'APPROVED' as const, roleId }
-            : req
-        )
+      setRequests((prev) =>
+        prev.map((req) => (req.id === requestId ? { ...req, status: "APPROVED" as const, roleId, pciUser } : req)),
       )
 
-      setSelectedRoles(prev => {
+      setSelectedRoles((prev) => {
+        const updated = { ...prev }
+        delete updated[requestId]
+        return updated
+      })
+
+      setSelectedPciUsers((prev) => {
         const updated = { ...prev }
         delete updated[requestId]
         return updated
       })
     } catch (err) {
-      console.error('Failed to approve request:', err)
-      // You might want to show a toast notification here
+      console.error("Failed to approve request:", err)
     } finally {
       setProcessingId(null)
     }
@@ -105,39 +124,30 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
     setProcessingId(requestId)
     try {
       await axios.put(`${API_URL}/labAdmission/reject/${requestId}`)
-      
+
       // Update local state
-      setRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { ...req, status: 'REJECTED' as const }
-            : req
-        )
-      )
-
-
+      setRequests((prev) => prev.map((req) => (req.id === requestId ? { ...req, status: "REJECTED" as const } : req)))
     } catch (err) {
-      console.error('Failed to reject request:', err)
+      console.error("Failed to reject request:", err)
     } finally {
       setProcessingId(null)
     }
   }
 
   const filteredRequests = requests.filter((request) => {
-    const matchesSearch = 
+    const matchesSearch =
       request.user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.user.jobTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.lab.name.toLowerCase().includes(searchQuery.toLowerCase())
 
-    const matchesStatus = 
-      statusFilter === '' || request.status.toLowerCase() === statusFilter.toLowerCase()
-
+    const matchesStatus = statusFilter === "" || request.status.toLowerCase() === statusFilter.toLowerCase()
+    
     return matchesSearch && matchesStatus
   })
 
   const sortedRequests = filteredRequests.sort((a, b) => {
-    if (a.status === 'PENDING' && b.status !== 'PENDING') return -1
-    if (a.status !== 'PENDING' && b.status === 'PENDING') return 1
+    if (a.status === "PENDING" && b.status !== "PENDING") return -1
+    if (a.status !== "PENDING" && b.status === "PENDING") return 1
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   })
 
@@ -160,9 +170,11 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
             labRoles={labRoles}
             onApprove={handleApprove}
             onReject={handleReject}
+            onPciUserChange={handlePciUserChange}
             isProcessing={processingId === request.id}
             selectedRole={selectedRoles[request.id] || null}
             onRoleChange={(roleId) => handleRoleChange(request.id, roleId)}
+            selectedPciUser={selectedPciUsers[request.id] ?? null}
           />
         ))}
       </div>
@@ -182,13 +194,19 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Requested Role
+                Status
               </th>
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Status
+                Approve as Role
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                PCI User
               </th>
               <th
                 scope="col"
@@ -212,9 +230,11 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
                 labRoles={labRoles}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                onPciUserChange={handlePciUserChange}
                 isProcessing={processingId === request.id}
                 selectedRole={selectedRoles[request.id] || null}
                 onRoleChange={(roleId) => handleRoleChange(request.id, roleId)}
+                selectedPciUser={selectedPciUsers[request.id] ?? null}
               />
             ))}
           </tbody>
@@ -222,9 +242,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
       </div>
 
       {sortedRequests.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          No admission requests found.
-        </div>
+        <div className="text-center py-8 text-gray-500">No admission requests found.</div>
       )}
     </div>
   )

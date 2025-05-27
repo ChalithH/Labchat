@@ -12,6 +12,7 @@ export interface AdmissionRequest {
     displayName: string;
     jobTitle?: string;
     office?: string;
+    isPCI: boolean;
   };
   role?: {
     name: string;

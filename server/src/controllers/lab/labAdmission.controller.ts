@@ -152,7 +152,7 @@ export const createAdmissionRequest = async (req: Request, res: Response): Promi
                     select: {
                         firstName: true,
                         lastName: true,
-                        displayName: true
+                        displayName: true, 
                     }
                 },
                 role: {
@@ -186,6 +186,24 @@ export const createAdmissionRequest = async (req: Request, res: Response): Promi
  *         schema:
  *           type: integer
  *         description: ID of the admission request to approve
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - roleId
+ *             properties:
+ *               roleId:
+ *                 type: integer
+ *                 description: ID of the lab role to assign to the user (must be a valid lab role)
+ *                 example: 3
+ *               isPCI:
+ *                 type: boolean
+ *                 description: Whether this approval is for a Principal Investigator Contact role
+ *                 example: false
+ *                 default: false
  *     responses:
  *       200:
  *         description: Admission approved and lab member created successfully
@@ -208,6 +226,7 @@ export const createAdmissionRequest = async (req: Request, res: Response): Promi
 export const approveAdmissionRequest = async (req: Request, res: Response): Promise<void> => {
     try {
         const { admissionId } = req.params;
+        const { roleId, isPCI } = req.body;
 
         // Find the admission request
         const admissionRequest = await prisma.labAdmission.findUnique({
@@ -222,7 +241,7 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
         if (!admissionRequest) {
             res.status(404).json({ error: 'Admission request not found' });
             return;
-        }
+        } 
 
         // Check if the request is in pending status
         if (admissionRequest.status !== AdmissionStatus.PENDING) {
@@ -248,10 +267,8 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
         const userFirstContact = await prisma.contact.findFirst({
             where: { 
                 userId: admissionRequest.userId,
-                // Optional: filter by type if you want specifically email contacts
-                // type: 'email'
             },
-            orderBy: { id: 'asc' } // Get the first contact created (lowest ID)
+            orderBy: { id: 'asc' } 
         });
 
         if (!userFirstContact) {
@@ -259,13 +276,14 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
             return;
         }
 
-
         // Use transaction to ensure both operations succeed or fail together
         const result = await prisma.$transaction(async (tx) => {
             // Update admission request status to APPROVED
             const updatedAdmission = await tx.labAdmission.update({
                 where: { id: Number(admissionId) },
                 data: { 
+                    roleId: roleId,
+                    // need to store PCI status in the admission request
                     status: AdmissionStatus.APPROVED,
                     updatedAt: new Date()
                 },
@@ -297,8 +315,8 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 data: {
                     userId: admissionRequest.userId,
                     labId: admissionRequest.labId,
-                    labRoleId: admissionRequest.roleId,
-                    inductionDone: false
+                    labRoleId: roleId,
+                    isPCI: isPCI,
                 },
                 include: {
                     user: {
@@ -323,6 +341,7 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 }
             });
 
+
             const onlineStatus: MemberStatus = await tx.memberStatus.create({
                 data: {
                     description: 'Default online status',
@@ -342,6 +361,16 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 }
             });
 
+            let updatedUser = null;
+            if (!admissionRequest.user.lastViewedLabId) {
+                updatedUser = await tx.user.update({
+                    where: { id: admissionRequest.userId },
+                    data: {
+                        lastViewedLabId: admissionRequest.labId,
+                        lastViewed: `/lab/${admissionRequest.labId}` // or '/dashboard'
+                    }
+                });
+            }
 
             return { updatedAdmission, newLabMember, onlineStatus, offlineStatus };
         });
@@ -354,7 +383,7 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
 
     } catch (error) {
         console.error("Error approving admission request:", error);
-        res.status(500).json({ error: 'Failed to approve admission request' });
+        res.status(500).json({ error: error});
     }
 };
 
@@ -581,38 +610,47 @@ export const withdrawAdmissionRequest = async (req: Request, res: Response): Pro
 export const getLabAdmissionRequests = async (req: Request, res: Response): Promise<void> => {
     try {
         const { labId } = req.params;
-
         const lab = await prisma.lab.findUnique({
             where: { id: Number(labId) }
         });
-
+ 
         if (!lab) {
             res.status(404).json({ error: 'Lab not found' });
             return;
         }
-
+ 
         const whereClause: any = { labId: Number(labId) };
-
+ 
         const admissionRequests = await prisma.labAdmission.findMany({
             where: whereClause,
             include: {
                 user: {
                     select: {
+                        id: true,
                         firstName: true,
                         lastName: true,
                         displayName: true,
                         jobTitle: true,
-                        office: true
+                        office: true,
+                        labMembers: {
+                            where: {
+                                labId: Number(labId)
+                            },
+                            select: {
+                                isPCI: true,
+                            }
+                        }
                     }
                 },
                 role: {
                     select: {
                         name: true,
-                        description: true
+                        description: true,
+                        permissionLevel: true
                     }
                 },
-                lab: { 
-                    select: {
+                lab: {
+                     select: {
                         name: true,
                         location: true
                     }
@@ -623,13 +661,25 @@ export const getLabAdmissionRequests = async (req: Request, res: Response): Prom
             }
         });
 
-        res.status(200).json(admissionRequests);
-
-    } catch (error) {
+        const flattenedRequests = admissionRequests.map(request => ({
+            ...request,
+            user: {
+                id: request.user.id,
+                firstName: request.user.firstName,
+                lastName: request.user.lastName,
+                displayName: request.user.displayName,
+                jobTitle: request.user.jobTitle,
+                office: request.user.office,
+            }
+        }));
+ 
+        res.status(200).json(flattenedRequests);
+     } catch (error) {
         console.error("Error retrieving lab admission requests:", error);
         res.status(500).json({ error: 'Failed to retrieve admission requests' });
     }
 };
+
 
 /**
  * @swagger

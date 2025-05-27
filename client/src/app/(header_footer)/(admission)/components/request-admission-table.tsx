@@ -2,7 +2,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react"
 import type { Lab, LabRole, LabWithStatus, UserLabStatus } from "@/app/(header_footer)/(admission)/types"
-import { MobileRow, DesktopRow } from "@/app/(header_footer)/(admission)/components/request-admission-row"
+import { MobileRow, DesktopRow } from "./request-admission-row"
 import {
   Dialog,
   DialogContent,
@@ -37,11 +37,11 @@ export default function RequestAdmissionTable({ userId, searchQuery, statusFilte
     const fetchData = async () => {
       try {
         // Fetch all labs
-        const labsResponse = await axios.get(`${API_URL}/lab/all`) // You'll need this endpoint
+        const labsResponse = await axios.get(`${API_URL}/lab/all`)
         const allLabs: Lab[] = labsResponse.data
 
         // Fetch user's lab memberships and admission requests
-        const membershipResponse = await axios.get(`${API_URL}/lab/user/${userId}/labs`) // You'll need this endpoint
+        const membershipResponse = await axios.get(`${API_URL}/lab/user/${userId}/labs`)
         const admissionResponse = await axios.get(`${API_URL}/labAdmission/user/${userId}`)
         
         const memberships = membershipResponse.data
@@ -137,7 +137,6 @@ export default function RequestAdmissionTable({ userId, searchQuery, statusFilte
       setSelectedRole(null)
     } catch (err) {
       console.error('Failed to submit admission request:', err)
-      // You might want to show a toast notification here
     } finally {
       setIsSubmitting(false)
     }
@@ -216,6 +215,9 @@ export default function RequestAdmissionTable({ userId, searchQuery, statusFilte
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Your Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Action

@@ -2,8 +2,9 @@
 import type { LabWithStatus, LabRole } from "@/app/(header_footer)/(admission)/types"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Clock, XCircle, Users } from "lucide-react"
+import { CheckCircle, Clock, XCircle, Users } from 'lucide-react'
 import { useState } from "react"
+import { RoleSelect } from "./role-select"
 
 interface RequestAdmissionRowProps {
   lab: LabWithStatus
@@ -89,22 +90,17 @@ export function MobileRow({ lab, labRoles, onSubmitRequest, isProcessing }: Requ
         {canRequest ? (
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Role:
               </label>
-              <select
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={selectedRoleId || ''}
-                onChange={(e) => setSelectedRoleId(e.target.value ? parseInt(e.target.value) : null)}
+              <RoleSelect
+                roles={labRoles}
+                value={selectedRoleId}
+                onValueChange={setSelectedRoleId}
+                placeholder="Choose a role..."
                 disabled={isProcessing}
-              >
-                <option value="">Choose a role...</option>
-                {labRoles.map(role => (
-                  <option key={role.id} value={role.id}>
-                    {role.name} {role.description && `- ${role.description}`}
-                  </option>
-                ))}
-              </select>
+                className="w-full"
+              />
             </div>
             
             <Button
@@ -160,28 +156,26 @@ export function DesktopRow({ lab, labRoles, onSubmitRequest, isProcessing }: Req
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         {canRequest ? (
-          <div className="flex space-x-2 items-center">
-            <select
-              className="border rounded px-2 py-1 text-sm min-w-[140px]"
-              value={selectedRoleId || ''}
-              onChange={(e) => setSelectedRoleId(e.target.value ? parseInt(e.target.value) : null)}
-              disabled={isProcessing}
-            >
-              <option value="">Choose role...</option>
-              {labRoles.map(role => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              disabled={!selectedRoleId || isProcessing}
-            >
-              {isProcessing ? 'Submitting...' : 'Request'}
-            </Button>
-          </div>
+          <RoleSelect
+            roles={labRoles}
+            value={selectedRoleId}
+            onValueChange={setSelectedRoleId}
+            placeholder="Choose role..."
+            disabled={isProcessing}
+          />
+        ) : (
+          <span className="text-sm text-gray-500">-</span>
+        )}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        {canRequest ? (
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={!selectedRoleId || isProcessing}
+          >
+            {isProcessing ? 'Submitting...' : 'Request'}
+          </Button>
         ) : (
           <span className="text-sm text-gray-500">
             {lab.userStatus.isMember && "Already member"}
