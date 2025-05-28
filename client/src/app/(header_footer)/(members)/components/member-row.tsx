@@ -115,11 +115,12 @@ export function MobileRow({ member, isExpanded, toggleExpand }: MemberRowProps) 
               <div className="h-px bg-gray-200 my-3"></div>
 
               <div className="pt-2">
-                <Link href={`/member/profile/${member.memberID}`}>
+                <Link href={`/profile/${member.memberID}`}>
                   <Button variant="outline" size="sm" className="w-full flex items-center justify-center">
                     <ExternalLink className="mr-2 h-4 w-4" /> View Full Profile
                   </Button>
                 </Link>
+
               </div>
             </div>
           </div>
@@ -226,7 +227,7 @@ export function DesktopRow({ member, isExpanded, toggleExpand }: MemberRowProps)
                   <div className="h-px bg-gray-200 my-3"></div>
 
                   <div className="pt-2">
-                    <Link href={`/member/profile/${member.memberID}`}>
+                    <Link href={`/profile/${member.memberID}`}>
                       <Button variant="outline" size="sm" className="w-full flex items-center justify-center">
                         <ExternalLink className="mr-2 h-4 w-4" /> View Full Profile
                       </Button>
