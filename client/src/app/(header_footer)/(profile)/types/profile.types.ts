@@ -26,6 +26,8 @@ export type ProfileDataType = {
   dateJoined: string
   lastViewed: string | null
   role: string
+  profilePic?: string,
+  lastViewedLabId?: string,
   contacts: ContactType[],
 
   // Custom field for frontend

@@ -4,6 +4,7 @@ import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import AdmissionClient from '../components/admission-client'
 import RequestAdmissionClient from '../components/request-admission-client'
+import { UserType } from '@/types/user.type'
 
 interface AdmissionPageProps {
   searchParams: {
@@ -14,13 +15,14 @@ interface AdmissionPageProps {
 const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
   setUsersLastViewed(`/admission`)
 
-  const user = await getUserFromSessionServer()
+  const user: UserType = await getUserFromSessionServer()
   if (!user) {
     redirect('/home')
   }
+  console.log(user)
 
   // Get the view from search params, default to 'requests' for admin view
-  const view = searchParams.view || 'requests'
+  const view = await searchParams.view || 'requests'
   
   // You might want to get the current lab ID from user session or route params
   const labId = 21 // Replace with actual lab ID logic
