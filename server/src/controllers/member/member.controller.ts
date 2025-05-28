@@ -56,6 +56,8 @@ export const getMemberByUserId = async (req: Request, res: Response): Promise<vo
  *                 properties:
  *                   statusName:
  *                     type: string
+ *                   id: 
+ *                     type: integer
  *       500:
  *         description: Failed to retrieve member statuses
  */
@@ -65,7 +67,7 @@ export const getStatuses = async (req: Request, res: Response): Promise<void> =>
 
     const statuses = await prisma.status.findMany({
       select: {
-        id: false,
+        id: true,
         statusName: true,
         statusWeight: false
       }

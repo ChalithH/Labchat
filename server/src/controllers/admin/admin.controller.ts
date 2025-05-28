@@ -58,7 +58,7 @@ export const getAllLabs = async (req: Request, res: Response): Promise<void> => 
                     where: {
                         labRole: {
                             permissionLevel: {
-                                gte: 70,  // Only managers with role permission >= 70
+                                gte: 70,  // Consider manager roles with permission level 70+
                             },
                         }
                     },
@@ -156,6 +156,139 @@ export const getLabById = async (req: Request, res: Response): Promise<void> => 
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
+/**
+ * @swagger
+ * /admin/lab/{id}:
+ *   put:
+ *     summary: Update lab details
+ *     description: Updates the name, location, or status of a lab.
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: New name of the lab
+ *               location:
+ *                 type: string
+ *                 description: New location of the lab
+ *               status:
+ *                 type: string
+ *                 description: New status of the lab (e.g., active, inactive, under_maintenance)
+ *     responses:
+ *       200:
+ *         description: Lab updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Lab'
+ *       400:
+ *         description: Invalid lab ID or invalid input
+ *       403:
+ *         description: User not authorized to update this lab
+ *       404:
+ *         description: Lab not found
+ *       500:
+ *         description: Internal server error
+ */
+export const updateLab = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.id);
+    const { name, location, status } = req.body;
+    const sessionUserId = (req.session as any)?.passport?.user;
+
+    if (isNaN(labId)) {
+        res.status(400).json({ error: 'Invalid lab ID' });
+        return;
+    }
+
+    if (!sessionUserId) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+    }
+
+    try {
+        // 1. Get current user and their global role
+        const currentUser = await prisma.user.findUnique({
+            where: { id: sessionUserId },
+            include: { role: true },
+        });
+
+        if (!currentUser || !currentUser.role) {
+            res.status(403).json({ error: 'User role not found or user not found.' });
+            return;
+        }
+
+        let authorized = false;
+        
+        if (currentUser.role.permissionLevel >= 100) {
+            authorized = true;
+        }
+
+        
+        if (!authorized) {
+            const labManagerRecord = await prisma.labMember.findFirst({
+                where: {
+                    userId: sessionUserId,
+                    labId: labId,
+                    labRole: {
+                        permissionLevel: { gte: 70 }, // assume: 70 is manager level
+                    },
+                },
+            });
+            if (labManagerRecord) {
+                authorized = true;
+            }
+        }
+
+        if (!authorized) {
+            res.status(403).json({ error: 'User not authorized to update this lab' });
+            return;
+        }
+
+        // update if authorized
+        const currentLab = await prisma.lab.findUnique({
+            where: { id: labId },
+        });
+
+        if (!currentLab) {
+            res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        const updatedLab = await prisma.lab.update({
+            where: { id: labId },
+            data: {
+                name: name !== undefined ? name : currentLab.name,
+                location: location !== undefined ? location : currentLab.location,
+                status: status !== undefined ? status : currentLab.status,
+                updatedAt: new Date(), // Explicitly set updatedAt
+            },
+        });
+        res.status(200).json(updatedLab);
+    } catch (error) {
+        console.error('Error updating lab:', error);
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // Handle Prisma errors
+            if (error.code === 'P2025') {
+                res.status(404).json({ error: 'Lab not found during update' });
+                return;
+            }
+        }
+        res.status(500).json({ error: 'Internal server error while updating lab' });
+    }
+};
 
 // Admin:
 
@@ -824,7 +957,7 @@ export const createGlobalItem = async (req: Request, res: Response): Promise<voi
     try {
         const newItem = await prisma.item.create({
             data: {
-                id: undefined, // Prisma will auto-generate the ID
+                id: undefined, // Allow Prisma to auto-generate ID
                 name,
                 description: description || null,
                 safetyInfo: safetyInfo || null,
@@ -967,5 +1100,296 @@ export const deleteItem = async (req: Request, res: Response): Promise<void> => 
     } catch (error) {
         console.error('Error deleting item:', error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/get-lab-roles:
+ *   get:
+ *     summary: Get all lab roles
+ *     description: Retrieves a list of all lab roles available in the system.
+ *     tags: [Admin, LabRole]
+ *     responses:
+ *       200:
+ *         description: List of lab roles fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/LabRole' 
+ *       500:
+ *         description: Internal server error
+ */
+export const getAllLabRoles = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const labRoles = await prisma.labRole.findMany();
+        res.status(200).json(labRoles);
+    } catch (error) {
+        console.error('Error fetching lab roles:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+export const activateMemberStatus = async (req: Request, res: Response): Promise<void> => {
+    const memberStatusId = parseInt(req.params.memberStatusId);
+    // TODO: Add robust authorization checks (e.g. is the requester an admin of the lab this member belongs to?)
+
+    if (isNaN(memberStatusId)) {
+        res.status(400).json({ error: 'Invalid MemberStatus ID' });
+        return;
+    }
+
+    try {
+        const targetMemberStatus = await prisma.memberStatus.findUnique({
+            where: { id: memberStatusId },
+            select: { memberId: true } // We need the labMemberId to deactivate others
+        });
+
+        if (!targetMemberStatus) {
+            res.status(404).json({ error: 'MemberStatus entry not found' });
+            return;
+        }
+
+        const labMemberId = targetMemberStatus.memberId;
+
+        
+        await prisma.$transaction(async (tx) => {
+            // Deactivate all current statuses for this lab member
+            await tx.memberStatus.updateMany({
+                where: { memberId: labMemberId },
+                data: { isActive: false },
+            });
+
+            // Activate the target status
+            await tx.memberStatus.update({
+                where: { id: memberStatusId },
+                data: { isActive: true },
+            });
+        });
+
+        
+        res.status(200).json({ message: 'Member status activated successfully', activatedMemberStatusId: memberStatusId });
+
+    } catch (error) {
+        console.error('Error activating member status:', error);
+        // Check for Prisma errors
+        res.status(500).json({ error: 'Internal server error while activating member status' });
+    }
+};
+
+export const updateMemberStatus = async (req: Request, res: Response): Promise<void> => {
+    const memberStatusId = parseInt(req.params.memberStatusId);
+    const { description } = req.body;
+    // TODO: Add robust authorization checks
+
+    if (isNaN(memberStatusId)) {
+        res.status(400).json({ error: 'Invalid MemberStatus ID' });
+        return;
+    }
+
+    if (typeof description !== 'string') { // Base validation for description
+        res.status(400).json({ error: 'Invalid description provided' });
+        return;
+    }
+
+    try {
+        const updatedMemberStatus = await prisma.memberStatus.update({
+            where: { id: memberStatusId },
+            data: { description: description },
+        });
+
+        res.status(200).json(updatedMemberStatus);
+
+    } catch (error: any) {
+        console.error('Error updating member status:', error);
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            res.status(404).json({ error: 'MemberStatus entry not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error while updating member status' });
+        }
+    }
+};
+
+export const deleteMemberStatus = async (req: Request, res: Response): Promise<void> => {
+    const memberStatusId = parseInt(req.params.memberStatusId);
+    // TODO: Add robust authorization checks
+
+    if (isNaN(memberStatusId)) {
+        res.status(400).json({ error: 'Invalid MemberStatus ID' });
+        return;
+    }
+
+    try {
+        // First, check if the MemberStatus is currently active
+        
+        // For now allow deletion regardless of active state
+        const memberStatusToDelete = await prisma.memberStatus.findUnique({
+            where: { id: memberStatusId },
+        });
+
+        if (!memberStatusToDelete) {
+            res.status(404).json({ error: 'MemberStatus entry not found' });
+            return;
+        }
+
+        
+
+        await prisma.memberStatus.delete({
+            where: { id: memberStatusId },
+        });
+
+        res.status(200).json({ message: 'MemberStatus entry deleted successfully' });
+
+    } catch (error: any) {
+        console.error('Error deleting member status:', error);
+        if (error.code === 'P2025') { 
+            res.status(404).json({ error: 'MemberStatus entry not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error while deleting member status' });
+        }
+    }
+};
+
+export const createMemberStatusForLabMember = async (req: Request, res: Response): Promise<void> => {
+    const labMemberId = parseInt(req.params.labMemberId);
+    const { statusId, contactId, description } = req.body;
+    // TODO: Add robust authorization checks (is admin of the lab this member belongs to?)
+
+    if (isNaN(labMemberId)) {
+        res.status(400).json({ error: 'Invalid LabMember ID' });
+        return;
+    }
+    if (statusId === undefined || contactId === undefined) {
+        res.status(400).json({ error: 'statusId and contactId are required' });
+        return;
+    }
+    if (description === undefined || typeof description !== 'string') {
+        // Allowing empty string for description, but it must be provided
+        res.status(400).json({ error: 'Description must be a string' });
+        return;
+    }
+
+    try {
+        // Verify labMember, status, and contact exist before creating
+        const labMember = await prisma.labMember.findUnique({ where: { id: labMemberId } });
+        if (!labMember) {
+            res.status(404).json({ error: 'LabMember not found' });
+            return;
+        }
+        const globalStatus = await prisma.status.findUnique({ where: { id: parseInt(statusId) } });
+        if (!globalStatus) {
+            res.status(404).json({ error: 'Global Status type not found' });
+            return;
+        }
+        const contact = await prisma.contact.findUnique({ where: { id: parseInt(contactId) } });
+        if (!contact) {
+            res.status(404).json({ error: 'Contact not found' });
+            return;
+        }
+        // Ensure the contact belongs to the user associated with the labMember
+        if (contact.userId !== labMember.userId) {
+            res.status(403).json({ error: 'Contact does not belong to the specified lab member\'s user account.' });
+            return;
+        }
+
+        const newMemberStatus = await prisma.memberStatus.create({
+            data: {
+                memberId: labMemberId,
+                statusId: parseInt(statusId),
+                contactId: parseInt(contactId),
+                description: description,
+                isActive: false, // New statuses are created as inactive by default. Admin can activate separately
+            },
+            include: { 
+                status: true,
+                contact: true,
+            }
+        });
+
+        res.status(201).json(newMemberStatus);
+
+    } catch (error: any) {
+        console.error('Error creating new member status:', error);
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            // Unique constraint failed 
+             res.status(409).json({ error: 'This status configuration might already exist for the member.' });
+        } else {
+            res.status(500).json({ error: 'Internal server error while creating member status' });
+        }
+    }
+};
+
+export const updateLabMemberRole = async (req: Request, res: Response): Promise<void> => {
+    const labMemberId = parseInt(req.params.labMemberId);
+    const { newLabRoleId } = req.body;
+    // TODO: Add robust authorization checks
+
+    if (isNaN(labMemberId)) {
+        res.status(400).json({ error: 'Invalid LabMember ID' });
+        return;
+    }
+    if (newLabRoleId === undefined || isNaN(parseInt(newLabRoleId))) {
+        res.status(400).json({ error: 'newLabRoleId is required and must be a number' });
+        return;
+    }
+
+    try {
+        const labRoleExists = await prisma.labRole.findUnique({ where: { id: parseInt(newLabRoleId) } });
+        if (!labRoleExists) {
+            res.status(404).json({ error: 'Specified LabRole ID not found' });
+            return;
+        }
+
+        const updatedLabMember = await prisma.labMember.update({
+            where: { id: labMemberId },
+            data: { labRoleId: parseInt(newLabRoleId) },
+            include: { user: true, labRole: true } // Return updated member with role details
+        });
+
+        res.status(200).json(updatedLabMember);
+
+    } catch (error: any) {
+        console.error('Error updating lab member role:', error);
+        if (error.code === 'P2025') { // Prisma record not found
+            res.status(404).json({ error: 'LabMember not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error while updating role' });
+        }
+    }
+};
+
+export const toggleLabMemberInduction = async (req: Request, res: Response): Promise<void> => {
+    const labMemberId = parseInt(req.params.labMemberId);
+    // TODO: Add robust authorization checks
+
+    if (isNaN(labMemberId)) {
+        res.status(400).json({ error: 'Invalid LabMember ID' });
+        return;
+    }
+
+    try {
+        const labMember = await prisma.labMember.findUnique({ where: { id: labMemberId } });
+        if (!labMember) {
+            res.status(404).json({ error: 'LabMember not found' });
+            return;
+        }
+
+        const updatedLabMember = await prisma.labMember.update({
+            where: { id: labMemberId },
+            data: { inductionDone: !labMember.inductionDone }, // Toggle the current value
+            include: { user: true, labRole: true } 
+        });
+
+        res.status(200).json(updatedLabMember);
+
+    } catch (error: any) {
+        console.error('Error toggling lab member induction status:', error);
+        if (error.code === 'P2025') { 
+            res.status(404).json({ error: 'LabMember not found during update' });
+        } else {
+            res.status(500).json({ error: 'Internal server error while toggling induction status' });
+        }
     }
 };
