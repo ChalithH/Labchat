@@ -47,7 +47,7 @@ export function UserSelect({ onRefresh, isLoading }: UserSelectProps) {
                 </Avatar>
               ))}
             </AvatarGroup>
-            All
+            All Assigned Users
           </div>
         </SelectItem>
 

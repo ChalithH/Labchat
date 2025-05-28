@@ -35,7 +35,7 @@ const AccountTab = ({ values, setters, onSubmit }: AccountTabProps) => {
       setters.setConfirmPassword('')
     }
     getUser()
-  }, [])
+  }, [setters])
   
   const handleSubmit = async () => {
     if (values.email === '') {

@@ -12,7 +12,6 @@ const getUserFromSessionServer = async () => {
     const cookieStore = cookies() // Remove 'await' here
     const cookieHeader = cookieStore.toString()
 
-    console.log('cookieHeader', cookieHeader)
 
     const status_response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/status`, {
       headers: {
@@ -20,7 +19,6 @@ const getUserFromSessionServer = async () => {
       },
     })
 
-    console.log('status_response', status_response)
     if (status_response.status !== 200) return false
 
     const userId = await status_response.json()
@@ -31,7 +29,6 @@ const getUserFromSessionServer = async () => {
       },
     })
 
-    console.log('user_response', user_response)
 
     if (user_response.status !== 200) return false
 

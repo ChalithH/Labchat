@@ -8,9 +8,10 @@ interface IProps {
   date: Date;
   events: IEvent[];
   multiDayEvents: IEvent[];
+  searchQuery?: string;
 }
 
-export function AgendaDayGroup({ date, events, multiDayEvents }: IProps) {
+export function AgendaDayGroup({ date, events, multiDayEvents, searchQuery }: IProps) {
   const sortedEvents = [...events].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
   return (
@@ -28,10 +29,24 @@ export function AgendaDayGroup({ date, events, multiDayEvents }: IProps) {
 
             const eventTotalDays = differenceInDays(eventEnd, eventStart) + 1;
             const eventCurrentDay = differenceInDays(currentDate, eventStart) + 1;
-            return <AgendaEventCard key={event.id} event={event} eventCurrentDay={eventCurrentDay} eventTotalDays={eventTotalDays} />;
+            return (
+              <AgendaEventCard 
+                key={event.id} 
+                event={event} 
+                eventCurrentDay={eventCurrentDay} 
+                eventTotalDays={eventTotalDays}
+                searchQuery={searchQuery}
+              />
+            );
           })}
 
-        {sortedEvents.length > 0 && sortedEvents.map(event => <AgendaEventCard key={event.id} event={event} />)}
+        {sortedEvents.length > 0 && sortedEvents.map(event => (
+          <AgendaEventCard 
+            key={event.id} 
+            event={event} 
+            searchQuery={searchQuery}
+          />
+        ))}
       </div>
     </div>
   );

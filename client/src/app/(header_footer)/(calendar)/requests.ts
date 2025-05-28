@@ -1,6 +1,6 @@
 import axios from "axios";
 import { CALENDAR_ITENS_MOCK, USERS_MOCK } from "@/calendar/mocks";
-import { IEvent, IEventType } from "@/calendar/interfaces";
+import { IEvent, IEventType, IInstrument } from "@/calendar/interfaces";
 import { format } from 'date-fns-tz';
 import { 
   ApiEventType, 
@@ -9,10 +9,64 @@ import {
   transformAPIUser 
 } from "./transform-api-event";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-// Global cache for event types
+// Global cache for event types and instruments
 let eventTypesCache: IEventType[] | null = null;
+let instrumentsCache: IInstrument[] | null = null;
+
+// Function to fetch instruments
+export const getInstruments = async (): Promise<IInstrument[]> => {
+  // Return cached instruments if available
+  if (instrumentsCache) {
+    return instrumentsCache;
+  }
+
+  try {
+    const response = await axios.get(`${API_URL}/calendar/get-instruments`);
+    
+    if (response.status === 200) {
+      // Cache the result
+      instrumentsCache = response.data;
+      return response.data;
+    }
+    
+    // Fallback to default instruments if API call succeeds but returns non-200 status
+    return getDefaultInstruments();
+  } catch (error) {
+    console.error("Error fetching instruments:", error);
+    // Fallback to default instruments if API call fails
+    return getDefaultInstruments();
+  }
+};
+
+// Default instruments (fallback)
+const getDefaultInstruments = (): IInstrument[] => {
+  return [
+    { id: 1, name: "HPLC System 1" },
+    { id: 2, name: "GC-MS System" },
+    { id: 3, name: "FTIR Spectrometer" },
+    { id: 4, name: "UV-Vis Spectrophotometer" },
+    { id: 5, name: "XRD Diffractometer" },
+    { id: 6, name: "Confocal Microscope" },
+    { id: 7, name: "Flow Cytometer" },
+    { id: 8, name: "PCR Machine" },
+    { id: 9, name: "Centrifuge (High-Speed)" },
+    { id: 10, name: "Optical Microscope" },
+    { id: 11, name: "Electrochemical Analyzer" },
+    { id: 12, name: "Glovebox" },
+    { id: 13, name: "Rotary Evaporator" },
+    { id: 14, name: "Schlenk Line" },
+    { id: 15, name: "Biosafety Cabinet (Class II)" },
+    { id: 16, name: "CO2 Incubator" },
+    { id: 17, name: "Gel Electrophoresis System" },
+    { id: 18, name: "Particle Size Analyzer" },
+    { id: 19, name: "Rheometer" },
+    { id: 20, name: "NMR Spectrometer (400 MHz)" },
+    { id: 21, name: "Freeze Dryer" },
+    { id: 22, name: "Atomic Absorption Spectrometer" }
+  ];
+};
 
 // Function to fetch event types
 export const getEventTypes = async (): Promise<IEventType[]> => {
@@ -90,6 +144,7 @@ export const createEvent = async (event: Partial<IEvent>): Promise<IEvent | null
       memberId: parseInt(event.user?.id || "1"), // Convert string ID to number
       title: event.title,
       description: event.description,
+      instrumentId: event.instrument?.id || null, // Include instrument ID if present
       status: "scheduled", // Default status
       startTime: event.startDate,
       endTime: event.endDate,
@@ -168,6 +223,21 @@ export const getUsers = async () => {
     console.error("Error fetching users:", error);
     // Fallback to mock user data if API call fails
     return USERS_MOCK;
+  }
+};
+
+export const getSingleEvent = async (eventId: number): Promise<IEvent | null> => {
+  try {
+    const response = await axios.get(`${API_URL}/calendar/event/${eventId}`);
+    
+    if (response.status === 200) {
+      return transformApiEvent(response.data);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error fetching single event:", error);
+    return null;
   }
 };
 
