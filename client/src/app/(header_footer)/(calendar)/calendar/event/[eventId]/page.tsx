@@ -11,7 +11,7 @@ interface SingleEventPageProps {
 type Params = Promise<{ eventId: string }>
 
 export default async function SingleEventPage(props:{ params: Params}) {
-const params = await props.params
+  const params = await props.params
   const eventId = parseInt( await params.eventId, 10);
   
   // Validate event ID

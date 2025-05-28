@@ -1,6 +1,7 @@
-// App Router: app/api/upload/route.js
+// App Router: app/api/upload/route.ts
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
@@ -20,12 +21,11 @@ const s3Client = new S3Client({
   },
 });
 
-
-export async function POST(request: { formData: () => any; }) {
+export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file');
-    const title = formData.get('title'); 
+    const file = formData.get('file') as File;
+    const title = formData.get('title') as string; 
     
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });

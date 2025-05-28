@@ -4,15 +4,13 @@ import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import AdmissionClient from '../components/admission-client'
 import RequestAdmissionClient from '../components/request-admission-client'
-import { UserType } from '@/types/user.type'
+import { UserType } from '@/types/account_user.type'
 
-interface AdmissionPageProps {
-  searchParams: {
-    view?: 'requests' | 'submit'
-  }
-}
 
-const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
+type Params = Promise<{ view?: 'requests' | 'submit' }>
+
+
+const AdmissionPage = async (props:{ params: Params}) => {
   setUsersLastViewed(`/admission`)
 
   const user: UserType = await getUserFromSessionServer()
@@ -22,7 +20,9 @@ const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
   console.log(user)
 
   // Get the view from search params, default to 'requests' for admin view
-  const view = await searchParams.view || 'requests'
+
+  const params = await props.params
+  const view = await params.view || 'requests';
   
   // You might want to get the current lab ID from user session or route params
   const labId = 20 // Replace with actual lab ID logic

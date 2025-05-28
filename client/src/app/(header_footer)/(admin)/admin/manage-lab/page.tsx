@@ -11,7 +11,7 @@ const Dashboard: React.FC = async () => {
     redirect('/home')
   }
 
-  return <DashboardClient />
+  return <DashboardClient role=""/>
 }
 
 export default Dashboard
