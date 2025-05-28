@@ -3,13 +3,13 @@
 import { createContext, useContext, useState } from "react";
 
 import type { Dispatch, SetStateAction } from "react";
-import type { IEvent, IUser, IEventType } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType, IInstrument } from "@/calendar/interfaces";
 import type { TBadgeVariant, TVisibleHours, TWorkingHours } from "@/calendar/types";
 
 interface ICalendarContext {
   selectedDate: Date;
   setSelectedDate: (date: Date | undefined) => void;
-  selectedUserId: IUser["id"] | "all";
+  selectedUserId: IUser["id"] | "all"; // Now filters by assigned users, not assigners
   setSelectedUserId: (userId: IUser["id"] | "all") => void;
   selectedTypeId: IEventType["id"] | "all";
   setSelectedTypeId: (typeId: IEventType["id"] | "all") => void;
@@ -17,6 +17,7 @@ interface ICalendarContext {
   setBadgeVariant: (variant: TBadgeVariant) => void;
   users: IUser[];
   eventTypes: IEventType[];
+  instruments: IInstrument[];
   workingHours: TWorkingHours;
   setWorkingHours: Dispatch<SetStateAction<TWorkingHours>>;
   visibleHours: TVisibleHours;
@@ -28,26 +29,28 @@ interface ICalendarContext {
 const CalendarContext = createContext({} as ICalendarContext);
 
 const WORKING_HOURS = {
-  0: { from: 0, to: 0 },
-  1: { from: 8, to: 17 },
-  2: { from: 8, to: 17 },
-  3: { from: 8, to: 17 },
-  4: { from: 8, to: 17 },
-  5: { from: 8, to: 17 },
-  6: { from: 8, to: 12 },
+  0: { from: 0, to: 24 },
+  1: { from: 0, to: 24 },
+  2: { from: 0, to: 24 },
+  3: { from: 0, to: 24 },
+  4: { from: 0, to: 24 },
+  5: { from: 0, to: 24 },
+  6: { from: 0, to: 24 },
 };
 
-const VISIBLE_HOURS = { from: 7, to: 18 };
+const VISIBLE_HOURS = { from: 0, to: 24 };
 
 export function CalendarProvider({ 
   children, 
   users, 
   eventTypes = [],
+  instruments = [],
   initialEvents = [] 
 }: { 
   children: React.ReactNode; 
   users: IUser[]; 
   eventTypes: IEventType[];
+  instruments: IInstrument[];
   initialEvents?: IEvent[] 
 }) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
@@ -79,6 +82,7 @@ export function CalendarProvider({
         setBadgeVariant,
         users,
         eventTypes,
+        instruments,
         visibleHours,
         setVisibleHours,
         workingHours,

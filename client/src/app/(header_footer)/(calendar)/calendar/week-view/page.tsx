@@ -1,4 +1,4 @@
-import { getUsers, getEvents, getEventTypes } from "@/calendar/requests";
+import { getUsers, getEvents, getEventTypes, getInstruments } from "@/calendar/requests";
 import { startOfWeek, endOfWeek } from 'date-fns';
 import { CalendarClient } from "@/calendar/components/calendar-client";
 
@@ -8,10 +8,11 @@ export default async function WeekViewPage() {
   const endDate = endOfWeek(currentDate);
   
   // Fetch initial data on the server
-  const [initialEvents, users, eventTypes] = await Promise.all([
+  const [initialEvents, users, eventTypes, instruments] = await Promise.all([
     getEvents(startDate, endDate),
     getUsers(),
-    getEventTypes()
+    getEventTypes(),
+    getInstruments()
   ]);
   
   return (
@@ -20,6 +21,7 @@ export default async function WeekViewPage() {
       initialEvents={initialEvents} 
       users={users}
       eventTypes={eventTypes}
+      instruments={instruments}
     />
   );
 }

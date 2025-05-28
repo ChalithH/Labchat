@@ -29,57 +29,58 @@ export function ClientContainer({ view }: IProps) {
     setView(view);
   }, [view, setView]);
 
+  // Helper function to check if an event has a specific user assigned
+  const eventHasUserAssigned = (event: any, userId: string) => {
+    // If no assignments, check if the user is the assigner
+    if (!event.assignments || event.assignments.length === 0) {
+      return event.user.id === userId;
+    }
+    
+    // Check if the user is in the assignments
+    return event.assignments.some((assignment: any) => 
+      assignment.memberId?.toString() === userId
+    );
+  };
+
   // Memoize event filtering for better performance
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const eventStartDate = parseISO(event.startDate);
       const eventEndDate = parseISO(event.endDate);
 
+      // Date filtering logic remains the same
+      let isInDateRange = false;
+
       if (view === "year") {
         const yearStart = new Date(selectedDate.getFullYear(), 0, 1);
         const yearEnd = new Date(selectedDate.getFullYear(), 11, 31, 23, 59, 59, 999);
-        const isInSelectedYear = eventStartDate <= yearEnd && eventEndDate >= yearStart;
-        const isUserMatch = selectedUserId === "all" || event.user.id === selectedUserId;
-        const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
-        return isInSelectedYear && isUserMatch && isTypeMatch;
-      }
-
-      if (view === "month" || view === "agenda") {
+        isInDateRange = eventStartDate <= yearEnd && eventEndDate >= yearStart;
+      } else if (view === "month" || view === "agenda") {
         const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
         const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
-        const isInSelectedMonth = eventStartDate <= monthEnd && eventEndDate >= monthStart;
-        const isUserMatch = selectedUserId === "all" || event.user.id === selectedUserId;
-        const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
-        return isInSelectedMonth && isUserMatch && isTypeMatch;
-      }
-
-      if (view === "week") {
+        isInDateRange = eventStartDate <= monthEnd && eventEndDate >= monthStart;
+      } else if (view === "week") {
         const dayOfWeek = selectedDate.getDay();
-
         const weekStart = new Date(selectedDate);
         weekStart.setDate(selectedDate.getDate() - dayOfWeek);
         weekStart.setHours(0, 0, 0, 0);
-
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
         weekEnd.setHours(23, 59, 59, 999);
-
-        const isInSelectedWeek = eventStartDate <= weekEnd && eventEndDate >= weekStart;
-        const isUserMatch = selectedUserId === "all" || event.user.id === selectedUserId;
-        const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
-        return isInSelectedWeek && isUserMatch && isTypeMatch;
-      }
-
-      if (view === "day") {
+        isInDateRange = eventStartDate <= weekEnd && eventEndDate >= weekStart;
+      } else if (view === "day") {
         const dayStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0);
         const dayEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59);
-        const isInSelectedDay = eventStartDate <= dayEnd && eventEndDate >= dayStart;
-        const isUserMatch = selectedUserId === "all" || event.user.id === selectedUserId;
-        const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
-        return isInSelectedDay && isUserMatch && isTypeMatch;
+        isInDateRange = eventStartDate <= dayEnd && eventEndDate >= dayStart;
       }
+
+      // Updated user filtering logic - now checks assignments
+      const isUserMatch = selectedUserId === "all" || eventHasUserAssigned(event, selectedUserId);
       
-      return false;
+      // Type filtering remains the same
+      const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
+
+      return isInDateRange && isUserMatch && isTypeMatch;
     });
   }, [selectedDate, selectedUserId, selectedTypeId, events, view]);
 
