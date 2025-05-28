@@ -22,7 +22,7 @@ const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
   console.log(user)
 
   // Get the view from search params, default to 'requests' for admin view
-  const view = await searchParams.view || 'requests'
+  const view = searchParams.view || 'requests'
   
   // You might want to get the current lab ID from user session or route params
   const labId = 21 // Replace with actual lab ID logic
