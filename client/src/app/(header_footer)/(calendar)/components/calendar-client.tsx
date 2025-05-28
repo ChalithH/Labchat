@@ -8,7 +8,7 @@ import { ChangeBadgeVariantInput } from "@/calendar/components/change-badge-vari
 import { ChangeVisibleHoursInput } from "@/calendar/components/change-visible-hours-input";
 import { ChangeWorkingHoursInput } from "@/calendar/components/change-working-hours-input";
 
-import type { IEvent, IUser, IEventType } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType, IInstrument } from "@/calendar/interfaces";
 import type { TCalendarView } from "@/calendar/types";
 
 interface CalendarClientProps {
@@ -16,32 +16,19 @@ interface CalendarClientProps {
   initialEvents: IEvent[];
   users: IUser[];
   eventTypes: IEventType[];
+  instruments: IInstrument[];
 }
 
-export function CalendarClient({ view, initialEvents, users, eventTypes }: CalendarClientProps) {
+export function CalendarClient({ view, initialEvents, users, eventTypes, instruments }: CalendarClientProps) {
   return (
     <>
-      <CalendarProvider users={users} eventTypes={eventTypes} initialEvents={initialEvents}>
+      <CalendarProvider 
+        users={users} 
+        eventTypes={eventTypes} 
+        instruments={instruments}
+        initialEvents={initialEvents}
+      >
         <ClientContainer view={view} />
-        
-        <Accordion type="single" collapsible>
-          <AccordionItem value="item-1" className="border-none">
-            <AccordionTrigger className="flex-none gap-2 py-0 hover:no-underline">
-              <div className="flex items-center gap-2">
-                <Settings className="size-4" />
-                <p className="text-base font-semibold">Calendar settings</p>
-              </div>
-            </AccordionTrigger>
-
-            <AccordionContent>
-              <div className="mt-4 flex flex-col gap-6">
-                <ChangeBadgeVariantInput />
-                <ChangeVisibleHoursInput />
-                <ChangeWorkingHoursInput />
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
       </CalendarProvider>
     </>
   );
