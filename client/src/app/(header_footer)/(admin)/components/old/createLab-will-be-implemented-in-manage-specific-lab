@@ -1,0 +1,493 @@
+"use client"
+
+import React, { useState } from "react"
+import { ChevronDown, ChevronRight, Plus, Save, X } from "lucide-react"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+interface LabFormData {
+  name: string;
+  location: string;
+  status: string;
+  labMembers: LabMemberFormData[];
+  inventoryItems: InventoryItemFormData[];
+  instruments: InstrumentFormData[];
+}
+
+interface LabMemberFormData {
+  userId: string;
+  labRoleId: string;
+  inductionDone: boolean;
+}
+
+interface InventoryItemFormData {
+  itemId: string;
+  location: string;
+  itemUnit: string;
+  currentStock: number;
+  minStock: number;
+}
+
+interface InstrumentFormData {
+  name: string;
+  description: string;
+}
+
+const CreateLabClient: React.FC = () => {
+  const [formData, setFormData] = useState<LabFormData>({
+    name: "",
+    location: "",
+    status: "active",
+    labMembers: [],
+    inventoryItems: [],
+    instruments: []
+  });
+
+  const [expandedSections, setExpandedSections] = useState({
+    basicInfo: true,
+    labMembers: false,
+    inventory: false,
+    instruments: false
+  });
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const handleBasicInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleStatusChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      status: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_URL}/labs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create lab');
+      }
+
+      const data = await response.json();
+      console.log("Lab created successfully:", data);
+      // Redirect or show success message
+    } catch (error) {
+      console.error("Error creating lab:", error);
+      // Show error message
+    }
+  };
+
+  // Section components
+  const BasicInfoSection = () => (
+    <div className="bg-white border rounded-lg shadow-sm overflow-hidden mb-4">
+      <div
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+        onClick={() => toggleSection('basicInfo')}
+      >
+        <h3 className="text-lg font-medium">Basic Information</h3>
+        {expandedSections.basicInfo ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+      </div>
+
+      {expandedSections.basicInfo && (
+        <div className="px-4 pb-4 pt-1 bg-gray-50">
+          <div className="border border-gray-200 rounded-md bg-white p-4 space-y-4">
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium">Lab Name</Label>
+              <Input
+                name="name"
+                value={formData.name}
+                onChange={handleBasicInfoChange}
+                placeholder="Enter lab name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium">Location</Label>
+              <Input
+                name="location"
+                value={formData.location}
+                onChange={handleBasicInfoChange}
+                placeholder="Enter lab location"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium">Status</Label>
+              <Select value={formData.status} onValueChange={handleStatusChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="maintenance">Under Maintenance</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const LabMembersSection = () => (
+    <div className="bg-white border rounded-lg shadow-sm overflow-hidden mb-4">
+      <div
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+        onClick={() => toggleSection('labMembers')}
+      >
+        <h3 className="text-lg font-medium">Lab Members</h3>
+        {expandedSections.labMembers ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+      </div>
+
+      {expandedSections.labMembers && (
+        <div className="px-4 pb-4 pt-1 bg-gray-50">
+          <div className="border border-gray-200 rounded-md bg-white p-4 space-y-4">
+            {formData.labMembers.length > 0 ? (
+              formData.labMembers.map((member, index) => (
+                <div key={index} className="border rounded-md p-4 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">User</Label>
+                      <Input
+                        value={member.userId}
+                        onChange={(e) => handleMemberChange(index, 'userId', e.target.value)}
+                        placeholder="Select user"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">Role</Label>
+                      <Input
+                        value={member.labRoleId}
+                        onChange={(e) => handleMemberChange(index, 'labRoleId', e.target.value)}
+                        placeholder="Select role"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id={`induction-${index}`}
+                      checked={member.inductionDone}
+                      onCheckedChange={(checked) => handleMemberChange(index, 'inductionDone', checked)}
+                    />
+                    <Label htmlFor={`induction-${index}`}>Induction Completed</Label>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeLabMember(index)}
+                    >
+                      Remove Member
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No lab members added yet</p>
+            )}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={addLabMember}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add Lab Member
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const InventorySection = () => (
+    <div className="bg-white border rounded-lg shadow-sm overflow-hidden mb-4">
+      <div
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+        onClick={() => toggleSection('inventory')}
+      >
+        <h3 className="text-lg font-medium">Inventory Items</h3>
+        {expandedSections.inventory ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+      </div>
+
+      {expandedSections.inventory && (
+        <div className="px-4 pb-4 pt-1 bg-gray-50">
+          <div className="border border-gray-200 rounded-md bg-white p-4 space-y-4">
+            {formData.inventoryItems.length > 0 ? (
+              formData.inventoryItems.map((item, index) => (
+                <div key={index} className="border rounded-md p-4 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">Item</Label>
+                      <Input
+                        value={item.itemId}
+                        onChange={(e) => handleInventoryChange(index, 'itemId', e.target.value)}
+                        placeholder="Select item"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">Location</Label>
+                      <Input
+                        value={item.location}
+                        onChange={(e) => handleInventoryChange(index, 'location', e.target.value)}
+                        placeholder="Enter location"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">Current Stock</Label>
+                      <Input
+                        type="number"
+                        value={item.currentStock}
+                        onChange={(e) => handleInventoryChange(index, 'currentStock', parseInt(e.target.value))}
+                        placeholder="Enter current stock"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">Minimum Stock</Label>
+                      <Input
+                        type="number"
+                        value={item.minStock}
+                        onChange={(e) => handleInventoryChange(index, 'minStock', parseInt(e.target.value))}
+                        placeholder="Enter minimum stock"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeInventoryItem(index)}
+                    >
+                      Remove Item
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No inventory items added yet</p>
+            )}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={addInventoryItem}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add Inventory Item
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const InstrumentsSection = () => (
+    <div className="bg-white border rounded-lg shadow-sm overflow-hidden mb-4">
+      <div
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+        onClick={() => toggleSection('instruments')}
+      >
+        <h3 className="text-lg font-medium">Instruments</h3>
+        {expandedSections.instruments ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+      </div>
+
+      {expandedSections.instruments && (
+        <div className="px-4 pb-4 pt-1 bg-gray-50">
+          <div className="border border-gray-200 rounded-md bg-white p-4 space-y-4">
+            {formData.instruments.length > 0 ? (
+              formData.instruments.map((instrument, index) => (
+                <div key={index} className="border rounded-md p-4 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">Name</Label>
+                      <Input
+                        value={instrument.name}
+                        onChange={(e) => handleInstrumentChange(index, 'name', e.target.value)}
+                        placeholder="Enter instrument name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">Description</Label>
+                      <Textarea
+                        value={instrument.description}
+                        onChange={(e) => handleInstrumentChange(index, 'description', e.target.value)}
+                        placeholder="Enter description"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeInstrument(index)}
+                    >
+                      Remove Instrument
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No instruments added yet</p>
+            )}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={addInstrument}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add Instrument
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Handler functions for form sections
+  const addLabMember = () => {
+    setFormData(prev => ({
+      ...prev,
+      labMembers: [
+        ...prev.labMembers,
+        { userId: "", labRoleId: "", inductionDone: false }
+      ]
+    }));
+  };
+
+  const handleMemberChange = (index: number, field: keyof LabMemberFormData, value: any) => {
+    setFormData(prev => {
+      const updatedMembers = [...prev.labMembers];
+      updatedMembers[index] = { ...updatedMembers[index], [field]: value };
+      return { ...prev, labMembers: updatedMembers };
+    });
+  };
+
+  const removeLabMember = (index: number) => {
+    setFormData(prev => {
+      const updatedMembers = [...prev.labMembers];
+      updatedMembers.splice(index, 1);
+      return { ...prev, labMembers: updatedMembers };
+    });
+  };
+
+  const addInventoryItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      inventoryItems: [
+        ...prev.inventoryItems,
+        { itemId: "", location: "", itemUnit: "each", currentStock: 0, minStock: 0 }
+      ]
+    }));
+  };
+
+  const handleInventoryChange = (index: number, field: keyof InventoryItemFormData, value: any) => {
+    setFormData(prev => {
+      const updatedItems = [...prev.inventoryItems];
+      updatedItems[index] = { ...updatedItems[index], [field]: value };
+      return { ...prev, inventoryItems: updatedItems };
+    });
+  };
+
+  const removeInventoryItem = (index: number) => {
+    setFormData(prev => {
+      const updatedItems = [...prev.inventoryItems];
+      updatedItems.splice(index, 1);
+      return { ...prev, inventoryItems: updatedItems };
+    });
+  };
+
+  const addInstrument = () => {
+    setFormData(prev => ({
+      ...prev,
+      instruments: [
+        ...prev.instruments,
+        { name: "", description: "" }
+      ]
+    }));
+  };
+
+  const handleInstrumentChange = (index: number, field: keyof InstrumentFormData, value: any) => {
+    setFormData(prev => {
+      const updatedInstruments = [...prev.instruments];
+      updatedInstruments[index] = { ...updatedInstruments[index], [field]: value };
+      return { ...prev, instruments: updatedInstruments };
+    });
+  };
+
+  const removeInstrument = (index: number) => {
+    setFormData(prev => {
+      const updatedInstruments = [...prev.instruments];
+      updatedInstruments.splice(index, 1);
+      return { ...prev, instruments: updatedInstruments };
+    });
+  };
+
+  return (
+    <div className="max-w-screen-xl mx-auto w-full px-4 py-6">
+      {/* Responsive header with breadcrumb */}
+      <div className="relative flex flex-col items-center mb-8 lg:flex-row lg:justify-center">
+        <h1 className="font-play font-extrabold text-black text-[clamp(1.5rem,4vw,2rem)] text-center order-1 lg:order-none">
+          Create A New Lab
+        </h1>
+        <div className="lg:absolute lg:left-0 order-2 lg:order-none mb-2 lg:mb-0">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/admin/dashboard">Admin Dashboard</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Create Lab</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <BasicInfoSection />
+        <LabMembersSection />
+        <InventorySection />
+        <InstrumentsSection />
+
+        <div className="flex justify-end gap-4 mt-6">
+          <Button variant="outline" type="button" onClick={() => window.history.back()}>
+            Cancel
+          </Button>
+          <Button type="submit">
+            <Save className="h-4 w-4 mr-2" /> Create Lab
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+export default CreateLabClient

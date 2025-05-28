@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
       destination: "/calendar/month-view",
       permanent: false,
     },
+    {
+      source: "/",
+      destination: "/home",
+      permanent: false,
+    },
   ],
 };
 

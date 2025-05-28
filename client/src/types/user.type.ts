@@ -1,0 +1,18 @@
+export type UserType = {
+    id: number,
+    roleId: number,
+    universityId: string,
+    username: string,
+    loginEmail: string,
+    loginPassword: string,
+    firstName: string,
+    lastName: string,
+    displayName: string,
+    jobTitle: string,
+    office: string,
+    bio: string,
+    dateJoined: string,
+    profilePic?: string,
+    lastViewed?: string,
+    lastViewedLabId?: string,
+}
