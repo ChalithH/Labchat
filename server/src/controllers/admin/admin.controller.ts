@@ -1393,3 +1393,49 @@ export const toggleLabMemberInduction = async (req: Request, res: Response): Pro
         }
     }
 };
+
+/**
+ * @desc Toggle a lab member's PCI status
+ * @route PUT /api/admin/lab-member/:labMemberId/pci
+ * @access Private (Requires permission level 60)
+ */
+export const toggleLabMemberPCI = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { labMemberId } = req.params;
+    const { isPCI } = req.body;
+
+    if (typeof isPCI !== 'boolean') {
+      res.status(400).json({ message: 'Invalid input: isPCI must be a boolean.' });
+      return;
+    }
+
+    const memberIdInt = parseInt(labMemberId, 10);
+    if (isNaN(memberIdInt)) {
+      res.status(400).json({ message: 'Invalid labMemberId.' });
+      return;
+    }
+
+    const existingMember = await prisma.labMember.findUnique({
+      where: { id: memberIdInt },
+    });
+
+    if (!existingMember) {
+      res.status(404).json({ message: 'Lab member not found.' });
+      return;
+    }
+
+    const updatedLabMember = await prisma.labMember.update({
+      where: { id: memberIdInt },
+      data: { isPCI },
+    });
+
+    res.status(200).json(updatedLabMember);
+  } catch (error) {
+    console.error('Error toggling lab member PCI status:', error);
+    if (error instanceof Error) {
+        res.status(500).json({ message: 'Server error toggling PCI status.', error: error.message });
+        return;
+    }
+    res.status(500).json({ message: 'Server error toggling PCI status.' });
+  }
+};

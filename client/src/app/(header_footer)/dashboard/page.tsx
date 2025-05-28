@@ -47,6 +47,7 @@ export default async function DashboardPage() {
     role: userRoleName,
     statusName: userPrimaryStatusName,
     memberID: memberId,
+    lastViewedLabId: sessionUser.lastViewedLabId
   };
 
   // Fetch posts from the Announcements topic (topic 1)
@@ -151,6 +152,7 @@ export default async function DashboardPage() {
     }
   }
 
+  console.log('user lastviewed labId:', dashboardUser.lastViewedLabId)
   return (
     <DashboardClient
       user={dashboardUser}

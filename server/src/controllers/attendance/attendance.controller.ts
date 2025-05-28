@@ -316,3 +316,173 @@ export const getCurrentMembers = async (req: Request, res: Response): Promise<vo
   }
 };
 
+/**
+ * @swagger
+ * /attendance/logs/{labId}:
+ *   get:
+ *     summary: Get attendance logs for a specific lab
+ *     tags: [Attendance]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The lab ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Number of records per page
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter logs from this date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter logs up to this date
+ *       - in: query
+ *         name: memberId
+ *         schema:
+ *           type: integer
+ *         description: Filter by specific lab member
+ *     responses:
+ *       200:
+ *         description: List of attendance logs
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Not authorized to view this lab's logs
+ */
+export const getAttendanceLogs = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user as number;
+    const labId = Number(req.params.labId);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const startDate = req.query.startDate as string;
+    const endDate = req.query.endDate as string;
+    const memberId = req.query.memberId ? Number(req.query.memberId) : undefined;
+
+    if (typeof userId !== 'number') {
+      res.status(401).json({ message: 'User not authenticated.' });
+      return;
+    }
+
+    // Check if user has permission to view this lab's attendance logs
+    // Admin users can view any lab, lab managers can view their own lab
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true }
+    });
+
+    if (!user) {
+      res.status(401).json({ message: 'User not found.' });
+      return;
+    }
+
+    const isAdmin = user.role.permissionLevel >= 100;
+    
+    if (!isAdmin) {
+      // Check if user is a lab manager for this lab
+      const labMember = await prisma.labMember.findFirst({
+        where: {
+          userId: userId,
+          labId: labId,
+          labRole: {
+            permissionLevel: { gte: 70 }
+          }
+        }
+      });
+
+      if (!labMember) {
+        res.status(403).json({ message: 'Not authorized to view this lab\'s attendance logs.' });
+        return;
+      }
+    }
+
+    // Build where clause for filtering
+    const whereClause: any = {
+      member: {
+        labId: labId
+      }
+    };
+
+    if (memberId) {
+      whereClause.memberId = memberId;
+    }
+
+    if (startDate || endDate) {
+      whereClause.clockIn = {};
+      if (startDate) {
+        whereClause.clockIn.gte = new Date(startDate);
+      }
+      if (endDate) {
+        whereClause.clockIn.lte = new Date(endDate + 'T23:59:59.999Z');
+      }
+    }
+
+    // Get total count for pagination
+    const totalCount = await prisma.labAttendance.count({
+      where: whereClause
+    });
+
+    // Get paginated logs
+    const logs = await prisma.labAttendance.findMany({
+      where: whereClause,
+      include: {
+        member: {
+          include: {
+            user: true,
+            labRole: true
+          }
+        }
+      },
+      orderBy: {
+        clockIn: 'desc'
+      },
+      skip: (page - 1) * limit,
+      take: limit
+    });
+
+    // Format the response
+    const formattedLogs = logs.map(log => ({
+      id: log.id,
+      memberId: log.memberId,
+      memberName: log.member.user.displayName || `${log.member.user.firstName} ${log.member.user.lastName}`,
+      memberRole: log.member.labRole?.name || 'Lab Member',
+      clockIn: log.clockIn,
+      clockOut: log.clockOut,
+      duration: log.clockOut ? Math.floor((log.clockOut.getTime() - log.clockIn.getTime()) / 1000 / 60) : null, // Duration in minutes
+      isActive: !log.clockOut
+    }));
+
+    res.status(200).json({
+      logs: formattedLogs,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    });
+    return;
+  } catch (error) {
+    console.error('Get attendance logs error:', error);
+    res.status(500).json({ message: 'Internal server error while fetching attendance logs.' });
+    return;
+  }
+};
+

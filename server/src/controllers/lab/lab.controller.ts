@@ -77,20 +77,21 @@ export const getLab = async (req: Request, res: Response): Promise<void> => {
  *         description: Internal server error.
  */
 export const getLabMembers = async (req: Request, res: Response): Promise<void> => {
-    const labId = req.params.labId; 
+    const labId = req.params.labId;
     try {
         const labMembersFromDb = await prisma.labMember.findMany({
             where: { labId: Number(labId) },
             select: {
-                id: true,          
+                id: true,
                 userId: true,
                 labId: true,
                 labRoleId: true,
                 inductionDone: true,
+                isPCI: true,
                 createdAt: true,
-                user: {            
+                user: {
                     select: {
-                        id: true,      
+                        id: true,
                         firstName: true,
                         lastName: true,
                         displayName: true,
@@ -98,59 +99,69 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
                         office: true,
                         bio: true,
                     },
-                }, 
-                memberStatus: {     
+                },
+                memberStatus: {
                     select: {
-                        id: true,          
+                        id: true,
                         contactId: true,
                         statusId: true,
                         isActive: true,
                         description: true,
-                        contact: {     // Nested contact details for this status entry
+                        contact: {
                             select: {
-                                id: true,      
+                                id: true,
                                 type: true,
                                 info: true,
                                 useCase: true,
                                 name: true,
                             },
                         },
-                        status: {      
+                        status: {
                             select: {
-                                id: true,     
+                                id: true,
                                 statusName: true,
                                 statusWeight: true,
                             }
                         }
                     },
-                }, 
+                },
             },
         });
 
-        
-        const formattedMembers = labMembersFromDb.map((member) => ({
-            
-            id: member.user.id,             
-            firstName: member.user.firstName,
-            lastName: member.user.lastName,
-            displayName: member.user.displayName,
-            jobTitle: member.user.jobTitle,
-            office: member.user.office,
-            bio: member.user.bio,
+        const formattedMembers = labMembersFromDb.map((member) => {
+            const userData = member.user ? {
+                id: member.user.id,
+                firstName: member.user.firstName,
+                lastName: member.user.lastName,
+                displayName: member.user.displayName,
+                jobTitle: member.user.jobTitle,
+                office: member.user.office,
+                bio: member.user.bio,
+            } : {
+                id: -1,
+                firstName: 'Unknown',
+                lastName: 'User',
+                displayName: 'Unknown User (Data Issue)',
+                jobTitle: null,
+                office: null,
+                bio: null,
+            };
 
-            // LabMember specific details
-            memberID: member.id,            
-            labID: member.labId,           
-            labRoleId: member.labRoleId,      
-            createdAt: member.createdAt,
-            inductionDone: member.inductionDone,
+            return {
+                ...userData,
 
-            
-            status: member.memberStatus, 
-          }));
-      
+                memberID: member.id,
+                labID: member.labId,
+                labRoleId: member.labRoleId,
+                createdAt: member.createdAt,
+                inductionDone: member.inductionDone,
+                isPCI: member.isPCI,
+                status: member.memberStatus,
+            };
+        });
+
         res.json(formattedMembers);
-        
+
     } catch (error) {
         console.error(`Error retrieving members for lab ID ${labId}:`, error);
         res.status(500).json({ error: 'Failed to retrieve lab members' });

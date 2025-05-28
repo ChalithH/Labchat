@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, AlertCircle, UserCog, Users, Trash2, Edit3 } from 'lucide-react';
+import { Loader2, AlertCircle, UserCog, Users, Trash2, Edit3, Clock, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '@/lib/api'; 
 import {
   Dialog,
@@ -30,6 +30,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import { format } from 'date-fns';
 
 interface LabDetails {
   id: number;
@@ -87,6 +90,7 @@ interface LabMemberData extends UserData {
   labID: number;
   createdAt: string;
   inductionDone: boolean;
+  isPCI: boolean;
   status: MemberStatusEntry[];
   labRoleName?: string;
   labRoleId?: number;
@@ -110,12 +114,31 @@ interface ManageLabClientProps {
  
 }
 
+interface AttendanceLog {
+  id: number;
+  memberId: number;
+  memberName: string;
+  memberRole: string;
+  clockIn: string;
+  clockOut: string | null;
+  duration: number | null; // in minutes
+  isActive: boolean;
+}
+
+interface AttendancePagination {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 export default function ManageLabClient({ params }: ManageLabClientProps) {
   const [labDetails, setLabDetails] = useState<LabDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
 
   // Editable fields
   const [editableName, setEditableName] = useState('');
@@ -168,6 +191,25 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
   const [memberToRemove, setMemberToRemove] = useState<LabMemberData | null>(null);
   const [isRemovingMember, setIsRemovingMember] = useState(false);
 
+  const [isUpdatingPCIForMemberId, setIsUpdatingPCIForMemberId] = useState<number | null>(null);
+  const [isUpdatingInductionForMemberId, setIsUpdatingInductionForMemberId] = useState<number | null>(null);
+
+  // State for Clock-in Log
+  const [attendanceLogs, setAttendanceLogs] = useState<AttendanceLog[]>([]);
+  const [isLoadingAttendance, setIsLoadingAttendance] = useState(false);
+  const [attendanceError, setAttendanceError] = useState<string | null>(null);
+  const [attendancePagination, setAttendancePagination] = useState<AttendancePagination>({
+    page: 1,
+    limit: 20,
+    totalCount: 0,
+    totalPages: 0
+  });
+  const [attendanceFilters, setAttendanceFilters] = useState({
+    startDate: '',
+    endDate: '',
+    memberId: 'all'
+  });
+
   const fetchLabDetails = useCallback(async () => {
     if (!params.id) {
       console.log("fetchLabDetails: params.id is missing, bailing out.");
@@ -201,26 +243,31 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
     try {
       console.log(`fetchLabMembers: Fetching members for lab ID: ${params.id}`);
       const response = await api.get(`/lab/getMembers/${params.id}`);
-      const rawMembersDataFromApi = response.data;
+      const rawMembersDataFromApi = response.data; // This is the array from the backend (already flattened)
 
-      
       const initialMappedMembers: LabMemberData[] = rawMembersDataFromApi.map((member: any) => ({
-        id: member.id, 
+        // User-related fields are now at the top-level of the 'member' object from the API
+        id: member.id, // This is User ID
         firstName: member.firstName,
         lastName: member.lastName,
         displayName: member.displayName,
         jobTitle: member.jobTitle,
         office: member.office,
         bio: member.bio,
-        memberID: member.memberID, 
-        labID: member.labID, 
-        labRoleId: member.labRoleId, 
+        
+        // LabMember specific fields from the API response
+        memberID: member.memberID, // This is the LabMember ID
+        labID: member.labID,
+        labRoleId: member.labRoleId,
         createdAt: member.createdAt,
         inductionDone: member.inductionDone,
-        status: member.status, 
+        isPCI: member.isPCI, 
+        status: member.status, // Check if the server sends this as 'status' or 'memberStatus'
+                                // The server controller maps it as 'status: member.memberStatus'
       }));
 
-      setRawLabMembers(initialMappedMembers); // Store for processing
+      setRawLabMembers(initialMappedMembers);
+      setLabMembers(initialMappedMembers);
       
     } catch (err: any) {
       console.error("fetchLabMembers: API call failed:", err);
@@ -254,6 +301,38 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
     }
   }, []);
 
+  const fetchAttendanceLogs = useCallback(async (page: number = 1) => {
+    if (!params.id) return;
+    setIsLoadingAttendance(true);
+    setAttendanceError(null);
+    
+    try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: attendancePagination.limit.toString(),
+      });
+      
+      if (attendanceFilters.startDate) {
+        queryParams.append('startDate', attendanceFilters.startDate);
+      }
+      if (attendanceFilters.endDate) {
+        queryParams.append('endDate', attendanceFilters.endDate);
+      }
+      if (attendanceFilters.memberId && attendanceFilters.memberId !== 'all') {
+        queryParams.append('memberId', attendanceFilters.memberId);
+      }
+      
+      const response = await api.get(`/attendance/logs/${params.id}?${queryParams.toString()}`);
+      setAttendanceLogs(response.data.logs);
+      setAttendancePagination(response.data.pagination);
+    } catch (err: any) {
+      console.error("Failed to fetch attendance logs:", err);
+      setAttendanceError(err.response?.data?.message || "Failed to load attendance logs");
+    } finally {
+      setIsLoadingAttendance(false);
+    }
+  }, [params.id, attendancePagination.limit, attendanceFilters]);
+
   useEffect(() => {
     // Initial data fetching when component mounts or lab ID (params.id) changes
     if (params.id) {
@@ -263,6 +342,13 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
         fetchGlobalStatuses();
     }
   }, [params.id, fetchLabDetails, fetchLabMembers, fetchLabRoles, fetchGlobalStatuses]);
+
+  useEffect(() => {
+    // Fetch attendance logs when clock_log tab is selected
+    if (activeTab === "clock_log" && params.id) {
+      fetchAttendanceLogs(1);
+    }
+  }, [activeTab, params.id, fetchAttendanceLogs]);
 
   useEffect(() => {
     let newLabMembersData: LabMemberData[];
@@ -478,14 +564,47 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
   };
 
   const handleToggleInduction = async (member: LabMemberData) => {
-    // Update could be done here, refetchcing for now
+    if (!member || typeof member.memberID === 'undefined') {
+      console.error("handleToggleInduction: Invalid member data provided.");
+      toast.error("Error", { description: "Could not update induction status due to invalid member data." });
+      return;
+    }
+    setIsUpdatingInductionForMemberId(member.memberID);
     try {
       await api.put(`/admin/lab-member/${member.memberID}/induction`);
-      // Placeholder for toast: alert(`Induction status for ${member.displayName} toggled! Refreshing list.`);
-      await fetchLabMembers(); // Refresh list
+      
+      setLabMembers(prevMembers =>
+        prevMembers.map(m =>
+          m.memberID === member.memberID ? { ...m, inductionDone: !m.inductionDone } : m
+        )
+      );
+      setRawLabMembers(prevMembers => 
+        prevMembers.map(m =>
+            m.memberID === member.memberID ? { ...m, inductionDone: !m.inductionDone } : m
+        )
+      );
+
+      toast.success("Induction Updated", {
+        description: `${member.displayName}'s induction status toggled!`,
+      });
     } catch (err: any) {
       console.error(`Failed to toggle induction for ${member.displayName}:`, err);
-      // Placeholder for toast: alert(err.response?.data?.error || `Failed to toggle induction status.`);
+      toast.error("Update Failed", {
+        description: err.response?.data?.error || `Failed to toggle induction status.`,
+      });
+      // Revert optimistic update if API call fails
+      setLabMembers(prevMembers =>
+        prevMembers.map(m =>
+          m.memberID === member.memberID ? { ...m, inductionDone: member.inductionDone } : m
+        )
+      );
+      setRawLabMembers(prevMembers => 
+        prevMembers.map(m =>
+            m.memberID === member.memberID ? { ...m, inductionDone: member.inductionDone } : m
+        )
+      );
+    } finally {
+      setIsUpdatingInductionForMemberId(null);
     }
   };
 
@@ -520,13 +639,80 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
     }
   };
 
+  const handleTogglePCIMember = async (memberToUpdate: LabMemberData) => {
+    if (!memberToUpdate || typeof memberToUpdate.memberID === 'undefined') {
+      console.error("handleTogglePCIMember: Invalid member data provided.");
+      toast.error("Error", {
+        description: "Could not update PCI status due to invalid member data.",
+      });
+      return;
+    }
+    
+    setIsUpdatingPCIForMemberId(memberToUpdate.memberID);
+    try {
+      const response = await api.put(`/admin/lab-member/${memberToUpdate.memberID}/pci`, {
+        isPCI: !memberToUpdate.isPCI,
+      });
+      
+      setLabMembers(prevMembers =>
+        prevMembers.map(member =>
+          member.memberID === memberToUpdate.memberID ? { ...member, isPCI: !memberToUpdate.isPCI } : member
+        )
+      );
+      setRawLabMembers(prevMembers => 
+        prevMembers.map(member =>
+            member.memberID === memberToUpdate.memberID ? { ...member, isPCI: !memberToUpdate.isPCI } : member
+        )
+      );
+
+      toast.success("Success", {
+        description: `${memberToUpdate.displayName}'s PCI status updated.`,
+      });
+    } catch (error: any) {
+      console.error("Failed to toggle PCI status for member:", memberToUpdate.memberID, error);
+      toast.error("Error updating PCI status", {
+        description: error.response?.data?.message || "Could not update PCI status.",
+      });
+    } finally {
+      setIsUpdatingPCIForMemberId(null);
+    }
+  };
+
+  const formatDuration = (minutes: number | null) => {
+    if (minutes === null) return 'Ongoing';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins}m`;
+    return `${hours}h ${mins}m`;
+  };
+
+  const handleAttendancePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= attendancePagination.totalPages) {
+      fetchAttendanceLogs(newPage);
+    }
+  };
+
+  const handleApplyFilters = () => {
+    fetchAttendanceLogs(1); // Reset to page 1 when applying filters
+  };
+
+  const handleClearFilters = () => {
+    setAttendanceFilters({
+      startDate: '',
+      endDate: '',
+      memberId: 'all'
+    });
+    // Trigger refetch after state update
+    setTimeout(() => fetchAttendanceLogs(1), 0);
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-6 text-center sm:text-left">
         Manage Lab: {loading ? <Loader2 className="h-8 w-8 animate-spin inline-block" /> : labDetails?.name || `ID ${params.id}`}
       </h1>
       
-      <Tabs defaultValue="details" className="w-full">
+      <Tabs defaultValue="details" className="w-full" value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto pb-2 mb-4">
           <TabsList className="min-w-max sm:w-full grid grid-flow-col sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 auto-cols-max sm:auto-cols-fr gap-2">
             <TabsTrigger value="details" className="px-4 py-2">Lab Details</TabsTrigger>
@@ -644,21 +830,45 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
                             <span className="text-orange-600 font-medium">Pending</span>
                           }
                         </p>
+                        <p className="text-sm text-gray-500">
+                          PCI Access: {member.isPCI ? 
+                            <span className="text-blue-600 font-medium">Enabled</span> : 
+                            <span className="text-gray-600 font-medium">Disabled</span>
+                          }
+                        </p>
                       </div>
-                      <div className="flex space-x-2 flex-wrap">
+                      <div className="flex space-x-2 flex-wrap items-center">
+                        <div className="flex items-center space-x-1 p-1.5 rounded-md hover:bg-gray-100">
+                            <Switch
+                                id={`pci-toggle-${member.memberID}`}
+                                checked={member.isPCI}
+                                onCheckedChange={() => handleTogglePCIMember(member)}
+                                disabled={isUpdatingPCIForMemberId === member.memberID}
+                                aria-label={`Toggle PCI Access for ${member.displayName}`}
+                            />
+                            <Label htmlFor={`pci-toggle-${member.memberID}`} className="text-sm cursor-pointer select-none">
+                                PCI Access
+                            </Label>
+                            {isUpdatingPCIForMemberId === member.memberID && <Loader2 className="h-4 w-4 animate-spin ml-1" />}
+                        </div>
+                        <div className="flex items-center space-x-1 p-1.5 rounded-md hover:bg-gray-100">
+                            <Switch
+                                id={`induction-toggle-${member.memberID}`}
+                                checked={member.inductionDone}
+                                onCheckedChange={() => handleToggleInduction(member)}
+                                disabled={isUpdatingInductionForMemberId === member.memberID}
+                                aria-label={`Toggle Induction Status for ${member.displayName}`}
+                            />
+                            <Label htmlFor={`induction-toggle-${member.memberID}`} className="text-sm cursor-pointer select-none">
+                                Inducted
+                            </Label>
+                            {isUpdatingInductionForMemberId === member.memberID && <Loader2 className="h-4 w-4 animate-spin ml-1" />}
+                        </div>
                         <Button variant="outline" size="sm" onClick={() => handleOpenManageStatusesModal(member)} className="flex items-center">
                           <UserCog className="mr-1 h-4 w-4" /> Statuses
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => handleOpenChangeRoleModal(member)} className="flex items-center">
                           <Users className="mr-1 h-4 w-4" /> Role
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleToggleInduction(member)} 
-                          className={`flex items-center ${member.inductionDone ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}`}
-                        >
-                           <Edit3 className="mr-1 h-4 w-4" /> {member.inductionDone ? "Mark Pending" : "Mark Done"}
                         </Button>
                         <Button variant="destructive" size="sm" onClick={() => handleOpenRemoveMemberConfirm(member)} className="flex items-center">
                           <Trash2 className="mr-1 h-4 w-4" /> Remove
@@ -680,10 +890,174 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
         </TabsContent>
 
         <TabsContent value="clock_log">
-          <div className="p-4 border rounded-md min-h-[300px]">
-            <h2 className="text-xl font-semibold mb-4">Clock-in Log</h2>
-            <p>Content for viewing clock-in logs for this lab will go here for Lab ID: {params.id}</p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Clock-in Log
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Filters Section */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+                <h3 className="font-semibold text-sm">Filters</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <Label htmlFor="startDate" className="text-sm">Start Date</Label>
+                    <Input 
+                      id="startDate"
+                      type="date" 
+                      value={attendanceFilters.startDate}
+                      onChange={(e) => setAttendanceFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="endDate" className="text-sm">End Date</Label>
+                    <Input 
+                      id="endDate"
+                      type="date" 
+                      value={attendanceFilters.endDate}
+                      onChange={(e) => setAttendanceFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="memberSelect" className="text-sm">Member</Label>
+                    <Select 
+                      value={attendanceFilters.memberId}
+                      onValueChange={(value) => setAttendanceFilters(prev => ({ ...prev, memberId: value }))}
+                    >
+                      <SelectTrigger id="memberSelect">
+                        <SelectValue placeholder="All members" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All members</SelectItem>
+                        {labMembers.map(member => (
+                          <SelectItem key={member.memberID} value={member.memberID.toString()}>
+                            {member.displayName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <Button onClick={handleApplyFilters} size="sm" className="flex-1">
+                      Apply
+                    </Button>
+                    <Button onClick={handleClearFilters} variant="outline" size="sm" className="flex-1">
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Logs Table */}
+              {isLoadingAttendance && (
+                <div className="flex justify-center items-center min-h-[200px]">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="ml-2">Loading attendance logs...</p>
+                </div>
+              )}
+              
+              {attendanceError && (
+                <div className="flex flex-col items-center justify-center min-h-[200px] text-destructive">
+                  <AlertCircle className="h-8 w-8 mb-2" />
+                  <p className="text-center">{attendanceError}</p>
+                  <Button variant="outline" className="mt-4" onClick={() => fetchAttendanceLogs(1)}>Retry</Button>
+                </div>
+              )}
+
+              {!isLoadingAttendance && !attendanceError && attendanceLogs.length === 0 && (
+                <p className="text-center text-gray-500 py-8">No attendance logs found.</p>
+              )}
+
+              {!isLoadingAttendance && !attendanceError && attendanceLogs.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-2 font-medium">Member</th>
+                        <th className="text-left p-2 font-medium">Role</th>
+                        <th className="text-left p-2 font-medium">Clock In</th>
+                        <th className="text-left p-2 font-medium">Clock Out</th>
+                        <th className="text-left p-2 font-medium">Duration</th>
+                        <th className="text-left p-2 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {attendanceLogs.map((log) => (
+                        <tr key={log.id} className="border-b hover:bg-gray-50">
+                          <td className="p-2">{log.memberName}</td>
+                          <td className="p-2">{log.memberRole}</td>
+                          <td className="p-2">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3 text-gray-500" />
+                              {format(new Date(log.clockIn), 'MMM d, yyyy')}
+                              <Clock className="h-3 w-3 text-gray-500 ml-2" />
+                              {format(new Date(log.clockIn), 'HH:mm')}
+                            </div>
+                          </td>
+                          <td className="p-2">
+                            {log.clockOut ? (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-gray-500" />
+                                {format(new Date(log.clockOut), 'MMM d, yyyy')}
+                                <Clock className="h-3 w-3 text-gray-500 ml-2" />
+                                {format(new Date(log.clockOut), 'HH:mm')}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
+                          </td>
+                          <td className="p-2">{formatDuration(log.duration)}</td>
+                          <td className="p-2">
+                            {log.isActive ? (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                Completed
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+            
+            {/* Pagination */}
+            {!isLoadingAttendance && !attendanceError && attendancePagination.totalPages > 1 && (
+              <CardFooter className="flex justify-between items-center">
+                <div className="text-sm text-gray-600">
+                  Page {attendancePagination.page} of {attendancePagination.totalPages} 
+                  <span className="ml-2">({attendancePagination.totalCount} total records)</span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAttendancePageChange(attendancePagination.page - 1)}
+                    disabled={attendancePagination.page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAttendancePageChange(attendancePagination.page + 1)}
+                    disabled={attendancePagination.page === attendancePagination.totalPages}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardFooter>
+            )}
+          </Card>
         </TabsContent>
 
         <TabsContent value="inventory_log">

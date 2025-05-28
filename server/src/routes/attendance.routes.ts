@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { clockIn, clockOut, getAttendanceStatus, getCurrentMembers } from '../controllers/attendance/attendance.controller';
+import { clockIn, clockOut, getAttendanceStatus, getCurrentMembers, getAttendanceLogs } from '../controllers/attendance/attendance.controller';
 
 /**
  * @swagger
@@ -14,5 +14,6 @@ router.post('/clock-in', clockIn);
 router.post('/clock-out', clockOut);
 router.get('/status', getAttendanceStatus);
 router.get('/current-members', getCurrentMembers);
+router.get('/logs/:labId', getAttendanceLogs);
 
 export default router;

@@ -44,6 +44,7 @@ interface DashboardClientProps {
     role?: string;
     statusName?: string;
     memberID?: number;
+    lastViewedLabId: number;
   };
   announcements: PostType[];
   members: Member[];

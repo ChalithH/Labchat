@@ -14,7 +14,8 @@ import  {getAllLabs, getLabById, createLab, assignUserToLab,
            deleteMemberStatus,
            createMemberStatusForLabMember,
            updateLabMemberRole,
-           toggleLabMemberInduction
+           toggleLabMemberInduction,
+           toggleLabMemberPCI
            } from '../controllers/admin/admin.controller';
 
 import { requirePermission } from '../middleware/permission.middleware';
@@ -52,6 +53,9 @@ router.post('/lab-member/:labMemberId/status', requirePermission(60), createMemb
 router.put('/lab-member/:labMemberId/role', requirePermission(60), updateLabMemberRole);
 // Toggle a lab member's induction status (true/false)
 router.put('/lab-member/:labMemberId/induction', requirePermission(60), toggleLabMemberInduction);
+
+// Toggle a lab member's PCI status
+router.put('/lab-member/:labMemberId/pci', requirePermission(60), toggleLabMemberPCI);
 
 router.delete('/remove-user', requirePermission(60), removeUserFromLab); 
 
