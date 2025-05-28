@@ -32,12 +32,13 @@ import type { TEventFormData } from "@/calendar/schemas";
 interface IProps {
   children: React.ReactNode;
   event: IEvent;
+  onEventUpdate?: (updatedEvent: IEvent) => void;
 }
 
 export function EditEventDialog({ children, event }: IProps) {
   const { isOpen, onClose, onToggle } = useDisclosure();
 
-  const { users, eventTypes: contextEventTypes } = useCalendar();
+  const { users, eventTypes: contextEventTypes, instruments } = useCalendar();
   const { updateEvent, isUpdating, error: updateError } = useUpdateEvent();
   
   // State for event types
@@ -73,6 +74,9 @@ export function EditEventDialog({ children, event }: IProps) {
   // Find the event type ID
   const initialTypeId = event.type?.id.toString() || "1";
   
+  // Get the current instrument ID if any
+  const initialInstrumentId = event.instrument ? event.instrument.id.toString() : null;
+  
   // Initialize with existing assignments if any
   useEffect(() => {
     if (event.assignments && event.assignments.length > 0) {
@@ -91,6 +95,7 @@ export function EditEventDialog({ children, event }: IProps) {
       endDate: parseISO(event.endDate),
       endTime: { hour: parseISO(event.endDate).getHours(), minute: parseISO(event.endDate).getMinutes() },
       type: initialTypeId,
+      instrumentId: initialInstrumentId,
     },
   });
 
@@ -107,6 +112,11 @@ export function EditEventDialog({ children, event }: IProps) {
 
     // Find the selected event type
     const selectedType = eventTypes.find(type => type.id.toString() === values.type);
+    
+    // Find the selected instrument if any
+    const selectedInstrument = values.instrumentId && values.instrumentId !== "none" 
+      ? instruments.find(i => i.id.toString() === values.instrumentId)
+      : null;
 
     // Prepare assignments with proper member IDs
     const assignmentsWithMemberIds = selectedAssignees.map(assignee => ({
@@ -121,6 +131,7 @@ export function EditEventDialog({ children, event }: IProps) {
       description: values.description,
       color: selectedType?.color || "green", // Use color from type or default to green
       type: selectedType,
+      instrument: selectedInstrument,
       startDate: startDateTime.toISOString(),
       endDate: endDateTime.toISOString(),
       assignments: assignmentsWithMemberIds,
@@ -175,7 +186,6 @@ export function EditEventDialog({ children, event }: IProps) {
   const firstUserId = hasUsers ? users[0]?.id : "";
   
   const hasAssignments = selectedAssignees && selectedAssignees.length > 0;
-  const hasInstrument = !!event.instrument;
 
   return (
     <Dialog open={isOpen} onOpenChange={onToggle}>
@@ -267,8 +277,44 @@ export function EditEventDialog({ children, event }: IProps) {
                   )}
                 />
 
+                {/* Instrument Selection - show for equipment events */}
+                  <FormField
+                    control={form.control}
+                    name="instrumentId"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <FormLabel>Instrument</FormLabel>
+                        <FormControl>
+                          <Select
+                            value={field.value !== null ? field.value : "none"}
+                            onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+                          >
+                            <SelectTrigger data-invalid={fieldState.invalid}>
+                              <SelectValue placeholder="Select an instrument" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground">No instrument</span>
+                                </div>
+                              </SelectItem>
+                              {instruments.map(instrument => (
+                                <SelectItem key={instrument.id} value={instrument.id.toString()}>
+                                  <div className="flex items-center gap-2">
+                                    <Microscope className="h-4 w-4 text-muted-foreground" />
+                                    {instrument.name}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                 {/* Assignees management section - only show for non-equipment events */}
-                {!isEquipmentType && hasUsers && (
                   <div className="space-y-3 border rounded-md p-3">
                     <div className="flex justify-between items-center">
                       <h3 className="text-sm font-medium">Assigned Members</h3>
@@ -333,18 +379,6 @@ export function EditEventDialog({ children, event }: IProps) {
                       </div>
                     )}
                   </div>
-                )}
-
-                {/* Display instrument info as read-only */}
-                {hasInstrument && (
-                  <div className="rounded-md border p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Microscope className="h-4 w-4 text-muted-foreground" />
-                      <p className="text-sm font-medium">Instrument</p>
-                    </div>
-                    <p className="pl-6 text-sm text-muted-foreground">{event.instrument?.name || "N/A"}</p>
-                  </div>
-                )}
 
                 <FormField
                   control={form.control}

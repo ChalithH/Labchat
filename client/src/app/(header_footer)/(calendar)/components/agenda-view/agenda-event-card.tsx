@@ -45,9 +45,30 @@ interface IProps {
   event: IEvent;
   eventCurrentDay?: number;
   eventTotalDays?: number;
+  searchQuery?: string;
 }
 
-export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IProps) {
+// Helper function to highlight search terms
+function highlightText(text: string, searchQuery?: string) {
+  if (!searchQuery || !searchQuery.trim()) {
+    return text;
+  }
+
+  const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+
+  return parts.map((part, index) => (
+    regex.test(part) ? (
+      <mark key={index} className="bg-yellow-200 dark:bg-yellow-900 px-0.5 rounded">
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+  ));
+}
+
+export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, searchQuery }: IProps) {
   const { badgeVariant } = useCalendar();
 
   const startDate = parseISO(event.startDate);
@@ -95,14 +116,14 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
                     Day {eventCurrentDay} of {eventTotalDays} •{" "}
                   </span>
                 )}
-                {event.title}
+                {highlightText(event.title, searchQuery)}
               </p>
               
               <Badge 
                 variant={getBadgeVariant(event.color)}
                 className="ml-1"
               >
-                {typeName}
+                {highlightText(typeName, searchQuery)}
               </Badge>
             </div>
           </div>
@@ -110,7 +131,9 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <User className="size-3.5 shrink-0 text-muted-foreground" />
-              <p className="text-xs text-foreground">Assigner: {event.user.name}</p>
+              <p className="text-xs text-foreground">
+                Assigner: {highlightText(event.user.name, searchQuery)}
+              </p>
             </div>
 
             {hasAssignments && (
@@ -126,7 +149,7 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
               <div className="flex items-center gap-1">
                 <Microscope className="size-3.5 shrink-0 text-muted-foreground" />
                 <p className="text-xs text-foreground">
-                  {event.instrument?.name || "N/A"}
+                  {event.instrument?.name ? highlightText(event.instrument.name, searchQuery) : "N/A"}
                 </p>
               </div>
             )}
@@ -143,10 +166,33 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
             {event.description && (
               <div className="flex items-center gap-1">
                 <Text className="size-3.5 shrink-0 text-muted-foreground" />
-                <p className="text-xs text-foreground max-w-[300px] truncate">{event.description}</p>
+                <p className="text-xs text-foreground max-w-[300px] truncate">
+                  {highlightText(event.description, searchQuery)}
+                </p>
               </div>
             )}
           </div>
+
+          {/* Show assigned member names if they match search */}
+          {searchQuery && hasAssignments && event.assignments?.some(assignment => 
+            assignment.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ) && (
+            <div className="flex items-center gap-1 mt-1">
+              <Users className="size-3.5 shrink-0 text-muted-foreground" />
+              <div className="text-xs text-foreground">
+                <span className="text-muted-foreground">Assigned to:</span>{" "}
+                {event.assignments
+                  ?.filter(assignment => assignment.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((assignment, index, arr) => (
+                    <span key={assignment.id}>
+                      {highlightText(assignment.name, searchQuery)}
+                      {index < arr.length - 1 && ", "}
+                    </span>
+                  ))
+                }
+              </div>
+            </div>
+          )}
         </div>
         
         {event.status && (

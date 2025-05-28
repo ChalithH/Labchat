@@ -89,11 +89,21 @@ export const useFetchEvents = () => {
       
       const fetchedEvents = await getEvents(startDate, endDate);
       
-      // Filter events by user if needed
+      // Filter events by user if needed - now checks assignments
       let filteredEvents = fetchedEvents;
       
       if (userId !== "all") {
-        filteredEvents = filteredEvents.filter(event => event.user.id === userId);
+        filteredEvents = filteredEvents.filter(event => {
+          // If no assignments, check if the user is the assigner
+          if (!event.assignments || event.assignments.length === 0) {
+            return event.user.id === userId;
+          }
+          
+          // Check if the user is in the assignments
+          return event.assignments.some((assignment: any) => 
+            assignment.memberId?.toString() === userId
+          );
+        });
       }
       
       // Filter events by type if needed

@@ -6,6 +6,9 @@ import { ContactType, ProfileDataType } from '../types/profile.types'
 import ContactGroup from './ContactGroup'
 import EditProfile from './EditProfile'
 import AddContact from './AddContact'
+import ProfilePicture from '@/components/profilePicture/ProfilePicture'
+import { UserType } from '@/types/account_user.type'
+import ProfilePictureGroup from '@/components/profilePicture/ProfilePictureGroup'
 
 
 export default function ProfileClient({ data, is_users_profile }: { data: ProfileDataType, is_users_profile: boolean }) {
@@ -19,7 +22,16 @@ export default function ProfileClient({ data, is_users_profile }: { data: Profil
         </div>
 
         <div className={ `flex items-center w-[100%] ${ is_users_profile ? 'justify-between' : 'justify-center' }` }>
-          <ThreadAuthorGroup name={ `${ data.firstName } ${ data.lastName }` } role={ data.role } size={ 60 } />
+
+          <ProfilePictureGroup 
+            id={data.id} 
+            profilePic={data.profilePic} 
+            universityId={data.universityId} 
+            firstName={data.firstName}
+            lastName={data.lastName}
+            role={ data.role }
+            size={14}
+          />
 
           { is_users_profile && 
             <EditProfile /> }

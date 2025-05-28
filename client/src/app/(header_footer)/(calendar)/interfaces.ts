@@ -41,6 +41,7 @@ export interface IEvent {
   instrument?: IInstrument | null;
   lab?: ILab;
   assignments?: IAssignment[];
+  assignedUserIds?: string[];
 }
 
 export interface ICalendarCell {

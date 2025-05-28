@@ -63,6 +63,13 @@ export default function Header() {
   }
   
 
+  const handleLabChange = (labId: number) => {
+    // Optional: Add any additional logic when lab changes
+    console.log('Switched to lab:', labId)
+    // You could refresh the page, update context, or redirect
+    // window.location.reload() // Uncomment if you want to refresh the page
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full bg-zinc-200/70 dark:bg-zinc-900/70 shadow-sm border-b-[1px] ">
       <div className="container mx-auto flex h-24 items-center justify-between px-8">

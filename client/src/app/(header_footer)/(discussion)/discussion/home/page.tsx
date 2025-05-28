@@ -7,7 +7,7 @@ import { PostType } from '@/types/post.type'
 import { CategoryType } from '@/types/category.type'
 
 import setUsersLastViewed from '@/lib/set_last_viewed'
-import getUserFromSessionServer from '@/lib/get_user_server'
+import getUserFromSessionServer from '@/lib/get_user_server' 
 
 import HomeClient from '../../components/clients/HomeClient'
 import api from '@/lib/api'
