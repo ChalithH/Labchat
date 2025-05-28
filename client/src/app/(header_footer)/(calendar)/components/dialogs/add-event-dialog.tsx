@@ -220,7 +220,6 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                                     <AvatarImage src={user.picturePath ?? undefined} alt={user.name} />
                                     <AvatarFallback className="text-xxs">{user.name[0]}</AvatarFallback>
                                   </Avatar>
-
                                   <p className="truncate">{user.name}</p>
                                 </div>
                               </SelectItem>
