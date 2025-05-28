@@ -25,6 +25,7 @@ export async function POST(request: { formData: () => any; }) {
   try {
     const formData = await request.formData();
     const file = formData.get('file');
+    const title = formData.get('title'); 
     
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -33,7 +34,7 @@ export async function POST(request: { formData: () => any; }) {
     const bytes: ArrayBuffer = await file.arrayBuffer();
     const buffer: Buffer = Buffer.from(bytes);
 
-    const fileName = `${Date.now()}-${file.name}`;
+    const fileName = `${Date.now()}-${title}`;
     
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME,

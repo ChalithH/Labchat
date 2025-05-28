@@ -35,13 +35,6 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
       const user = await getUserFromSession()
       const currentProfilePic = user.profilePic || ''
       
-      console.log('Initial user data loaded:', {
-        currentProfilePic,
-        userId: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName
-      })
-      
       // Set profile pic state internally
       setProfilePic(currentProfilePic)
       setOriginalProfilePic(currentProfilePic)
@@ -55,34 +48,16 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
       })
     }
     getUser()
-  }, []) // Remove setters dependency
+  }, [])
 
   useEffect(() => {
     const newHasChanges = profilePic !== originalProfilePic
-    console.log('Change detection:', {
-      currentProfilePic: profilePic,
-      originalProfilePic,
-      hasChanges: newHasChanges
-    })
     setHasChanges(newHasChanges)
   }, [profilePic, originalProfilePic])
-
-  console.log('ProfileTab render state:', {
-    profilePic,
-    hasChanges,
-    isUploading,
-    userData: userData ? 'loaded' : 'loading'
-  })
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-
-    console.log('Starting upload for file:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    })
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -102,17 +77,11 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
     try {
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('title', String(`${userData?.firstName}${userData?.lastName}${userData?.universityId}`))
 
-      console.log('Sending upload request...')
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
-      })
-
-      console.log('Upload response:', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText
       })
 
       if (!response.ok) {
@@ -122,10 +91,6 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
       }
 
       const data = await response.json()
-      console.log('Upload successful! Data:', data)
-      console.log('Setting profile pic to:', data.url)
-      
-      // Use internal state setter
       setProfilePic(data.url)
       
       // Clear the input so the same file can be selected again if needed
@@ -140,25 +105,17 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
   }
 
   const handleRemoveImage = () => {
-    console.log('Removing image, setting profilePic to empty string')
     setProfilePic('')
     setError('')
   }
 
   const handleSubmit = async () => {
-    console.log('Submit clicked:', {
-      hasChanges,
-      currentProfilePic: profilePic,
-      originalProfilePic
-    })
-    
     if (!hasChanges) {
       setError('No changes to save')
       return
     }
 
     setError('')
-    console.log('Calling onSubmit with:', { profilePic })
     onSubmit({
       profilePic
     })
@@ -187,47 +144,47 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
           </p>
         </div>
 
-        {/* Current/Preview Profile Picture */}
+        {/* Profile Picture Display */}
         <div className="relative">
           {profilePic ? (
             <div className="relative">
-              {/* Test with regular img tag */}
-              <img 
-                src={profilePic}
-                alt="Profile preview"
-                className="w-12 h-12 rounded-full object-cover border-2 border-border"
-                onError={(e) => {
-                  console.error('Image failed to load:', profilePic)
-                  e.currentTarget.style.display = 'none'
-                }}
-                onLoad={() => console.log('Image loaded successfully:', profilePic)}
+              <ProfilePicture 
+                key={`profile-${profilePic}`}
+                user_id={userData.id} 
+                profilePic={profilePic} 
+                universityId={userData.universityId} 
+                firstName={userData.firstName}
+                lastName={userData.lastName}
+                size={16} 
               />
-              {/* Your ProfilePicture component */}
-              <div className="mt-2">
-                <ProfilePicture 
-                  key={`profile-${profilePic}`}
-                  user_id={userData.id} 
-                  profilePic={profilePic} 
-                  universityId={userData.universityId} 
-                  firstName={userData.firstName}
-                  lastName={userData.lastName}
-                  size={12} 
-                />
-              </div>
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="absolute -top-2 -right-2 rounded-full p-2 h-8 w-8"
+                className="absolute -top-1 -right-1 rounded-full p-1 h-6 w-6 shadow-md text-xs"
                 onClick={handleRemoveImage}
                 disabled={isUploading}
+                title="Remove image"
               >
                 ×
               </Button>
             </div>
           ) : (
-            <div className="w-12 h-12 rounded-full bg-muted border-2 border-dashed border-border flex items-center justify-center">
-              <Camera className="w-6 h-6 text-muted-foreground" />
+            <div className="relative">
+              {/* Show ProfilePicture with fallback initials when no profilePic */}
+              <ProfilePicture 
+                key={`profile-fallback-${userData.id}`}
+                user_id={userData.id} 
+                profilePic={undefined} // This will show initials
+                universityId={userData.universityId} 
+                firstName={userData.firstName}
+                lastName={userData.lastName}
+                size={16}
+              />
+              {/* Overlay to indicate it's clickable/empty */}
+              <div className="absolute inset-0 bg-black bg-opacity-20 rounded-full flex items-center justify-center">
+                <Camera className="w-6 h-6 text-white drop-shadow-md" />
+              </div>
             </div>
           )}
         </div>
@@ -261,18 +218,11 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  Choose Image
+                  {profilePic ? 'Change Image' : 'Choose Image'}
                 </>
               )}
             </Button>
           </div>
-        </div>
-
-        {/* Debug info */}
-        <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
-          <div>Profile Pic: {profilePic ? 'Set' : 'Not set'}</div>
-          <div>Has Changes: {hasChanges ? 'Yes' : 'No'}</div>
-          <div>Is Uploading: {isUploading ? 'Yes' : 'No'}</div>
         </div>
       </div>
 
