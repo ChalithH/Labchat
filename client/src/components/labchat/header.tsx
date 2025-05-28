@@ -20,9 +20,9 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 import ResolveRoleName from "@/lib/resolve_role_name.util";
+import { SimpleLabSwitcher } from "@/components/labSwitcher/LabSwitcher"; // Import the lab switcher
 
 export default function Header() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [userData, setUserData] = useState<any>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [activeLink, setActiveLink] = useState('#');
@@ -30,7 +30,6 @@ export default function Header() {
   const handleLinkClick = (href: string) => {
     setActiveLink(href);
   };
-
 
   useEffect(() => {
     const getUser = async () => {
@@ -63,6 +62,13 @@ export default function Header() {
     }
   }
 
+  const handleLabChange = (labId: number) => {
+    // Optional: Add any additional logic when lab changes
+    console.log('Switched to lab:', labId)
+    // You could refresh the page, update context, or redirect
+    // window.location.reload() // Uncomment if you want to refresh the page
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full bg-zinc-200/70 dark:bg-zinc-900/70 shadow-sm border-b-[1px] ">
       <div className="container mx-auto flex h-24 items-center justify-between px-8">
@@ -79,6 +85,17 @@ export default function Header() {
           </Link>
         </div>
 
+        {/* Center section with Lab Switcher - only shown when logged in */}
+        {isLoggedIn && userData && (
+          <div className="hidden md:flex items-center">
+            <SimpleLabSwitcher
+              userId={userData.id}
+              onLabChange={handleLabChange}
+              placeholder="Select lab..."
+              className="w-56"
+            />
+          </div>
+        )}
 
         <div className="flex items-center gap-4">
           <ModeSwitch />
@@ -109,11 +126,23 @@ export default function Header() {
                       <span className="text-2xl font-bold play-font text-labchat-blue-500">Labchat Navigation</span>
                     </Link>
                   }
-
-
                 </SheetClose>
                 <SheetDescription className='hidden'>Description goes here</SheetDescription>
               </SheetHeader>
+
+              {/* Lab Switcher in mobile menu - only shown when logged in */}
+              {isLoggedIn && userData && (
+                <div className="px-4 py-4 border-b">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Switch Lab:</p>
+                  <SimpleLabSwitcher
+                    userId={userData.id}
+                    onLabChange={handleLabChange}
+                    placeholder="Select lab..."
+                    className="w-full"
+                  />
+                </div>
+              )}
+
               <div className="flex flex-col gap-10 p-10 text-center">
                 {/* Conditionally render navigation links based on login status */}
                 {isLoggedIn ? (
