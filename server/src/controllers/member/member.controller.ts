@@ -229,3 +229,22 @@ export const getMemberWithStatus = async (req: Request, res: Response): Promise<
   }
 };
 
+export const getMembershipsByUserId = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = parseInt(req.params.id);
+    const memberships = await prisma.labMember.findMany({
+      where: { userId: userId },
+    });
+    
+    if (!memberships || memberships.length === 0) {
+      res.status(404).json({ error: 'No lab memberships found for this user' });
+      return;
+    }
+    
+    res.json(memberships);
+  } catch (error) {
+    console.error('Error retrieving memberships by user ID:', error);
+    res.status(500).json({ error: 'Failed to retrieve lab memberships' });
+  }
+};
+

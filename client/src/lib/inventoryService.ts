@@ -23,8 +23,8 @@ export type InventoryItem = {
   itemTags: Tag[];
 };
 
-export const getInventoryItems = async (): Promise<InventoryItem[]> => {
-  const response = await fetch(`${BASE_URL}/inventory/1`);
+export const getInventoryItems = async (labId: number): Promise<InventoryItem[]> => {
+  const response = await fetch(`${BASE_URL}/inventory/${labId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch inventory items');
   }
@@ -64,8 +64,8 @@ const postInventoryAction = async (
   return response.json();
 };
 
-export const takeInventoryItem = (id: number, amount: number) =>
-  postInventoryAction('take', { itemId: id, amountTaken: amount });
+export const takeInventoryItem = (id: number, amount: number, labId: number) =>
+  postInventoryAction('take', { itemId: id, amountTaken: amount, labId: labId });
 
-export const replenishInventoryItem = (id: number, amount: number) =>
-  postInventoryAction('replenish', { itemId: id, amountAdded: amount });
+export const replenishInventoryItem = (id: number, amount: number, labId: number) =>
+  postInventoryAction('replenish', { itemId: id, amountAdded: amount, labId: labId });

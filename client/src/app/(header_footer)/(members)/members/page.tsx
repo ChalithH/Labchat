@@ -3,7 +3,7 @@ import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import MembersClient from '../components/MembersClient'
-
+import { LabProvider } from '@/contexts/lab-context'
 
 const MembersPage = async () => {
     setUsersLastViewed(`/members`)
@@ -13,8 +13,15 @@ const MembersPage = async () => {
       redirect('/home')
     }
   
+    // Ensure lastViewedLabId is a number, default to 1 if not present or invalid
+    const lastViewedLabId = user.lastViewedLabId && !isNaN(parseInt(user.lastViewedLabId))
+      ? parseInt(user.lastViewedLabId)
+      : 1;
+
     return (
-      <MembersClient />
+      <LabProvider initialLabId={lastViewedLabId}>
+        <MembersClient user={user} />
+      </LabProvider>
     )
   }
 

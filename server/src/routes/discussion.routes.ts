@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createPost, deletePost, editPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller'
+import { createPost, deletePost, editPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle, getAnnouncementsByLab } from '../controllers/discussion/post.controller'
 import {
     getAllTags,
     getTagById,
@@ -7,10 +7,12 @@ import {
     editTag,
     deleteTag,
     assignTagToPost, 
-    removeTagFromPost
+    removeTagFromPost,
+    getPostsByTagForLab,
+    getTagsUsedInLab
 } from '../controllers/discussion/category.controller'; 
 import { getReplyById, getRepliesByPost, createReply, editReply, deleteReply,} from '../controllers/discussion/reply.controller'
-import { getMixedPosts, getPopularPosts, getRecentPosts } from '../controllers/discussion/misc.controller'
+import { getMixedPosts, getPopularPosts, getRecentPosts, getDiscussionsForLab } from '../controllers/discussion/misc.controller'
 /**
  * @swagger
  * tags:
@@ -31,6 +33,7 @@ router.put('/post/:id', editPost)
 router.get('/category-posts/:id', getPostsByCategory)
 router.get('/member-posts/:id', getPostsByMember)
 router.post('/title-posts', getPostsByTitle)
+router.get('/announcements/lab/:labId', getAnnouncementsByLab)
 
 
 // category controller routes
@@ -41,6 +44,11 @@ router.put('/tags/:id', editTag);
 router.delete('/tags/:id', deleteTag); 
 router.post('/posts/:postId/tags', assignTagToPost);
 router.delete('/posts/:postId/tags/:tagAssignmentId', removeTagFromPost);
+
+// Lab-aware routes
+router.get('/lab/discussions', getDiscussionsForLab); // GET /api/discussion/lab/discussions?labId=1
+router.get('/lab/tags', getTagsUsedInLab); // GET /api/discussion/lab/tags?labId=1
+router.get('/lab/tags/:tagId/posts', getPostsByTagForLab); // GET /api/discussion/lab/tags/1/posts?labId=1
 
 // reply controller routes
 router.get('/reply/:id', getReplyById)

@@ -274,13 +274,19 @@ export const getInventoryLocal = async (req: Request, res: Response): Promise<vo
 
 export const takeItem = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { itemId, amountTaken } = req.body;
+        const { itemId, amountTaken, labId } = req.body;
+
+        if (!labId) {
+            res.status(400).json({ error: 'labId is required' });
+            return;
+        }
+
         const item = await prisma.labInventoryItem.findUnique({
             where: { id: itemId },
           });
 
-          if (!item) {
-            res.status(404).json({ error: 'Item not found' });
+          if (!item || item.labId !== labId) {
+            res.status(404).json({ error: 'Item not found in this lab' });
             return;
           }
 
@@ -372,12 +378,19 @@ export const replenishStock = async (req: Request, res: Response): Promise<void>
     try {
         const amountAdded = Math.abs(req.body.amountAdded);
         const itemId = req.body.itemId;
+        const labId = req.body.labId;
+
+        if (!labId) {
+            res.status(400).json({ error: 'labId is required' });
+            return;
+        }
+
         const item = await prisma.labInventoryItem.findUnique({
             where: {id:itemId}
     });
 
-    if (!item) {
-        res.status(404).json({ error: "Item not found"})
+    if (!item || item.labId !== labId) {
+        res.status(404).json({ error: "Item not found in this lab"})
         return;
     }
 

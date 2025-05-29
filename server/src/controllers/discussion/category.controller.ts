@@ -374,3 +374,119 @@ export const removeTagFromPost = async (req: Request, res: Response): Promise<vo
         res.status(500).json({ error: 'Failed to remove tag from post' });
     }
 };
+
+/*
+ *      Get Posts By Tag for Lab
+ *
+ *    Parameters:
+ *      tagId: number
+ *      labId?: number (optional query parameter)
+ * 
+ *    200:
+ *      - Successfully found posts with the tag, optionally filtered by lab
+ *    400:
+ *      - Failed to parse tag ID from request parameters
+ *    500:
+ *      - Internal server error, unable to retrieve posts     
+ */ 
+export const getPostsByTagForLab = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const tagId = parseInt(req.params.tagId, 10);
+        const labId = req.query.labId ? parseInt(req.query.labId as string, 10) : undefined;
+
+        if (isNaN(tagId)) {
+            res.status(400).json({ error: 'Invalid tag ID' });
+            return;
+        }
+
+        const whereClause: any = {
+            tags: {
+                some: {
+                    postTagId: tagId
+                }
+            }
+        };
+
+        // Add lab filter if provided
+        if (labId) {
+            whereClause.discussion = {
+                labId: labId
+            };
+        }
+
+        const posts = await prisma.discussionPost.findMany({
+            where: whereClause,
+            include: {
+                discussion: true,
+                tags: {
+                    include: {
+                        postTag: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(posts);
+    } catch (error) {
+        console.error('Error retrieving posts by tag for lab:', error);
+        res.status(500).json({ error: 'Failed to retrieve posts by tag for lab' });
+    }
+};
+
+/*
+ *      Get Tags Used in Lab
+ *
+ *    Parameters:
+ *      labId?: number (optional query parameter)
+ * 
+ *    200:
+ *      - Successfully retrieved tags used in the lab
+ *    500:
+ *      - Internal server error     
+ */ 
+export const getTagsUsedInLab = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const labId = req.query.labId ? parseInt(req.query.labId as string, 10) : undefined;
+
+        if (labId) {
+            // Get tags that are actually used in posts for this lab
+            const tags = await prisma.postTag.findMany({
+                where: {
+                    postTags: {
+                        some: {
+                            post: {
+                                discussion: {
+                                    labId: labId
+                                }
+                            }
+                        }
+                    }
+                },
+                include: {
+                    _count: {
+                        select: {
+                            postTags: {
+                                where: {
+                                    post: {
+                                        discussion: {
+                                            labId: labId
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            res.json(tags);
+        } else {
+            // Return all tags if no lab filter
+            const tags = await prisma.postTag.findMany();
+            res.json(tags);
+        }
+    } catch (error) {
+        console.error('Error retrieving tags for lab:', error);
+        res.status(500).json({ error: 'Failed to retrieve tags for lab' });
+    }
+};

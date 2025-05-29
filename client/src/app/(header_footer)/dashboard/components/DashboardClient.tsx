@@ -18,21 +18,25 @@ import { PostType } from "@/types/post.type";
 import Link from "next/link";
 import api from '@/lib/api';
 import { DashboardStatusModal } from "./DashboardStatusModal";
+import { getEvents } from "@/app/(header_footer)/(calendar)/requests";
+import { useCurrentLabId } from "@/contexts/lab-context";
+import ResolveRoleName from '@/lib/resolve_role_name.util';
+import { parseISO, startOfDay, startOfToday, format, isAfter, isSameDay } from 'date-fns';
 
-// Attendance API helpers using Axios instance
-async function clockIn(labId = 1) {
+// Attendance API helpers
+async function clockIn(labId: number) {
   const res = await api.post('/attendance/clock-in', { labId });
   return res.data;
 }
-async function clockOut(labId = 1) {
+async function clockOut(labId: number) {
   const res = await api.post('/attendance/clock-out', { labId });
   return res.data;
 }
-async function getAttendanceStatus(labId = 1) {
+async function getAttendanceStatus(labId: number) {
   const res = await api.get(`/attendance/status?labId=${labId}`);
   return res.data;
 }
-async function getCurrentMembers(labId = 1) {
+async function getCurrentMembers(labId: number) {
   const res = await api.get(`/attendance/current-members?labId=${labId}`);
   return res.data;
 }
@@ -45,14 +49,12 @@ interface DashboardClientProps {
     statusName?: string;
     memberID?: number;
     lastViewedLabId: number;
+    userId: number;
   };
-  announcements: PostType[];
-  members: Member[];
-  jobs: Job[];
-  inventory: InventoryItem[];
 }
 
-export default function DashboardClient({ user, announcements, jobs, inventory }: DashboardClientProps) {
+export default function DashboardClient({ user }: DashboardClientProps) {
+  const currentLabId = useCurrentLabId(); // Get current lab ID from context
   const [isClockedIn, setIsClockedIn] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentMembers, setCurrentMembers] = useState<Member[]>([]);
@@ -63,34 +65,180 @@ export default function DashboardClient({ user, announcements, jobs, inventory }
   const [showAllJobs, setShowAllJobs] = useState(false);
   const [showAllInventory, setShowAllInventory] = useState(false);
 
-  // Fetch attendance status and current members on mount
-  useEffect(() => {
-    getAttendanceStatus(1).then(data => {
-      setIsClockedIn(data.isClockedIn);
-    });
-    getCurrentMembers(1).then(data => {
-      setCurrentMembers(data.members || []);
-    });
-  }, []);
+  // State for data previously passed as props
+  const [announcements, setAnnouncements] = useState<PostType[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [currentMemberId, setCurrentMemberId] = useState<number | null>(user.memberID || null);
 
   useEffect(() => {
-    if (user.memberID) {
-      api.get(`/member/get-with-status/${user.memberID}`)
+    const sessionUserId = user.userId;
+
+    if (!currentLabId || !sessionUserId) return;
+
+    // Fetch memberId for the current user and lab
+    api.get(`/member/memberships/user/${sessionUserId}`)
+      .then(memberRes => {
+        const currentLabMembership = memberRes.data.find((mem: any) => mem.labId === currentLabId);
+        if (currentLabMembership) {
+          setCurrentMemberId(currentLabMembership.id);
+        } else {
+          setCurrentMemberId(null);
+          console.warn(`User is not a member of lab ${currentLabId}`);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching member data:', err);
+        setCurrentMemberId(null);
+      });
+
+    // Fetch announcements
+    api.get(`/discussion/announcements/lab/${currentLabId}`)
+      .then(async announcementRes => {
+        const posts = announcementRes.data;
+        const announcementsInfo = await Promise.all(posts.map(async (post: any) => {
+          let authorName = 'Unknown';
+          let authorRole = 'User';
+          let authorImage = '/default_pfp.svg';
+          try {
+            const memberRes = await api.get(`/member/get/${post.memberId}`);
+            const memberData = memberRes.data;
+            const userRes = await api.get(`/user/get/${memberData.userId}`);
+            const userData = userRes.data;
+            authorName = userData.displayName || userData.username || 'Unknown';
+            authorRole = userData.roleId ? await ResolveRoleName(userData.roleId) : (userData.jobTitle || 'User');
+            authorImage = userData.image || '/default_pfp.svg';
+          } catch (error) {
+            console.error('Error fetching announcement author details:', error);
+          }
+          return {
+            id: post.id,
+            discussionId: post.discussionId,
+            memberId: post.memberId,
+            title: post.title,
+            content: post.content,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            isPinned: post.isPinned,
+            isAnnounce: post.isAnnounce,
+            authorName,
+            authorRole,
+            authorImage,
+          };
+        }));
+        setAnnouncements(announcementsInfo);
+      })
+      .catch(err => {
+        console.error(`[Lab ${currentLabId}] Failed to get announcements:`, err);
+        setAnnouncements([]);
+      });
+
+    // Fetch inventory
+    api.get(`/inventory/${currentLabId}`)
+      .then(inventoryRes => {
+        const lowStockInventory = inventoryRes.data
+          .filter((item: any) => item.currentStock <= item.minStock)
+          .map((item: any) => ({
+            name: item.item.name,
+            remaining: item.currentStock,
+            minStock: item.minStock,
+            tags: item.itemTags
+              ? item.itemTags.map((apiTag: any) => ({
+                  name: apiTag.name,
+                  description: apiTag.description
+                }))
+              : [],
+          }));
+        setInventory(lowStockInventory);
+      })
+      .catch(err => {
+        console.error("Failed to get inventory:", err);
+        setInventory([]);
+      });
+    
+    // Fetch attendance status and current members
+    getAttendanceStatus(currentLabId).then(data => {
+      setIsClockedIn(data.isClockedIn);
+    }).catch(err => console.error("Failed to get attendance status:", err));
+    getCurrentMembers(currentLabId).then(data => {
+      setCurrentMembers(data.members || []);
+    }).catch(err => console.error("Failed to get current members:", err));
+
+  }, [currentLabId, user.userId]);
+
+ useEffect(() => {
+    // Fetch jobs (calendar events) using the current lab context
+    if (!currentLabId || currentMemberId === null) {
+      setJobs([]); // Clear jobs if no lab or member ID
+      return;
+    }
+
+    // Start from beginning of today instead of current time
+    const startDate = startOfToday();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+
+    getEvents(startDate, endDate, currentLabId) // Pass currentLabId to getEvents
+      .then(allEvents => {
+        const userEvents = allEvents
+          .filter((event: any) => {
+            const isAssigned = event.assignments?.some(
+              (assignment: any) => String(assignment.memberId) === String(currentMemberId)
+            );
+            
+            const eventStart = parseISO(event.startDate);
+            const today = new Date();
+            
+            // Compare only the date parts (ignore time) to avoid timezone issues
+            const eventDate = format(eventStart, 'yyyy-MM-dd');
+            const todayDate = format(today, 'yyyy-MM-dd');
+            const isToday = eventDate === todayDate;
+            const isFuture = eventDate > todayDate;
+            
+            return isAssigned && (isToday || isFuture);
+          })
+          .sort((a: any, b: any) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime());
+        
+        const formattedJobs = userEvents.map((event: any) => ({
+          name: event.title,
+          time: event.startDate,
+        }));
+        
+        setJobs(formattedJobs);
+      })
+      .catch(err => {
+        console.error("Failed to get events/jobs:", err);
+        setJobs([]);
+      });
+  }, [currentLabId, currentMemberId]);
+
+  useEffect(() => {
+    if (currentMemberId) {
+      api.get(`/member/get-with-status/${currentMemberId}`)
         .then(res => {
           setFullCurrentUserMember(res.data);
         })
         .catch(err => {
           console.error('Failed to fetch member with status', err);
+          setFullCurrentUserMember(null);
         });
+    } else {
+      setFullCurrentUserMember(null);
     }
-  }, [user.memberID]);
+  }, [currentMemberId]);
 
-  // Refresh both status and members after clock in/out
-  const refreshAttendance = async () => {
-    const status = await getAttendanceStatus(1);
+  // Refresh attendance and current members after clock in/out or status change
+  const refreshAttendanceAndMembers = async () => {
+    if (currentLabId) {
+      try {
+        const status = await getAttendanceStatus(currentLabId);
     setIsClockedIn(status.isClockedIn);
-    const members = await getCurrentMembers(1);
-    setCurrentMembers(members.members || []);
+        const membersData = await getCurrentMembers(currentLabId);
+        setCurrentMembers(membersData.members || []);
+      } catch (err) {
+        console.error("Failed to refresh attendance and members:", err);
+      }
+    }
   };
 
   const handleClockIn = async () => {
@@ -99,8 +247,14 @@ export default function DashboardClient({ user, announcements, jobs, inventory }
 
   const handleClockOut = async () => {
     setLoading(true);
-    await clockOut(1);
-    await refreshAttendance();
+    if (currentLabId) {
+      try {
+        await clockOut(currentLabId);
+        await refreshAttendanceAndMembers();
+      } catch (err) {
+        console.error("Failed to clock out:", err);
+      }
+    }
     setLoading(false);
   };
 
@@ -114,14 +268,16 @@ export default function DashboardClient({ user, announcements, jobs, inventory }
           statusId,
         });
       }
-      await clockIn(1);
+      if (currentLabId) {
+        await clockIn(currentLabId);
       setStatusModalOpen(false);
-      await refreshAttendance();
+        await refreshAttendanceAndMembers();
       // Refetch full member info after status change
-      if (user.memberID) {
-        api.get(`/member/get-with-status/${user.memberID}`).then(res => {
+        if (currentMemberId) {
+          api.get(`/member/get-with-status/${currentMemberId}`).then(res => {
           setFullCurrentUserMember(res.data);
         });
+        }
       }
     } catch (err: any) {
       setStatusModalError(err.message || "Failed to update status or clock in");

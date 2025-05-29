@@ -57,13 +57,18 @@ const getDefaultEventTypes = (): IEventType[] => {
   ];
 };
 
-export const getEvents = async (startDate: Date, endDate: Date): Promise<IEvent[]> => {
+// Updated getEvents function with optional labId parameter
+export const getEvents = async (startDate: Date, endDate: Date, labId?: number): Promise<IEvent[]> => {
   try {
-    const start = format(startDate, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    const end = format(endDate, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    // Use toISOString() instead of date-fns-tz format to avoid timezone issues
+    const start = startDate.toISOString();
+    const end = endDate.toISOString();
+    
+    // Use provided labId or default to 1 for backward compatibility
+    const targetLabId = labId || 1;
         
     const response = await axios.get(
-      `${API_URL}/calendar/events/1?start=${start}&end=${end}`
+      `${API_URL}/calendar/events/${targetLabId}?start=${start}&end=${end}`
     );
     
     if (response.status === 200) {
@@ -86,7 +91,7 @@ export const createEvent = async (event: Partial<IEvent>): Promise<IEvent | null
     
     // Transform the event data to match the API's expected format
     const apiEventData = {
-      labId: 1, // Fixed lab ID as specified
+      labId: event.lab?.id || 1, // Use lab ID from event or default to 1
       memberId: parseInt(event.user?.id || "1"), // Convert string ID to number
       title: event.title,
       description: event.description,
@@ -156,10 +161,13 @@ export const deleteEvent = async (eventId: number): Promise<boolean> => {
   }
 };
 
-export const getUsers = async () => {
+export const getUsers = async (labId?: number) => {
   try {
+    // Use provided labId or default to 1 for backward compatibility
+    const targetLabId = labId || 1;
+    
     const response = await axios.get(
-      `${API_URL}/lab/getMembersList/1`
+      `${API_URL}/lab/getMembersList/${targetLabId}`
     );
     if (response.status === 200) {
       return response.data.map(transformAPIUser);

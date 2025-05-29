@@ -12,8 +12,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Building2, Loader2, CheckCircle } from "lucide-react"
+import { Building2, Loader2 } from "lucide-react"
 import { useRouter } from 'next/navigation'
+import { useLabContext } from "@/contexts/lab-context"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -23,19 +24,18 @@ interface SimpleLab {
   isCurrentLab: boolean
 }
 
-interface SimpleLabSwitcherProps {
+interface LabSwitcherWithContextProps {
   userId: number
-  onLabChange?: (labId: number) => void
   placeholder?: string
   className?: string
 }
 
-export function SimpleLabSwitcher({
+export function LabSwitcherWithContext({
   userId,
-  onLabChange,
   placeholder = "Select lab...",
   className = "",
-}: SimpleLabSwitcherProps) {
+}: LabSwitcherWithContextProps) {
+  const { currentLabId, setCurrentLabId } = useLabContext()
   const [labs, setLabs] = useState<SimpleLab[]>([])
   const [loading, setLoading] = useState(true)
   const [switching, setSwitching] = useState(false)
@@ -71,6 +71,13 @@ export function SimpleLabSwitcher({
       fetchLabs()
     }
   }, [userId])
+
+  // Sync with lab context
+  useEffect(() => {
+    if (currentLabId) {
+      setSelectedLabId(currentLabId.toString())
+    }
+  }, [currentLabId])
 
   const handleSelectChange = (labId: string) => {
     if (!labId || switching) return
@@ -108,7 +115,9 @@ export function SimpleLabSwitcher({
         })),
       )
 
-      onLabChange?.(labIdNum)
+      // Update the lab context
+      setCurrentLabId(labIdNum)
+      
       router.refresh()
     } catch (error) {
       console.error("Failed to switch lab:", error)
@@ -206,4 +215,4 @@ export function SimpleLabSwitcher({
       </Dialog>
     </>
   )
-}
+} 

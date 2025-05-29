@@ -4,15 +4,15 @@ import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import { LabProvider } from '@/contexts/lab-context'
-import TopicClient from '../../../components/clients/TopicClient'
+import BoardClient from '../../../components/clients/BoardClient'
 
 type Params = Promise<{ id: number }>
 
-const DiscussionTopic = async (props:{ params: Params}) => {
+const DiscussionBoard = async (props: { params: Params }) => {
     const params = await props.params
     const id = params.id
 
-    setUsersLastViewed(`/discussion/topic/${ id }`)
+    setUsersLastViewed(`/discussion/board/${id}`)
     
     const user = await getUserFromSessionServer()
     if (!user) {
@@ -22,10 +22,10 @@ const DiscussionTopic = async (props:{ params: Params}) => {
     const currentLabId = user.lastViewedLabId || 1
 
     return (
-      <LabProvider initialLabId={currentLabId}>
-        <TopicClient params={ {id: `${ id }`} } />
-      </LabProvider>
+        <LabProvider initialLabId={currentLabId}>
+            <BoardClient params={{ id: `${id}` }} />
+        </LabProvider>
     )
-  }
+}
 
-export default DiscussionTopic
+export default DiscussionBoard 
