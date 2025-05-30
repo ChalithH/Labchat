@@ -846,8 +846,6 @@ export const createInventoryItem = async (req: Request, res: Response): Promise<
     }
 }
 
-
-
 // Inventory related endpoints
 /**
  * @swagger
@@ -1438,4 +1436,694 @@ export const toggleLabMemberPCI = async (req: Request, res: Response): Promise<v
     }
     res.status(500).json({ message: 'Server error toggling PCI status.' });
   }
+};
+
+/**
+ * @swagger
+ * /admin/lab/{labId}/inventory:
+ *   post:
+ *     summary: Add a global item to a lab's inventory
+ *     description: Creates a new lab inventory item by adding a global item to a specific lab
+ *     tags: [Admin, Inventory]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab to add the item to
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - itemId
+ *               - location
+ *               - itemUnit
+ *               - currentStock
+ *               - minStock
+ *             properties:
+ *               itemId:
+ *                 type: integer
+ *                 description: ID of the global item to add
+ *               location:
+ *                 type: string
+ *                 description: Location within the lab
+ *               itemUnit:
+ *                 type: string
+ *                 description: Unit of measurement
+ *               currentStock:
+ *                 type: integer
+ *                 description: Current stock amount
+ *               minStock:
+ *                 type: integer
+ *                 description: Minimum stock threshold
+ *               tagIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of tag IDs to assign to this item
+ *     responses:
+ *       201:
+ *         description: Item added to lab inventory successfully
+ *       400:
+ *         description: Invalid input or item already in lab
+ *       404:
+ *         description: Lab or item not found
+ *       500:
+ *         description: Internal server error
+ */
+export const addItemToLab = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.labId);
+    const { itemId, location, itemUnit, currentStock, minStock, tagIds = [] } = req.body;
+
+    if (isNaN(labId)) {
+        res.status(400).json({ error: 'Invalid lab ID' });
+        return;
+    }
+
+    if (!itemId || !location || !itemUnit || currentStock === undefined || minStock === undefined) {
+        res.status(400).json({ error: 'Missing required fields' });
+        return;
+    }
+
+    try {
+        // Check if lab exists
+        const lab = await prisma.lab.findUnique({ where: { id: labId } });
+        if (!lab) {
+            res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        // Check if global item exists
+        const globalItem = await prisma.item.findUnique({ where: { id: itemId } });
+        if (!globalItem) {
+            res.status(404).json({ error: 'Global item not found' });
+            return;
+        }
+
+        // Check if item already exists in this lab
+        const existingLabItem = await prisma.labInventoryItem.findFirst({
+            where: { labId, itemId }
+        });
+        if (existingLabItem) {
+            res.status(400).json({ error: 'Item already exists in this lab' });
+            return;
+        }
+
+        // Create lab inventory item
+        const newLabItem = await prisma.labInventoryItem.create({
+            data: {
+                itemId,
+                labId,
+                location,
+                itemUnit,
+                currentStock: parseInt(currentStock),
+                minStock: parseInt(minStock)
+            },
+            include: {
+                item: true,
+                labItemTags: {
+                    include: { itemTag: true }
+                }
+            }
+        });
+
+        // Add tags if provided
+        if (tagIds.length > 0) {
+            await prisma.labItemTag.createMany({
+                data: tagIds.map((tagId: number) => ({
+                    inventoryItemId: newLabItem.id,
+                    itemTagId: tagId
+                }))
+            });
+        }
+
+        // Fetch item with tags
+        const completeItem = await prisma.labInventoryItem.findUnique({
+            where: { id: newLabItem.id },
+            include: {
+                item: true,
+                labItemTags: {
+                    include: { itemTag: true }
+                }
+            }
+        });
+
+        res.status(201).json(completeItem);
+    } catch (error) {
+        console.error('Error adding item to lab:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/lab/{labId}/inventory/{itemId}:
+ *   put:
+ *     summary: Update a lab inventory item
+ *     description: Updates the details of an existing lab inventory item
+ *     tags: [Admin, Inventory]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab inventory item
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               location:
+ *                 type: string
+ *               itemUnit:
+ *                 type: string
+ *               currentStock:
+ *                 type: integer
+ *               minStock:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Lab inventory item updated successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Lab or item not found
+ *       500:
+ *         description: Internal server error
+ */
+export const updateLabInventoryItem = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.labId);
+    const itemId = parseInt(req.params.itemId);
+    const { location, itemUnit, currentStock, minStock } = req.body;
+
+    if (isNaN(labId) || isNaN(itemId)) {
+        res.status(400).json({ error: 'Invalid lab ID or item ID' });
+        return;
+    }
+
+    try {
+        // Find the lab inventory item
+        const existingItem = await prisma.labInventoryItem.findFirst({
+            where: { id: itemId, labId }
+        });
+
+        if (!existingItem) {
+            res.status(404).json({ error: 'Lab inventory item not found' });
+            return;
+        }
+
+        // Update the item
+        const updatedItem = await prisma.labInventoryItem.update({
+            where: { id: itemId },
+            data: {
+                location: location ?? existingItem.location,
+                itemUnit: itemUnit ?? existingItem.itemUnit,
+                currentStock: currentStock !== undefined ? parseInt(currentStock) : existingItem.currentStock,
+                minStock: minStock !== undefined ? parseInt(minStock) : existingItem.minStock,
+                updatedAt: new Date()
+            },
+            include: {
+                item: true,
+                labItemTags: {
+                    include: { itemTag: true }
+                }
+            }
+        });
+
+        res.status(200).json(updatedItem);
+    } catch (error) {
+        console.error('Error updating lab inventory item:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/lab/{labId}/inventory/{itemId}:
+ *   delete:
+ *     summary: Remove an item from lab inventory
+ *     description: Removes a lab inventory item and all its associated tags
+ *     tags: [Admin, Inventory]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab inventory item
+ *     responses:
+ *       200:
+ *         description: Item removed from lab inventory successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Lab or item not found
+ *       500:
+ *         description: Internal server error
+ */
+export const removeItemFromLab = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.labId);
+    const itemId = parseInt(req.params.itemId);
+
+    if (isNaN(labId) || isNaN(itemId)) {
+        res.status(400).json({ error: 'Invalid lab ID or item ID' });
+        return;
+    }
+
+    try {
+        // Find the lab inventory item
+        const existingItem = await prisma.labInventoryItem.findFirst({
+            where: { id: itemId, labId }
+        });
+
+        if (!existingItem) {
+            res.status(404).json({ error: 'Lab inventory item not found' });
+            return;
+        }
+
+        // Delete the item + tags
+        await prisma.labInventoryItem.delete({
+            where: { id: itemId }
+        });
+
+        res.status(200).json({ message: 'Item removed from lab inventory successfully' });
+    } catch (error) {
+        console.error('Error removing item from lab:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/lab/{labId}/inventory/{itemId}/tags:
+ *   post:
+ *     summary: Add tags to a lab inventory item
+ *     description: Adds one or more tags to an existing lab inventory item
+ *     tags: [Admin, Inventory]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab inventory item
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tagIds
+ *             properties:
+ *               tagIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of tag IDs to add
+ *     responses:
+ *       200:
+ *         description: Tags added successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Lab, item, or tags not found
+ *       500:
+ *         description: Internal server error
+ */
+export const addTagsToLabItem = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.labId);
+    const itemId = parseInt(req.params.itemId);
+    const { tagIds } = req.body;
+
+    if (isNaN(labId) || isNaN(itemId)) {
+        res.status(400).json({ error: 'Invalid lab ID or item ID' });
+        return;
+    }
+
+    if (!Array.isArray(tagIds) || tagIds.length === 0) {
+        res.status(400).json({ error: 'tagIds must be a non-empty array' });
+        return;
+    }
+
+    try {
+        // Verify lab inventory item exists
+        const labItem = await prisma.labInventoryItem.findFirst({
+            where: { id: itemId, labId }
+        });
+
+        if (!labItem) {
+            res.status(404).json({ error: 'Lab inventory item not found' });
+            return;
+        }
+
+        // Check which tags already exist on this item
+        const existingTags = await prisma.labItemTag.findMany({
+            where: { inventoryItemId: itemId }
+        });
+        const existingTagIds = existingTags.map(tag => tag.itemTagId);
+
+        // Filter out tags that already exist
+        const newTagIds = tagIds.filter((tagId: number) => !existingTagIds.includes(tagId));
+
+        if (newTagIds.length === 0) {
+            res.status(400).json({ error: 'All specified tags are already assigned to this item' });
+            return;
+        }
+
+        // Verify all tags exist
+        const tags = await prisma.itemTag.findMany({
+            where: { id: { in: newTagIds } }
+        });
+
+        if (tags.length !== newTagIds.length) {
+            res.status(404).json({ error: 'One or more tags not found' });
+            return;
+        }
+
+        // Add the tags
+        await prisma.labItemTag.createMany({
+            data: newTagIds.map((tagId: number) => ({
+                inventoryItemId: itemId,
+                itemTagId: tagId
+            }))
+        });
+
+        res.status(200).json({ message: 'Tags added successfully' });
+    } catch (error) {
+        console.error('Error adding tags to lab item:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/lab/{labId}/inventory/{itemId}/tags/{tagId}:
+ *   delete:
+ *     summary: Remove a tag from a lab inventory item
+ *     description: Removes a specific tag from a lab inventory item
+ *     tags: [Admin, Inventory]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab inventory item
+ *       - in: path
+ *         name: tagId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the tag to remove
+ *     responses:
+ *       200:
+ *         description: Tag removed successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Lab, item, or tag assignment not found
+ *       500:
+ *         description: Internal server error
+ */
+export const removeTagFromLabItem = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.labId);
+    const itemId = parseInt(req.params.itemId);
+    const tagId = parseInt(req.params.tagId);
+
+    if (isNaN(labId) || isNaN(itemId) || isNaN(tagId)) {
+        res.status(400).json({ error: 'Invalid lab ID, item ID, or tag ID' });
+        return;
+    }
+
+    try {
+        // Verify lab inventory item exists
+        const labItem = await prisma.labInventoryItem.findFirst({
+            where: { id: itemId, labId }
+        });
+
+        if (!labItem) {
+            res.status(404).json({ error: 'Lab inventory item not found' });
+            return;
+        }
+
+        // Find and delete the tag assignment
+        const tagAssignment = await prisma.labItemTag.findFirst({
+            where: { inventoryItemId: itemId, itemTagId: tagId }
+        });
+
+        if (!tagAssignment) {
+            res.status(404).json({ error: 'Tag assignment not found' });
+            return;
+        }
+
+        await prisma.labItemTag.delete({
+            where: { id: tagAssignment.id }
+        });
+
+        res.status(200).json({ message: 'Tag removed successfully' });
+    } catch (error) {
+        console.error('Error removing tag from lab item:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/tags:
+ *   post:
+ *     summary: Create a new global tag
+ *     description: Creates a new global tag that can be used across all labs
+ *     tags: [Admin, Tags]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the tag
+ *               tagDescription:
+ *                 type: string
+ *                 description: Description of the tag
+ *     responses:
+ *       201:
+ *         description: Tag created successfully
+ *       400:
+ *         description: Invalid input or tag already exists
+ *       500:
+ *         description: Internal server error
+ */
+export const createTag = async (req: Request, res: Response): Promise<void> => {
+    const { name, tagDescription } = req.body;
+
+    if (!name || typeof name !== 'string') {
+        res.status(400).json({ error: 'Tag name is required and must be a string' });
+        return;
+    }
+
+    try {
+        // Check if tag with this name already exists
+        const existingTag = await prisma.itemTag.findFirst({
+            where: { name: { equals: name, mode: 'insensitive' } }
+        });
+
+        if (existingTag) {
+            res.status(400).json({ error: 'Tag with this name already exists' });
+            return;
+        }
+
+        const newTag = await prisma.itemTag.create({
+            data: {
+                name: name.trim(),
+                tagDescription: tagDescription || null
+            }
+        });
+
+        res.status(201).json(newTag);
+    } catch (error) {
+        console.error('Error creating tag:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/tags/{tagId}:
+ *   put:
+ *     summary: Update an existing tag
+ *     description: Updates a global tag's name or description (admin only)
+ *     tags: [Admin, Tags]
+ *     parameters:
+ *       - in: path
+ *         name: tagId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the tag to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: New name for the tag
+ *               tagDescription:
+ *                 type: string
+ *                 description: New description for the tag
+ *     responses:
+ *       200:
+ *         description: Tag updated successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Tag not found
+ *       500:
+ *         description: Internal server error
+ */
+export const updateTag = async (req: Request, res: Response): Promise<void> => {
+    const tagId = parseInt(req.params.tagId);
+    const { name, tagDescription } = req.body;
+
+    if (isNaN(tagId)) {
+        res.status(400).json({ error: 'Invalid tag ID' });
+        return;
+    }
+
+    try {
+        const existingTag = await prisma.itemTag.findUnique({
+            where: { id: tagId }
+        });
+
+        if (!existingTag) {
+            res.status(404).json({ error: 'Tag not found' });
+            return;
+        }
+
+        // Check if another tag with the new name exists
+        if (name && name !== existingTag.name) {
+            const duplicateTag = await prisma.itemTag.findFirst({
+                where: { 
+                    name: { equals: name, mode: 'insensitive' },
+                    id: { not: tagId }
+                }
+            });
+
+            if (duplicateTag) {
+                res.status(400).json({ error: 'Tag with this name already exists' });
+                return;
+            }
+        }
+
+        const updatedTag = await prisma.itemTag.update({
+            where: { id: tagId },
+            data: {
+                name: name ? name.trim() : existingTag.name,
+                tagDescription: tagDescription !== undefined ? tagDescription : existingTag.tagDescription
+            }
+        });
+
+        res.status(200).json(updatedTag);
+    } catch (error) {
+        console.error('Error updating tag:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/tags/{tagId}:
+ *   delete:
+ *     summary: Delete a tag
+ *     description: Deletes a global tag and removes all its assignments (admin only, use with caution)
+ *     tags: [Admin, Tags]
+ *     parameters:
+ *       - in: path
+ *         name: tagId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the tag to delete
+ *     responses:
+ *       200:
+ *         description: Tag deleted successfully
+ *       400:
+ *         description: Invalid tag ID
+ *       404:
+ *         description: Tag not found
+ *       500:
+ *         description: Internal server error
+ */
+export const deleteTag = async (req: Request, res: Response): Promise<void> => {
+    const tagId = parseInt(req.params.tagId);
+
+    if (isNaN(tagId)) {
+        res.status(400).json({ error: 'Invalid tag ID' });
+        return;
+    }
+
+    try {
+        const existingTag = await prisma.itemTag.findUnique({
+            where: { id: tagId },
+            include: {
+                labItemTags: true
+            }
+        });
+
+        if (!existingTag) {
+            res.status(404).json({ error: 'Tag not found' });
+            return;
+        }
+
+        // Delete the tag
+        await prisma.itemTag.delete({
+            where: { id: tagId }
+        });
+
+        res.status(200).json({ 
+            message: 'Tag deleted successfully',
+            affectedLabItems: existingTag.labItemTags.length
+        });
+    } catch (error) {
+        console.error('Error deleting tag:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };

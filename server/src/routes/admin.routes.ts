@@ -2,8 +2,7 @@ import { Router } from 'express';
 
 import  {getAllLabs, getLabById, createLab, assignUserToLab,
          updateRole, resetUserPassword, removeUserFromLab,
-          createDiscussionTag, createDiscussionCategory, getAllItems, createInventoryTag,
-           createInventoryItem,
+          createDiscussionTag, createDiscussionCategory, getAllItems,
            createGlobalItem,
            updateItem,
            deleteItem,
@@ -15,7 +14,15 @@ import  {getAllLabs, getLabById, createLab, assignUserToLab,
            createMemberStatusForLabMember,
            updateLabMemberRole,
            toggleLabMemberInduction,
-           toggleLabMemberPCI
+           toggleLabMemberPCI,
+           addItemToLab,
+           updateLabInventoryItem,
+           removeItemFromLab,
+           addTagsToLabItem,
+           removeTagFromLabItem,
+           createTag,
+           updateTag,
+           deleteTag
            } from '../controllers/admin/admin.controller';
 
 import { requirePermission } from '../middleware/permission.middleware';
@@ -81,9 +88,19 @@ router.put("/update-item/:id", updateItem); // TODO: Add requirePermission(100) 
 router.delete("/delete-item/:id", deleteItem); // TODO: Add requirePermission(100) or verify in controller
 
 
-// Create a new tag for inventory items (potentially lab-specific or global based on controller)
-router.post('/create-inventory-tag', requirePermission(60), createInventoryTag);
-// Create a new inventory item instance within a lab (associates a global item with a lab)
-router.post('/create-inventory-item', requirePermission(60), createInventoryItem);
+// Lab Inventory Management stuff
+router.post('/lab/:labId/inventory', requirePermission(60), addItemToLab);
+router.put('/lab/:labId/inventory/:itemId', requirePermission(60), updateLabInventoryItem);
+router.delete('/lab/:labId/inventory/:itemId', requirePermission(60), removeItemFromLab);
+router.post('/lab/:labId/inventory/:itemId/tags', requirePermission(60), addTagsToLabItem);
+router.delete('/lab/:labId/inventory/:itemId/tags/:tagId', requirePermission(60), removeTagFromLabItem);
+
+// Global Tag Management stuff
+router.post('/tags', requirePermission(60), createTag);
+// Update an existing global tag (admin only)
+router.put('/tags/:tagId', requirePermission(100), updateTag);
+// Delete a global tag (admin only)
+router.delete('/tags/:tagId', requirePermission(100), deleteTag);
+
 // TODO: Change item threshold in lab
 export default router;
