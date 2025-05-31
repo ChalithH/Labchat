@@ -8,6 +8,7 @@ import { PostType } from '@/types/post.type';
 import { CategoryType } from '@/types/category.type';
 import { useCurrentLabId } from '@/contexts/lab-context';
 import api from '@/lib/api';
+import getUserFromSession from '@/lib/get_user';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -21,6 +22,7 @@ const TopicClient = ({ params }: { params: { id: string } }) => {
     const currentLabId = useCurrentLabId();
     const [category, setCategory] = useState<CategoryType | null>(null);
     const [posts, setPosts] = useState<PostType[]>([]);
+    const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +34,10 @@ const TopicClient = ({ params }: { params: { id: string } }) => {
             setError(null);
 
             try {
+                // Fetch user data
+                const userData = await getUserFromSession();
+                setUser(userData);
+
                 // Fetch category info
                 const categoryResponse = await api.get(`/discussion/tags/${params.id}`);
                 const categoryData: CategoryType = categoryResponse.data;
@@ -89,7 +95,7 @@ const TopicClient = ({ params }: { params: { id: string } }) => {
             </Breadcrumb>
 
             <div className="mb-8">
-                <Title b_categories={ true } b_view_all={ false } perm_to_add='*' category={ category }/>
+                <Title b_categories={ true } b_view_all={ false } perm_to_add='*' category={ category } user={ user }/>
             </div>
 
             { posts.map( (thread, idx, arr) => (

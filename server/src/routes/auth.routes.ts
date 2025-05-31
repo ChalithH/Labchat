@@ -35,9 +35,12 @@ const router = Router();
  *               loginPassword:
  *                 type: string
  *     responses:
- *       200: { description: Login successful, session initiated. }
- *       401: { description: Authentication failed (invalid credentials or other auth error). }
- *       500: { description: Internal server error during login. }
+ *       200: 
+ *         description: "Login successful, session initiated."
+ *       401: 
+ *         description: "Authentication failed (invalid credentials or other auth error)."
+ *       500: 
+ *         description: "Internal server error during login."
  */
 router.post('/login', login);
 
@@ -48,9 +51,12 @@ router.post('/login', login);
  *     summary: Log out the current user
  *     tags: [Auth]
  *     responses:
- *       200: { description: Logout successful, session terminated. }
- *       400: { description: No active session to logout. }
- *       500: { description: Error during session destruction. }
+ *       200: 
+ *         description: "Logout successful, session terminated."
+ *       400: 
+ *         description: "No active session to logout."
+ *       500: 
+ *         description: "Error during session destruction."
  */
 router.get('/logout', logout);
 
@@ -61,8 +67,10 @@ router.get('/logout', logout);
  *     summary: Check current authentication status and get user info
  *     tags: [Auth]
  *     responses:
- *       200: { description: User is authenticated, returns user data. }
- *       401: { description: User is not authenticated. }
+ *       200: 
+ *         description: "User is authenticated, returns user data."
+ *       401: 
+ *         description: "User is not authenticated."
  */
 router.get('/status', status);
 
@@ -84,11 +92,16 @@ router.get('/status', status);
  *           type: integer
  *         description: The ID of the lab for which access permission is being checked.
  *     responses:
- *       200: { description: User is authorized. Response includes { authorized: true, isRootAdmin, isLabManager } }
- *       400: { description: Invalid lab ID format. }
- *       401: { description: User not authenticated (no session). }
- *       403: { description: User authenticated but not authorized for this lab. Response includes { authorized: false, ... } }
- *       500: { description: Internal server error during authorization check. }
+ *       200: 
+ *         description: "User is authorized. Response includes { authorized: true, isRootAdmin, isLabManager }"
+ *       400: 
+ *         description: "Invalid lab ID format."
+ *       401: 
+ *         description: "User not authenticated (no session)."
+ *       403: 
+ *         description: "User authenticated but not authorized for this lab. Response includes { authorized: false, ... }"
+ *       500: 
+ *         description: "Internal server error during authorization check."
  */
 router.get('/check-lab-access/:labId', checkLabAccessPermission);
 
@@ -101,8 +114,10 @@ router.get('/check-lab-access/:labId', checkLabAccessPermission);
  *     security:
  *       - cookieAuth: [] # Assumes you have a security scheme defined for session cookies
  *     responses:
- *       200: { description: Access granted. }
- *       401: { description: Unauthorized (not authenticated or insufficient permissions). }
+ *       200: 
+ *         description: "Access granted."
+ *       401: 
+ *         description: "Unauthorized (not authenticated or insufficient permissions)."
  */
 // Example of a route protected by a specific permission level (20 in this case)
 router.get('/locked', requirePermission(20), locked);

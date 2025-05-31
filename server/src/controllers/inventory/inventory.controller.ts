@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, InventorySource } from '@prisma/client';
+import { getUserAndMemberIdFromRequest, getUserContextForLogging, checkLabPermission, logStockRemove, logStockAdd } from '../../utils/inventoryLogging.util';
 
 const prisma = new PrismaClient();
 
@@ -96,26 +97,6 @@ export const getItemTags = async (req: Request, res: Response): Promise<void> =>
     } catch (error) {
         console.error("Error retrieving item tags:", error);
         res.status(500).json({ error: 'Failed to retrieve item tags' });
-    }
-} 
-
-export const getInventoryItem = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const inventoryItems = await prisma.labInventoryItem.findMany({
-            include: {
-                item: true, 
-                labItemTags: { 
-                    include: { 
-                        itemTag: true, // Include the related item tag data
-                    }
-                },
-            }
-        });
-        
-        res.json(inventoryItems);
-    } catch (error) {
-        console.error("Error retrieving inventory items:", error);
-        res.status(500).json({ error: 'Failed to retrieve inventory items' });
     }
 }
 
@@ -281,6 +262,14 @@ export const takeItem = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
+        // Check lab-based permissions (any lab member can take, admins (>=60) can access if not member)
+        const permissionCheck = await checkLabPermission(req, labId, 0, 60);
+        
+        if (!permissionCheck.hasPermission) {
+            res.status(403).json({ error: permissionCheck.error || 'Access denied' });
+            return;
+        }
+
         const item = await prisma.labInventoryItem.findUnique({
             where: { id: itemId },
           });
@@ -295,17 +284,38 @@ export const takeItem = async (req: Request, res: Response): Promise<void> => {
             return;
           }
 
+          const previousStock = item.currentStock;
+          const newStock = item.currentStock - amountTaken;
           const updatedItem = await prisma.labInventoryItem.update({
             where: { id: itemId },
             data: {
-              currentStock: item.currentStock - amountTaken,
+              currentStock: newStock,
               updatedAt: new Date(),
             },
           });
+
+          // Log the stock removal using permission check results
+          if (permissionCheck.userId) {
+            try {
+              await logStockRemove(
+                itemId,
+                permissionCheck.userId,
+                previousStock,
+                newStock,
+                amountTaken,
+                permissionCheck.source,
+                `Stock taken via ${permissionCheck.source === InventorySource.ADMIN_PANEL ? 'admin panel' : 'lab interface'}${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
+                permissionCheck.memberId
+              );
+            } catch (logError) {
+              console.error('Error logging stock removal:', logError);
+            }
+          }
       
           res.json(updatedItem);
 
     } catch (error) {
+        console.error('Error in takeItem:', error);
         res.status(500).json({ error: 'Failed to update item count' });
     }
 
@@ -385,6 +395,14 @@ export const replenishStock = async (req: Request, res: Response): Promise<void>
             return;
         }
 
+        // Check lab-based permissions (any lab member can replenish, admins (>=60) can access if not member)
+        const permissionCheck = await checkLabPermission(req, labId, 0, 60);
+        
+        if (!permissionCheck.hasPermission) {
+            res.status(403).json({ error: permissionCheck.error || 'Access denied' });
+            return;
+        }
+
         const item = await prisma.labInventoryItem.findUnique({
             where: {id:itemId}
     });
@@ -394,20 +412,42 @@ export const replenishStock = async (req: Request, res: Response): Promise<void>
         return;
     }
 
+    const previousStock = item.currentStock;
+    const newStock = item.currentStock + amountAdded;
+
     const updatedItem = await prisma.labInventoryItem.update({
         where: {
             id: itemId
         },
         data: {
-            currentStock: item.currentStock + amountAdded,
+            currentStock: newStock,
             updatedAt: new Date(),
         },
     });
+
+    // Log the stock addition using permission check results
+    if (permissionCheck.userId) {
+        try {
+            await logStockAdd(
+                itemId,
+                permissionCheck.userId,
+                previousStock,
+                newStock,
+                amountAdded,
+                permissionCheck.source,
+                `Stock replenished via ${permissionCheck.source === InventorySource.ADMIN_PANEL ? 'admin panel' : 'lab interface'}${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
+                permissionCheck.memberId
+            );
+        } catch (logError) {
+            console.error('Error logging stock addition:', logError);
+        }
+    }
 
     res.json(updatedItem)
 
     }
     catch (error) {
+        console.error('Error in replenishStock:', error);
         res.status(500).json({error: "Failed to update item count"})
     }
 };

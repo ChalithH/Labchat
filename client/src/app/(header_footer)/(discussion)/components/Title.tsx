@@ -4,19 +4,16 @@ import React from 'react'
 import { Button } from '@/components/ui/button';
 import { AddPostDialog } from './AddPostDialog'
 import { CategoryType } from '@/types/category.type';
-import getUserFromSession from '@/lib/get_user_server';
-
 
 type TitlePropTypes = {
   category: CategoryType,
   perm_to_add: string,
   b_view_all: boolean,
-  b_categories: boolean
+  b_categories: boolean,
+  user?: any // Add user as optional prop
 }
 
-const Title = async ({ category, perm_to_add, b_view_all, b_categories }: TitlePropTypes) => {
-  const user = await getUserFromSession()
-
+const Title = ({ category, perm_to_add, b_view_all, b_categories, user }: TitlePropTypes) => {
   return (
     <div className="barlow-font">
       <div className="flex justify-between items-center mb-2">
@@ -26,7 +23,7 @@ const Title = async ({ category, perm_to_add, b_view_all, b_categories }: TitleP
           </h1>
         </Link>
 
-        { perm_to_add && <AddPostDialog discussionId={ category.id } memberId={ user.id } /> }
+        { perm_to_add && user && <AddPostDialog discussionId={ category.id } memberId={ user.id } /> }
       </div>
 
       <div className="flex justify-between items-center text-lg mb-4">

@@ -7,9 +7,9 @@ import RequestAdmissionClient from '../components/request-admission-client'
 import { UserType } from '@/types/user.type'
 
 interface AdmissionPageProps {
-  searchParams: {
+  searchParams: Promise<{
     view?: 'requests' | 'submit'
-  }
+  }>
 }
 
 const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
@@ -22,7 +22,8 @@ const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
   console.log(user)
 
   // Get the view from search params, default to 'requests' for admin view
-  const view = searchParams.view || 'requests'
+  const params = await searchParams
+  const view = params.view || 'requests'
   
   // You might want to get the current lab ID from user session or route params
   const labId = 2 // Replace with actual lab ID logic

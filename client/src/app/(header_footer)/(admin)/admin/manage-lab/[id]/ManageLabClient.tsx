@@ -34,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { format } from 'date-fns';
 import LabInventoryComponent from './components/LabInventoryComponent';
+import InventoryLogComponent from './components/InventoryLogComponent';
 
 interface LabDetails {
   id: number;
@@ -1059,10 +1060,7 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
         </TabsContent>
 
         <TabsContent value="inventory_log">
-          <div className="p-4 border rounded-md min-h-[300px]">
-            <h2 className="text-xl font-semibold mb-4">Inventory Log</h2>
-            <p>Content for viewing inventory logs for this lab will go here for Lab ID: {params.id}</p>
-          </div>
+          <InventoryLogComponent labId={parseInt(params.id)} />
         </TabsContent>
       </Tabs>
 

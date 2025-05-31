@@ -22,7 +22,8 @@ import  {getAllLabs, getLabById, createLab, assignUserToLab,
            removeTagFromLabItem,
            createTag,
            updateTag,
-           deleteTag
+           deleteTag,
+           getLabInventoryLogs
            } from '../controllers/admin/admin.controller';
 
 import { requirePermission } from '../middleware/permission.middleware';
@@ -88,12 +89,16 @@ router.put("/update-item/:id", updateItem); // TODO: Add requirePermission(100) 
 router.delete("/delete-item/:id", deleteItem); // TODO: Add requirePermission(100) or verify in controller
 
 
-// Lab Inventory Management stuff
-router.post('/lab/:labId/inventory', requirePermission(60), addItemToLab);
-router.put('/lab/:labId/inventory/:itemId', requirePermission(60), updateLabInventoryItem);
-router.delete('/lab/:labId/inventory/:itemId', requirePermission(60), removeItemFromLab);
-router.post('/lab/:labId/inventory/:itemId/tags', requirePermission(60), addTagsToLabItem);
-router.delete('/lab/:labId/inventory/:itemId/tags/:tagId', requirePermission(60), removeTagFromLabItem);
+// Lab Inventory Management stuff - Permission checking handled in controllers
+// Requires authentication (permission level = 0) but lab-specific logic handled in controllers
+router.post('/lab/:labId/inventory', requirePermission(0), addItemToLab);
+router.put('/lab/:labId/inventory/:itemId', requirePermission(0), updateLabInventoryItem);
+router.delete('/lab/:labId/inventory/:itemId', requirePermission(0), removeItemFromLab);
+router.post('/lab/:labId/inventory/:itemId/tags', requirePermission(0), addTagsToLabItem);
+router.delete('/lab/:labId/inventory/:itemId/tags/:tagId', requirePermission(0), removeTagFromLabItem);
+
+// Get inventory logs for a lab
+router.get('/lab/:labId/inventory-logs', requirePermission(0), getLabInventoryLogs);
 
 // Global Tag Management stuff
 router.post('/tags', requirePermission(60), createTag);
