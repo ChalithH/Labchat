@@ -20,6 +20,8 @@ import { NotificationBell } from "./NotificationBell";
 import { MenuIcon } from "lucide-react";
 import frank from '/public/FrankIcon.svg';
 import React from "react";
+import { SimpleLabSwitcher } from "@/components/labSwitcher/LabSwitcher"; 
+
 
 
 export default function Header() {
@@ -84,7 +86,18 @@ export default function Header() {
           <h1 className="text-labchat-blue-500 text-xl md:text-3xl font-bold play-font text-center sm:text-left">Labchat</h1>
         </div>
 
-          
+          {/* Center section with Lab Switcher - only shown when logged in */}
+        {isLoggedIn && userData && (
+          <div className="hidden md:flex items-center">
+            <SimpleLabSwitcher
+              userId={userData.id}
+              onLabChange={handleLabChange}
+              placeholder="Select lab..."
+              className="w-56"
+            />
+          </div>
+        )}
+
         <div className="flex items-center gap-4">    
           <ModeSwitch />
 
@@ -121,6 +134,18 @@ export default function Header() {
               </SheetClose>
               <SheetDescription className='hidden'>Description goes here</SheetDescription>
             </SheetHeader>
+            {/* Lab Switcher in mobile menu - only shown when logged in */}
+              {isLoggedIn && userData && (
+                <div className="px-4 py-4 border-b">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Switch Lab:</p>
+                  <SimpleLabSwitcher
+                    userId={userData.id}
+                    onLabChange={handleLabChange}
+                    placeholder="Select lab..."
+                    className="w-full"
+                  />
+                </div>
+              )}
               <div className="flex flex-col justify-between text-center items-center h-[100%]">
                 <div className="flex flex-col gap-4 w-[100%]">
                   {/* Conditionally render navigation links based on login status */}

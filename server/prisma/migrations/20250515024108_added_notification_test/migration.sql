@@ -1,8 +1,6 @@
 -- DropForeignKey
 ALTER TABLE "discussion_post" DROP CONSTRAINT "discussion_post_memberId_fkey";
 
--- DropIndex
-DROP INDEX "lab_member_userId_key";
 
 -- CreateTable
 CREATE TABLE "Notification" (
