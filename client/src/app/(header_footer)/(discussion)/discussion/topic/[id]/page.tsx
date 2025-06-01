@@ -11,8 +11,11 @@ import { PostType } from '@/types/post.type'
 import { PermissionConfig } from '@/config/permissions'
 
 
-const DiscussionTopic = async ({ params }:{ params: { id: number }}) => {
-    const { id } = await params
+type Params = Promise<{ id: number }>
+
+const DiscussionTopic = async (props:{ params: Params}) => {
+    const params = await props.params
+    const id  =  params.id
     await setUsersLastViewed(`/discussion/topic/${ id }`)
     
     const user = await getUserFromSessionServer()

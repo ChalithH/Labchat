@@ -59,6 +59,7 @@ export default async function DashboardPage() {
   
   if (!memberId) {
     try {
+      console.log('Fetching member data for user:', user.id);
       const memberRes = await api.get(`/member/get/user/${user.id}`);
       memberId = memberRes.data.id;
     } catch (error) {

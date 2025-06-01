@@ -12,8 +12,12 @@ import ResolveRoleName from '@/lib/resolve_role_name.util'
 import { PermissionConfig } from '@/config/permissions'
 
 
-const DiscussionThread = async ({ params }:{ params: { id: number }}) => {
-    const { id } = await params
+type Params = Promise<{ id: number }>
+
+const DiscussionThread = async (props:{ params: Params}) => {
+    const params = await props.params
+    const id  = params.id
+
     await setUsersLastViewed(`/discussion/thread/${ id }`)
     
     const user = await getUserFromSessionServer()

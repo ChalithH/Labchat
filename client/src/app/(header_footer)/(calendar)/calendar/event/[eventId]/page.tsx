@@ -2,17 +2,11 @@ import { notFound } from 'next/navigation';
 import { getSingleEvent, getUsers, getEventTypes, getInstruments } from "@/calendar/requests";
 import { SingleEventClient } from "@/calendar/components/single-event/single-event-client";
 
-interface SingleEventPageProps {
-  params: {
-    eventId: string;
-  };
-}
-
 type Params = Promise<{ eventId: string }>
 
 export default async function SingleEventPage(props:{ params: Params}) {
   const params = await props.params
-  const eventId = parseInt( await params.eventId, 10);
+  const eventId = parseInt(params.eventId, 10);
   
   // Validate event ID
   if (isNaN(eventId) || eventId <= 0) {
