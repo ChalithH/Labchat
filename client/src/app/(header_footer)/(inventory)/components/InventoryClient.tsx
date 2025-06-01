@@ -46,7 +46,7 @@ const InventoryClient: React.FC = () => {
   // Fetch all available tags from the API
   const fetchTags = async (): Promise<void> => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventory/item-tags`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory/item-tags`);
       if (!response.ok) {
         throw new Error('Failed to fetch tags');
       }
