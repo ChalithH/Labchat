@@ -10,6 +10,7 @@ import labRoutes from './lab.routes';
 import memberRoutes from './member.routes';
 
 import adminRoutes from './admin.routes';
+import attendanceRoutes from './attendance.routes';
 import labAdmissionRoutes from './labAdmission.routes'; 
 import notificationRoutes from './notification.routes';
 
@@ -54,6 +55,7 @@ router.use('/notification', notificationRoutes);
 router.use('/user', userRoutes);
 router.use('/member', memberRoutes);
 router.use('/role', roleRoutes);
+router.use('/attendance', attendanceRoutes);
 
 
 export default router;

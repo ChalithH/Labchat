@@ -9,7 +9,7 @@ import { UserType } from '@/types/account_user.type'
 type SearchParams = Promise<{ view?: 'requests' | 'submit' }>
 
 const AdmissionPage = async (props: { 
-  params: Promise<{}>, // Keep this even if empty for Next.js
+  params: Promise<{}>, 
   searchParams: SearchParams 
 }) => {
   setUsersLastViewed(`/admission`)
@@ -26,7 +26,7 @@ const AdmissionPage = async (props: {
   
   console.log('Admission Page View:', view)
   
-  const labId = 2 // Replace with actual lab ID logic
+  const labId = Number(user.lastViewedLabId) || 1 
 
   return (
     <div>

@@ -45,6 +45,7 @@ model User {
   LabAdmission LabAdmission[]
   contacts      Contact[]
   auditLogs     AuditLog[]
+  inventoryLogs InventoryLog[]
   notifications Notification[]
   @@map("user")
 }
@@ -79,7 +80,7 @@ model Contact {
 // Status Management
 model Status {
   id           Int            @id @default(autoincrement())
-  statusName   String
+  statusName   String         @unique
   statusWeight Int
 
   // Relationships
@@ -173,6 +174,8 @@ model LabMember {
   discussionReplyReactions DiscussionReplyReaction[]
   events                  Event[]
   eventAssignments        EventAssignment[]
+  labAttendance           LabAttendance[]
+  inventoryLogs           InventoryLog[]
 
   @@map("lab_member")
 }
@@ -222,6 +225,7 @@ model LabInventoryItem {
   item            Item         @relation(fields: [itemId], references: [id])
   lab             Lab          @relation(fields: [labId], references: [id])
   labItemTags     LabItemTag[]
+  inventoryLogs   InventoryLog[]
 
   @@map("lab_inventory_item")
 }
@@ -524,6 +528,62 @@ model AuditDetail {
   @@map("audit_detail")
 }
 
+model LabAttendance {
+  id       Int       @id @default(autoincrement())
+  memberId Int
+  clockIn  DateTime
+  clockOut DateTime?
+  member   LabMember @relation(fields: [memberId], references: [id])
+
+  @@index([memberId])
+  @@map("lab_attendance")
+}
+
+// Inventory Logging System
+model InventoryLog {
+  id                Int                @id @default(autoincrement())
+  labInventoryItemId Int?              // Made optional to preserve logs when items are deleted
+  userId            Int                // Always present - who performed the action
+  memberId          Int?               // Optional - null for non-member admin operations
+  action            InventoryAction   
+  source            InventorySource   
+  previousValues    Json?             
+  newValues         Json?             
+  quantityChanged   Int?              
+  reason            String?           
+  createdAt         DateTime          @default(now())
+  
+  // Relationships
+  labInventoryItem  LabInventoryItem?  @relation(fields: [labInventoryItemId], references: [id], onDelete: SetNull)
+  user              User              @relation(fields: [userId], references: [id])
+  member            LabMember?        @relation(fields: [memberId], references: [id])
+  
+  @@index([labInventoryItemId])
+  @@index([userId])
+  @@index([memberId])
+  @@index([createdAt])
+  @@map("inventory_log")
+}
+
+// Inventory action enum
+enum InventoryAction {
+  STOCK_ADD        // Adding stock
+  STOCK_REMOVE     // Removing/using stock  
+  STOCK_UPDATE     // Manual stock correction
+  LOCATION_CHANGE  // Moving item location
+  MIN_STOCK_UPDATE // Changing minimum stock threshold
+  ITEM_ADDED       // New item added to lab
+  ITEM_REMOVED     // Item removed from lab
+  ITEM_UPDATE      // Updating item properties
+}
+
+// Inventory source enum
+enum InventorySource {
+  ADMIN_PANEL      // Changes made via admin/manage-lab inventory tab
+  LAB_INTERFACE    // Changes made from within lab context
+  API_DIRECT       // Direct API calls
+  BULK_IMPORT      // Bulk operations
+}
 model Notification {
   id        Int      @id @default(autoincrement())
   userId    Int

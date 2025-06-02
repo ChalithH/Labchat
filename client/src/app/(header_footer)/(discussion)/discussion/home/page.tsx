@@ -9,6 +9,7 @@ import { CategoryType } from '@/types/category.type'
 import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server' 
 
+import { LabProvider } from '@/contexts/lab-context'
 import HomeClient from '../../components/clients/HomeClient'
 import api from '@/lib/api'
 import { PermissionConfig } from '@/config/permissions'
@@ -21,6 +22,11 @@ const DiscussionHome = async () => {
     if (!user) {
       redirect('/home')
     }
+
+
+    const currentLabId = user.lastViewedLabId || 1
+
+      
 
     const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
     const userPermission = roleResponse.data.permissionLevel
@@ -57,7 +63,9 @@ const DiscussionHome = async () => {
     )
 
     return (
-      <HomeClient user={ user } userPermission={ userPermission } recentActivity={ filteredActivity } categories={ categories } posts={ posts }/>
+      <LabProvider initialLabId={currentLabId}>
+        <HomeClient user={ user } userPermission={ userPermission } recentActivity={ filteredActivity } categories={ categories } posts={ posts }/>
+      </LabProvider>
     )
   }
 

@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 import Title from '../Title'
 import Thread from '@/components/discussion/Thread'
 import { PostType } from '@/types/post.type';
 import { CategoryType } from '@/types/category.type';
+import { useCurrentLabId } from '@/contexts/lab-context';
+import api from '@/lib/api';
+import getUserFromSession from '@/lib/get_user';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -32,7 +35,6 @@ const TopicClient = async ({ params, user, userPermission, category, posts }:{ p
                 </BreadcrumbList>
             </Breadcrumb>
 
-
             <div className="mb-8">
                 <Title b_categories={ true } b_view_all={ false } user={ user } perm_to_add={ userPermission >= (category.postPermission ?? 0) ? true : false } category={ category }/>
             </div>
@@ -42,6 +44,12 @@ const TopicClient = async ({ params, user, userPermission, category, posts }:{ p
                     <Thread key={ idx } thread={ thread } b_show_blurb={ true }/>
                 </div>
             ))}
+
+            { posts.length === 0 && (
+                <div className="text-gray-500 italic text-center py-8">
+                    No posts found in this category for the current lab.
+                </div>
+            )}
         </main>
     )
 }

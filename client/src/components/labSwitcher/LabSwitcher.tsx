@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Building2, Loader2, CheckCircle } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -41,6 +42,7 @@ export function SimpleLabSwitcher({
   const [selectedLabId, setSelectedLabId] = useState<string>("")
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [pendingLabId, setPendingLabId] = useState<string>("")
+  const router = useRouter()
 
   useEffect(() => {
     const fetchLabs = async () => {
@@ -107,6 +109,7 @@ export function SimpleLabSwitcher({
       )
 
       onLabChange?.(labIdNum)
+      router.refresh()
     } catch (error) {
       console.error("Failed to switch lab:", error)
       // Reset selection to current lab on error

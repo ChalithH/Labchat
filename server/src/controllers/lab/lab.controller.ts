@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { status } from '../auth/auth.controller';
 
 const prisma = new PrismaClient();
-
 
  /**
  * @swagger
@@ -18,47 +16,34 @@ const prisma = new PrismaClient();
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID of the lab to retrieve
+ *         description: The ID of the lab to retrieve.
  *     responses:
  *       200:
- *         description: Lab details retrieved successfully
+ *         description: Lab details retrieved successfully.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Lab'
  *       404:
- *         description: Lab not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Lab not found
+ *         description: Lab not found.
  *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Failed to retrieve info
+ *         description: Internal server error.
  */
-
 export const getLab = async (req: Request, res: Response): Promise<void> => {
-    const labId = req.params.labId; // Assuming labId is passed as a URL parameter
+    const labId = req.params.labId; 
     try {
         const lab = await prisma.lab.findUnique({
             where: { id: Number(labId) },
         });
         
+        if (!lab) {
+            res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
         res.json(lab);
     } catch (error) {
-        console.error("Error retrieving lab info:", error);
-        res.status(500).json({ error: 'Failed to retrieve info' });
+        console.error(`Error retrieving lab with ID ${labId}:`, error);
+        res.status(500).json({ error: 'Failed to retrieve lab information' });
     }
 };
 
@@ -66,7 +51,11 @@ export const getLab = async (req: Request, res: Response): Promise<void> => {
  * @swagger
  * /lab/getMembers/{labId}:
  *   get:
- *     summary: Get all members of a lab with user and membership details flattened
+ *     summary: Get all members of a specific lab.
+ *     description: >
+ *       Retrieves a list of all members associated with the given labId.
+ *       The response includes flattened user details, lab membership specifics (like labRoleId),
+ *       and a structured list of their statuses (MemberStatus entries with nested Contact and global Status info).
  *     tags: [Lab]
  *     parameters:
  *       - in: path
@@ -74,31 +63,36 @@ export const getLab = async (req: Request, res: Response): Promise<void> => {
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID of the lab
+ *         description: The ID of the lab whose members are to be fetched.
  *     responses:
  *       200:
- *         description: A list of lab members with flattened user and status data
+ *         description: A list of lab members with their details.
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/LabMember'
+ *                 $ref: '#/components/schemas/LabMember' # Ensure this schema matches the transformed output
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  */
 export const getLabMembers = async (req: Request, res: Response): Promise<void> => {
-    const labId = req.params.labId; // Assuming labId is passed as a URL parameter
+    const labId = req.params.labId;
     try {
-        const labMembers = await prisma.labMember.findMany({
-            where: { labId: Number(labId) },
+        const labMembersFromDb = await prisma.labMember.findMany({
+            where: { 
+                labId: Number(labId),
+                labRole: { permissionLevel: { gte: 0 } } // Only active members
+            },
             select: {
                 id: true,
                 userId: true,
                 labId: true,
+                labRoleId: true,
                 inductionDone: true,
+                isPCI: true,
                 createdAt: true,
-                user: { 
+                user: {
                     select: {
                         id: true,
                         firstName: true,
@@ -108,43 +102,72 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
                         office: true,
                         bio: true,
                     },
-                }, 
+                },
                 memberStatus: {
                     select: {
-                        status: true,
+                        id: true,
+                        contactId: true,
+                        statusId: true,
                         isActive: true,
-                        contact: { 
+                        description: true,
+                        contact: {
                             select: {
+                                id: true,
                                 type: true,
                                 info: true,
+                                useCase: true,
                                 name: true,
                             },
+                        },
+                        status: {
+                            select: {
+                                id: true,
+                                statusName: true,
+                                statusWeight: true,
+                            }
                         }
                     },
-                }, 
+                },
             },
         });
 
-        const flattenedMembers = labMembers.map((member) => ({
-            ...member.user,
-            memberID: member.id,
-            labID: member.labId,
-            createdAt: member.createdAt,
-            inductionDone: member.inductionDone,
-            status: member.memberStatus.map((status) => ({
-                status: status.status,
-                isActive: status.isActive,
-                contactType: status.contact.type,
-                contactInfo: status.contact.info,
-                contactName: status.contact.name,
-            })),
-          }));
-      
-        res.json(flattenedMembers);
-        
+        const formattedMembers = labMembersFromDb.map((member) => {
+            const userData = member.user ? {
+                id: member.user.id,
+                firstName: member.user.firstName,
+                lastName: member.user.lastName,
+                displayName: member.user.displayName,
+                jobTitle: member.user.jobTitle,
+                office: member.user.office,
+                bio: member.user.bio,
+            } : {
+                id: -1,
+                firstName: 'Unknown',
+                lastName: 'User',
+                displayName: 'Unknown User (Data Issue)',
+                jobTitle: null,
+                office: null,
+                bio: null,
+            };
+
+            return {
+                ...userData,
+
+                memberID: member.id,
+                labID: member.labId,
+                labRoleId: member.labRoleId,
+                createdAt: member.createdAt,
+                inductionDone: member.inductionDone,
+                isPCI: member.isPCI,
+                status: member.memberStatus,
+            };
+        });
+
+        res.json(formattedMembers);
+
     } catch (error) {
-        console.error("Error retrieving lab info:", error);
-        res.status(500).json({ error: 'Failed to retrieve info' });
+        console.error(`Error retrieving members for lab ID ${labId}:`, error);
+        res.status(500).json({ error: 'Failed to retrieve lab members' });
     }
 };
 
@@ -153,7 +176,8 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
  * @swagger
  * /lab/getMembersList/{labId}:
  *   get:
- *     summary: Get all members of a lab with user and membership details flattened
+ *     summary: Get a simplified list of members for a lab.
+ *     description: Retrieves a list of lab members, primarily for display name and ID purposes (e.g., in dropdowns).
  *     tags: [Lab]
  *     parameters:
  *       - in: path
@@ -161,30 +185,48 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID of the lab
+ *         description: The ID of the lab.
  *     responses:
  *       200:
- *         description: A list of lab members with flattened user and status data
+ *         description: A simplified list of lab members.
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/LabMember'
+ *                 type: object
+ *                 properties:
+ *                   id: 
+ *                     type: integer
+ *                     description: User ID.
+ *                   firstName:
+ *                     type: string
+ *                   lastName:
+ *                     type: string
+ *                   displayName:
+ *                     type: string
+ *                   memberID: 
+ *                     type: integer
+ *                     description: LabMember ID.
+ *                   labID:
+ *                     type: string # Should be integer based on schema, but example shows string
+ *                     description: Lab ID.
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  */
-
 export const getLabMembersList = async (req: Request, res: Response): Promise<void> => {
-    const labId = req.params.labId; // Assuming labId is passed as a URL parameter
+    const labIdParam = req.params.labId;
     try {
         const labMembers = await prisma.labMember.findMany({
-            where: { labId: Number(labId) },
+            where: { 
+                labId: Number(labIdParam),
+                labRole: { permissionLevel: { gte: 0 } }
+            },
             select: {
-                id: true,
+                id: true,      
                 user: { 
                     select: {
-                        id: true,
+                        id: true,  
                         firstName: true,
                         lastName: true,
                         displayName: true,
@@ -193,17 +235,18 @@ export const getLabMembersList = async (req: Request, res: Response): Promise<vo
             },
         });
 
+        // Flatten user details and include LabMember ID and Lab ID.
         const flattenedMembers = labMembers.map((member) => ({
-            ...member.user,
-            memberID: member.id,
-            labID: labId,
+            ...member.user,       
+            memberID: member.id,  
+            labID: Number(labIdParam), 
           }));
       
         res.json(flattenedMembers);
         
     } catch (error) {
-        console.error("Error retrieving lab info:", error);
-        res.status(500).json({ error: 'Failed to retrieve info' });
+        console.error(`Error retrieving members list for lab ID ${labIdParam}:`, error);
+        res.status(500).json({ error: 'Failed to retrieve simplified lab members list' });
     }
 };
 
@@ -211,8 +254,8 @@ export const getLabMembersList = async (req: Request, res: Response): Promise<vo
  * @swagger
  * /lab/roles:
  *   get:
- *     summary: Get all lab roles
- *     description: Retrieve all available lab roles ordered by permission level (ascending). Used for admission requests and role assignments.
+ *     summary: Get available lab roles for admission requests
+ *     description: Retrieve available lab roles ordered by permission level (ascending). Used for admission requests and role assignments. Excludes 'Former Member' role and other roles with permission level < 0.
  *     tags: [Lab]
  *     responses:
  *       200:
@@ -272,6 +315,9 @@ export const getLabMembersList = async (req: Request, res: Response): Promise<vo
 export const getLabRoles = async (req: Request, res: Response): Promise<void> => {
   try {
     const roles = await prisma.labRole.findMany({
+      where: {
+        permissionLevel: { gte: 0 } // Exclude Former Member and other negative permission roles
+      },
       orderBy: { permissionLevel: 'asc' },
       take: 3, 
     });
@@ -433,7 +479,10 @@ export const getUserLabs = async (req: Request, res: Response): Promise<void> =>
     }
 
     const memberships = await prisma.labMember.findMany({
-      where: { userId: Number(userId) },
+      where: { 
+        userId: Number(userId),
+        labRole: { permissionLevel: { gte: 0 } } // Only active memberships
+      },
       select : { labId: true }
       })
       

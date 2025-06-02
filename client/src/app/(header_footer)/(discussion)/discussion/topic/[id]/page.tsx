@@ -3,6 +3,7 @@ import React from 'react'
 import setUsersLastViewed from '@/lib/set_last_viewed'
 import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
+import { LabProvider } from '@/contexts/lab-context'
 import TopicClient from '../../../components/clients/TopicClient'
 import { AxiosResponse } from 'axios'
 import api from '@/lib/api'
@@ -30,6 +31,7 @@ const DiscussionTopic = async (props:{ params: Params}) => {
         redirect('/home')
     }
 
+    const currentLabId = user.lastViewedLabId || 1
     const postsRequest: AxiosResponse = await api.get(`/discussion/category-posts/${ id }`)
     const allPosts: PostType[] = postsRequest.data
 
@@ -39,7 +41,9 @@ const DiscussionTopic = async (props:{ params: Params}) => {
     })
 
     return (
-      <TopicClient params={ {id: `${ id }`} } user={ user } userPermission={ userPermission } category={ category } posts={ posts } />
+      <LabProvider initialLabId={currentLabId}>
+        <TopicClient params={ {id: `${ id }`} } user={ user } userPermission={ userPermission } category={ category } posts={ posts } />
+      </LabProvider>
     )
   }
 

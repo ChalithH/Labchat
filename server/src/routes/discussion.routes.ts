@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createPost, deletePost, editPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle } from '../controllers/discussion/post.controller'
+import { createPost, deletePost, editPost, getPostById, getPostsByCategory, getPostsByMember, getPostsByTitle, getAnnouncementsByLab } from '../controllers/discussion/post.controller'
 import {
     getAllCategoriesByLab,
     getAllCategories,
@@ -31,7 +31,7 @@ router.put('/post/:id', editPost)
 router.get('/category-posts/:id', getPostsByCategory)
 router.get('/member-posts/:id', getPostsByMember)
 router.post('/title-posts', getPostsByTitle)
-
+router.get('/announcements/lab/:labId', getAnnouncementsByLab)
 
 // category controller routes
 router.get('/categories', getAllCategories); 
@@ -43,6 +43,8 @@ router.put('/categories/:id', editTag);
 router.delete('/categories/:id', deleteCategory); 
 router.post('/posts/:postId/categories', assignTagToPost);
 router.delete('/posts/:postId/categories/:tagAssignmentId', removeTagFromPost);
+
+
 
 // reply controller routes
 router.get('/reply/:id', getReplyById)

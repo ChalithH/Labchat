@@ -1,41 +1,48 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import MembersTable from '@/app/(header_footer)/(members)/components/members-table'
 import SearchFilterBar from '@/components/labchat/SearchFilter'
+import { useMembersData } from '../hooks/use-members-data'
 
-type FilterOption = {
-  label: string
-  value: string
+// Define the type for the user prop
+interface UserSessionData {
+  id: number;
+  lastViewedLabId?: number; 
+  // Add other relevant user fields if needed by this component
 }
 
-export default function MembersClient() {
+interface MembersClientProps {
+  user: UserSessionData;
+}
+
+export default function MembersClient({ user }: MembersClientProps) {
+  const {
+    members,
+    availableStatusOptions,
+    loading,
+    error,
+    getFilteredMembers
+  } = useMembersData();
+
   const [searchQuery, setSearchQuery] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
-  const [availableStatusOptions, setAvailableStatusOptions] = useState<FilterOption[]>([])
 
-  // Fetch all available member statuses
-const fetchStatusOptions = async (): Promise<void> => {
-  try {
-    const response = await fetch('http://localhost:8000/api/member/statuses')
-    if (!response.ok) {
-      throw new Error('Failed to fetch member statuses')
-    }
-    const statuses: { statusName: string }[] = await response.json()
-    const options: FilterOption[] = statuses.map(({ statusName }) => ({
-      label: statusName,
-      value: statusName.toLowerCase()
-    }))
-    setAvailableStatusOptions([{ label: 'All Statuses', value: '' }, ...options])
-  } catch (error) {
-    console.error('Error fetching status options:', error)
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-lg">Loading members...</div>
+      </div>
+    );
   }
-}
 
-useEffect(() => {
-  fetchStatusOptions()
-}, [])
-
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-lg text-red-600">Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -53,8 +60,10 @@ useEffect(() => {
 
       <div className="container mx-auto px-4 py-6">
         <MembersTable
+          members={members}
           searchQuery={searchQuery}
           statusFilter={filterCategory}
+          getFilteredMembers={getFilteredMembers}
         />
       </div>
     </>

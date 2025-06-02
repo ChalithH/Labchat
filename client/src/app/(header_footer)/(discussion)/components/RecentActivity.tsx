@@ -22,19 +22,28 @@ const RecentActivity = ({ posts }:{ posts: PostType[] }) => {
   const [count, setCount] = React.useState(0)
 
   React.useEffect(() => {
-    if (!api) return
+    if (!api) {
+      return;
+    }
 
-    setCount(api.scrollSnapList().length)
-    setCurrent(api.selectedScrollSnap() + 1)
+    const newCount = api.scrollSnapList().length;
+    const newSelectedSnap = api.selectedScrollSnap();
+
+    setCount(newCount);
+    setCurrent(newSelectedSnap + 1);
 
     api.on("select", () => {
-      setCurrent(api.selectedScrollSnap() + 1)
-    })
-  }, [api])
+      const selected = api.selectedScrollSnap();
+      setCurrent(selected + 1);
+    });
+  }, [api, posts])
+
+  // Create a key that changes when posts array reference changes or its length changes
+  const carouselKey = posts.map(p => p.id).join('-') || 'empty';
 
   return (
     <div className="w-[87dvw] m-auto">
-      <Carousel className="overflow-hidden flex justify-center items-center" setApi={setApi}>
+      <Carousel className="overflow-hidden flex justify-center items-center" setApi={setApi} key={carouselKey}>
         <Button className="max-[500px]:hidden" variant="outline" onClick={ () => api?.scrollPrev() } disabled={ current <= 1 }>
           ←
         </Button>

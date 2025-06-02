@@ -1,15 +1,16 @@
 import React from 'react'
 
+import Title from '@/app/(header_footer)/(discussion)/components/Title'
+import RecentActivity from '@/app/(header_footer)/(discussion)/components/RecentActivity'
+import Link from 'next/link'
+import Thread from '@/components/discussion/Thread'
+
+import { UserType } from '@/types/User.type'
 import { PostType } from '@/types/post.type'
 import { CategoryType } from '@/types/category.type'
 
-import Title from '@/app/(header_footer)/(discussion)/components/Title'
-import RecentActivity from '@/app/(header_footer)/(discussion)/components/RecentActivity'
-import Thread from '@/components/discussion/Thread'
-import { UserType } from '@/types/User.type'
-
-
 const THREADS_PER_TOPIC = 3
+
 
 const HomeClient = ({ user, userPermission, recentActivity, categories, posts }:{ user: UserType, userPermission: number, recentActivity: PostType[], categories: CategoryType[], posts: PostType[][] }): React.ReactNode => {
 	// Filter by categories that the user has permission to see 

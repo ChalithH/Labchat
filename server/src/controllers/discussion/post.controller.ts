@@ -406,3 +406,53 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
     return
   }  
 }
+
+/*
+ *      Get Announcements By Lab
+ *
+ *    Parameters:
+ *      labId: number
+ * 
+ *    200:
+ *      - Successfully found announcements for the lab
+ *    400:
+ *      - Failed to parse a lab ID from request parameters
+ *      - No lab found with the ID supplied
+ *    500:
+ *      - Internal server error, unable to retrieve announcements     
+ */ 
+export const getAnnouncementsByLab = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const labId: number = parseInt(req.params.labId);
+    if (!labId) {
+      res.status(400).json({ error: 'Failed to parse a lab ID from request parameters' });
+      return;
+    }
+
+    const lab = await prisma.lab.findUnique({ where: { id: labId } });
+    if (!lab) {
+      res.status(400).json({ error: `No lab found with an ID of ${labId}` });
+      return;
+    }
+
+    const announcements: DiscussionPost[] = await prisma.discussionPost.findMany({
+      where: {
+        isAnnounce: true,
+        discussion: {
+          labId: labId,
+        },
+      },
+      include: {
+        discussion: true, // Include discussion to confirm labId relation
+      },
+    });
+
+    res.status(200).json(announcements);
+    return;
+
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to retrieve announcements for the lab' });
+    return;
+  }
+};

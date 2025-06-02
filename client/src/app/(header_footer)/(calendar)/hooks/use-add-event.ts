@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { useCurrentLabId } from "@/contexts/lab-context";
 import { createEvent } from "@/calendar/requests";
 
 import type { IEvent } from "@/calendar/interfaces";
 
 export function useAddEvent() {
   const { setLocalEvents } = useCalendar();
+  const currentLabId = useCurrentLabId();
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +16,15 @@ export function useAddEvent() {
     setError(null);
     
     try {
-      const newEvent = await createEvent(eventData);
+      const eventWithLabId = {
+        ...eventData,
+        lab: { 
+          id: currentLabId,
+          name: `Lab ${currentLabId}`
+        }
+      };
+      
+      const newEvent = await createEvent(eventWithLabId);
       
       if (newEvent) {
         setLocalEvents(prev => [...prev, newEvent]);

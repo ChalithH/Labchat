@@ -13,7 +13,7 @@ type TitlePropTypes = {
   category: CategoryType,
   perm_to_add: boolean,
   b_view_all: boolean,
-  b_categories: boolean
+  b_categories: boolean,
 }
 
 const Title = async ({ user, category, perm_to_add, b_view_all, b_categories }: TitlePropTypes) => {
@@ -26,7 +26,7 @@ const Title = async ({ user, category, perm_to_add, b_view_all, b_categories }: 
           </h1>
         </Link>
 
-        { perm_to_add && <AddPostDialog discussionId={ category.id } memberId={ user.id } /> }
+        { perm_to_add && user && <AddPostDialog discussionId={ category.id } memberId={ user.id } /> }
       </div>
 
       <div className="flex justify-between items-center text-lg mb-4">

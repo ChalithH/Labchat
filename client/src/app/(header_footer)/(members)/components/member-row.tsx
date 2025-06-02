@@ -30,6 +30,8 @@ const getStatusColor = (status: string) => {
       return "bg-yellow-500 text-white"
     case "Outside":
       return "bg-purple-500 text-white"
+    case "Inactive":
+      return "bg-gray-500 text-white"
     default:
       return "bg-gray-200 text-gray-800"
   }
@@ -83,32 +85,27 @@ export function MobileRow({ member, isExpanded, toggleExpand }: MemberRowProps) 
               <div>
                 <h4 className="font-medium text-base mb-3">Status Information</h4>
 
-                {member.status.length > 0 ? (
-                  <div className="space-y-4">
-                    {member.status.map((status, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${getStatusColor(status.status.statusName)}`}
-                          >
-                            {status.status.statusName}
-                          </span>
-                          <span className="text-sm text-gray-500">{status.status.statusName}</span>
-                        </div>
-                        <p className="text-sm">
-                          <span className="font-medium">Contact Name:</span> {status.contactName}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-medium">Contact Type:</span> {status.contactType}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-medium">Contact Info:</span> {status.contactInfo}
-                        </p>
-                      </div>
-                    ))}
+                {activeStatus ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(activeStatus.status.statusName)}`}
+                      >
+                        {activeStatus.status.statusName}
+                      </span>
+                    </div>
+                    <p className="text-sm">
+                      <span className="font-medium">Contact Name:</span> {activeStatus.contactName || "Not provided"}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Contact Type:</span> {activeStatus.contactType || "Not provided"}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Contact Info:</span> {activeStatus.contactInfo || "Not provided"}
+                    </p>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No status information available</p>
+                  <p className="text-sm text-gray-500">No active status information available</p>
                 )}
               </div>
 
@@ -195,32 +192,27 @@ export function DesktopRow({ member, isExpanded, toggleExpand }: MemberRowProps)
                   <div>
                     <h4 className="font-medium text-base mb-3">Status Information</h4>
 
-                    {member.status.length > 0 ? (
-                      <div className="space-y-4">
-                        {member.status.map((status, index) => (
-                          <div key={index} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs ${getStatusColor(status.status.statusName)}`}
-                              >
-                                {status.status.statusName}
-                              </span>
-                              <span className="text-sm text-gray-500">{status.status.statusName}</span>
-                            </div>
-                            <p className="text-sm">
-                              <span className="font-medium">Contact Name:</span> {status.contactName}
-                            </p>
-                            <p className="text-sm">
-                              <span className="font-medium">Contact Type:</span> {status.contactType}
-                            </p>
-                            <p className="text-sm">
-                              <span className="font-medium">Contact Info:</span> {status.contactInfo}
-                            </p>
-                          </div>
-                        ))}
+                    {activeStatus ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(activeStatus.status.statusName)}`}
+                          >
+                            {activeStatus.status.statusName}
+                          </span>
+                        </div>
+                        <p className="text-sm">
+                          <span className="font-medium">Contact Name:</span> {activeStatus.contactName || "Not provided"}
+                        </p>
+                        <p className="text-sm">
+                          <span className="font-medium">Contact Type:</span> {activeStatus.contactType || "Not provided"}
+                        </p>
+                        <p className="text-sm">
+                          <span className="font-medium">Contact Info:</span> {activeStatus.contactInfo || "Not provided"}
+                        </p>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500">No status information available</p>
+                      <p className="text-sm text-gray-500">No active status information available</p>
                     )}
                   </div>
 

@@ -10,6 +10,7 @@ import {
 
 import { getEvents } from "@/calendar/requests";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { useCurrentLabId } from "@/contexts/lab-context";
 import type { TCalendarView } from "@/calendar/types";
 import type { IEvent } from "@/calendar/interfaces";
 
@@ -20,11 +21,13 @@ type FetchCache = {
   view: TCalendarView;
   userId: string;
   typeId: string;
+  labId: number;
   events: IEvent[];
 };
 
 export const useFetchEvents = () => {
   const { selectedDate, selectedUserId, selectedTypeId, setLocalEvents } = useCalendar();
+  const currentLabId = useCurrentLabId(); // Get current lab ID from context
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<TCalendarView>('month');
@@ -61,7 +64,7 @@ export const useFetchEvents = () => {
     return { startDate, endDate };
   }, []);
   
-  const fetchEventsForDateRange = useCallback(async (date: Date, viewType: TCalendarView, userId: string, typeId: string, force = false) => {
+  const fetchEventsForDateRange = useCallback(async (date: Date, viewType: TCalendarView, userId: string, typeId: string, labId: number, force = false) => {
     const { startDate, endDate } = getDateRange(date, viewType);
     
     // Create a cache key
@@ -76,7 +79,8 @@ export const useFetchEvents = () => {
       fetchCacheRef.current.endDate === endKey &&
       fetchCacheRef.current.view === viewType && 
       fetchCacheRef.current.userId === userId &&
-      fetchCacheRef.current.typeId === typeId
+      fetchCacheRef.current.typeId === typeId &&
+      fetchCacheRef.current.labId === labId
     ) {
       return;
     }
@@ -85,9 +89,9 @@ export const useFetchEvents = () => {
     setError(null);
     
     try {
-      console.log(`Fetching events for ${viewType} view from ${startDate.toDateString()} to ${endDate.toDateString()}`);
+      console.log(`Fetching events for ${viewType} view from ${startDate.toDateString()} to ${endDate.toDateString()} for lab ${labId}`);
       
-      const fetchedEvents = await getEvents(startDate, endDate);
+      const fetchedEvents = await getEvents(startDate, endDate, labId); // Pass lab ID to getEvents
       
       // Filter events by user if needed - now checks assignments
       let filteredEvents = fetchedEvents;
@@ -120,6 +124,7 @@ export const useFetchEvents = () => {
         view: viewType,
         userId,
         typeId,
+        labId,
         events: filteredEvents
       };
       
@@ -132,16 +137,16 @@ export const useFetchEvents = () => {
     }
   }, [getDateRange, setLocalEvents]);
   
-  // Fetch events when selected parameters change
+  // Fetch events when selected parameters change (including lab ID)
   useEffect(() => {
-    fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId));
-  }, [selectedDate, view, selectedUserId, selectedTypeId, fetchEventsForDateRange]);
+    fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId), currentLabId);
+  }, [selectedDate, view, selectedUserId, selectedTypeId, currentLabId, fetchEventsForDateRange]);
   
   return {
     loading,
     error,
     view,
     setView,
-    refreshEvents: () => fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId), true)
+    refreshEvents: () => fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId), currentLabId, true)
   };
 };
