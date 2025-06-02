@@ -717,7 +717,7 @@ export default function LabInventoryComponent({ labId }: LabInventoryComponentPr
                 className="h-6 px-2 text-xs flex items-center gap-1 hover:bg-red-50 hover:border-red-200"
                 onClick={() => setSearchQuery('')}
               >
-                <span>"{searchQuery}"</span>
+                <span>&quot;{searchQuery}&quot;</span>
                 <X className="h-3 w-3" />
               </Button>
             )}
@@ -772,7 +772,7 @@ export default function LabInventoryComponent({ labId }: LabInventoryComponentPr
             <Package className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-600 mb-2">No items in lab inventory</h3>
             <p className="text-gray-500 text-center mb-4">
-              Add global items to this lab's inventory to get started
+              Add global items to this lab&apos;s inventory to get started
             </p>
             <Button onClick={() => {
               setIsAddItemModalOpen(true);
@@ -1026,7 +1026,7 @@ export default function LabInventoryComponent({ labId }: LabInventoryComponentPr
           <DialogHeader>
             <DialogTitle>Edit Lab Inventory Item</DialogTitle>
             <DialogDescription>
-              Update the details of "{selectedItemForEdit?.item.name}"
+              Update the details of &quot;{selectedItemForEdit?.item.name}&quot;
             </DialogDescription>
           </DialogHeader>
           
@@ -1178,7 +1178,7 @@ export default function LabInventoryComponent({ labId }: LabInventoryComponentPr
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Item from Lab</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove "{selectedItemForRemoval?.item.name}" from this lab's inventory? 
+              Are you sure you want to remove &quot;{selectedItemForRemoval?.item.name}&quot; from this lab&apos;s inventory? 
               This action cannot be undone and will remove all associated tags for this item.
             </AlertDialogDescription>
           </AlertDialogHeader>
