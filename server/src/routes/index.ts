@@ -9,6 +9,9 @@ import calendarRoutes from './calendar.routes';
 import labRoutes from './lab.routes';
 import memberRoutes from './member.routes';
 
+import adminRoutes from './admin.routes';
+import labAdmissionRoutes from './labAdmission.routes'; 
+import notificationRoutes from './notification.routes';
 
 const router = Router();
 
@@ -44,6 +47,9 @@ router.use('/discussion', discussionRoutes);
 router.use('/profile', profileRoutes);
 router.use('/calendar', calendarRoutes);
 router.use('/lab', labRoutes);
+router.use('/labAdmission', labAdmissionRoutes);
+router.use('/admin', adminRoutes);
+router.use('/notification', notificationRoutes);
 // Models
 router.use('/user', userRoutes);
 router.use('/member', memberRoutes);

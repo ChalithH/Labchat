@@ -22,31 +22,48 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
+const ENV = process.env.NODE_ENV;
+
 // ===== CORS CONFIGURATION =====
-app.use(cors({ 
-  origin: process.env.CORS_ORIGIN, 
-  credentials: true 
-}));
+import type { CorsOptions } from 'cors';
+
+const corsOptions: CorsOptions = {
+  origin: process.env.CORS_ORIGIN,
+  credentials: true
+};
+
+// Add production-specific CORS options
+if (ENV === 'production') {
+  corsOptions.methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+  corsOptions.allowedHeaders = ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'];
+  corsOptions.exposedHeaders = ['Set-Cookie']; // This helps with cookie handling
+}
+
+app.use(cors(corsOptions));
 
 // ===== SESSION CONFIGURATION =====
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET!,
-    saveUninitialized: false,
-    resave: false,
-    cookie: {
-      maxAge: 60000 * 60 * 24 /* 1day */
-    },
-    store: new PrismaSessionStore(
-      new PrismaClient(), 
-      {
-        checkPeriod: 2 * 60 * 1000, /* 2 minutes */
-        dbRecordIdIsSessionId: true,
-        dbRecordIdFunction: undefined
-      }
-    )
-  })
-);
+const sessionOptions = {
+  secret: process.env.SESSION_SECRET!,
+  saveUninitialized: false,
+  resave: false,
+  cookie: {
+    maxAge: 60000 * 60 * 24 /* 1day */,
+    httpOnly: ENV === 'production' ? true : undefined,
+    secure: ENV === 'production' ? false : undefined,
+    sameSite: ENV === 'production' ? 'lax' as 'lax' : undefined,
+    domain: ENV === 'production' ? process.env.DOMAIN : undefined
+  },
+  store: new PrismaSessionStore(
+    new PrismaClient(),
+    {
+      checkPeriod: 2 * 60 * 1000, /* 2 minutes */
+      dbRecordIdIsSessionId: true,
+      dbRecordIdFunction: undefined
+    }
+  )
+};
+
+app.use(session(sessionOptions));
 
 // ===== AUTHENTICATION =====
 app.use(passport.initialize());

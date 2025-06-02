@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import setUsersLastViewed from "@/lib/set_last_viewed"
 
 const Inventory: React.FC = async () => {
-  setUsersLastViewed(`/inventory`)
+  await setUsersLastViewed(`/inventory`)
   const user = await getUserFromSessionServer()
   console.log('user', user); 
   if (!user) {

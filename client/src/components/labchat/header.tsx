@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
 
 import ResolveRoleName from "@/lib/resolve_role_name.util";
-import { SimpleLabSwitcher } from "@/components/labSwitcher/LabSwitcher";
 import getUserFromSession from "@/lib/get_user";
 
 import { NotificationBell } from "./NotificationBell";
@@ -30,6 +29,8 @@ import { MenuIcon } from "lucide-react";
 import frank from '/public/FrankIcon.svg';
 
 import React from "react";
+import { SimpleLabSwitcher } from "@/components/labSwitcher/LabSwitcher"; 
+
 
 export default function Header() {
   const [userData, setUserData] = useState<any>(null);
