@@ -4,7 +4,7 @@ import { ProfileDataType } from '@/app/(header_footer)/(profile)/types/profile.t
 
 interface ProfilePictureProps {
   user_id: number,
-  profilePic?: string, 
+  profilePic?: string | null, 
   universityId: string,
   firstName: string,
   lastName: string,
@@ -12,8 +12,11 @@ interface ProfilePictureProps {
 }
 
 const ProfilePicture: React.FC<ProfilePictureProps> = ({ user_id, profilePic, universityId, firstName, lastName, size }) => {
+  if (profilePic === "") { 
+    profilePic = null
+  }
   return (
-    <Avatar key={user_id} className={`size-${size}`}>
+    <Avatar key={user_id} className={`size-${size} border-labchat-blue-500 border-2`}>
         <AvatarImage src={profilePic ?? undefined} alt={universityId} />
         <AvatarFallback className="bg-zinc-950 text-zinc-50">
           {`${firstName[0]}${lastName[0]}`}

@@ -1,91 +1,112 @@
 [
-    {
-      "tag": "Announcement",
-      "description": "Official announcements from lab management."
-    },
-    {
-      "tag": "Question",
-      "description": "Questions seeking help or information."
-    },
-    {
-      "tag": "Discussion",
-      "description": "Topics for general discussion."
-    },
-    {
-      "tag": "Help",
-      "description": "Requests for assistance."
-    },
-    {
-      "tag": "Update",
-      "description": "Sharing progress or updates."
-    },
-    {
-      "tag": "Protocol",
-      "description": "Sharing or discussing experimental protocols."
-    },
-    {
-      "tag": "Equipment",
-      "description": "Related to lab equipment."
-    },
-    {
-      "tag": "Safety",
-      "description": "Related to lab safety."
-    },
-    {
-      "tag": "Results",
-      "description": "Sharing experimental results."
-    },
-    {
-      "tag": "Troubleshooting",
-      "description": "Discussing and resolving issues."
-    },
-    {
-      "tag": "Meeting",
-      "description": "Related to lab meetings."
-    },
-    {
-      "tag": "Resource",
-      "description": "Sharing useful resources (papers, links, etc.)."
-    },
-    {
-      "tag": "Tip",
-      "description": "Sharing helpful tips or tricks."
-    },
-    {
-      "tag": "Software",
-      "description": "Related to lab software or analysis tools."
-    },
-    {
-      "tag": "Field Trip",
-      "description": "Related to planning or discussing field work."
-    },
-    {
-      "tag": "Conference",
-      "description": "Discussing conferences or presentations."
-    },
-    {
-      "tag": "Technique",
-      "description": "Discussing specific experimental techniques."
-    },
-    {
-      "tag": "Project",
-      "description": "Related to specific research projects."
-    },
-    {
-      "tag": "Sample",
-      "description": "Related to sample preparation or analysis."
-    },
-    {
-      "tag": "Data",
-      "description": "Related to data analysis or sharing."
-    },
-    {
-      "tag": "Collaboration",
-      "description": "Related to collaborative work."
-    },
-    {
-      "tag": "General",
-      "description": "General topics not covered by other tags."
-    }
-  ]
-  
+  {
+    "tag": "Announcement",
+    "description": "Official announcements from lab management.",
+    "colour": "#FF6B6B"
+  },
+  {
+    "tag": "Question",
+    "description": "Questions seeking help or information.",
+    "colour": "#FFD93D"
+  },
+  {
+    "tag": "Discussion",
+    "description": "Topics for general discussion.",
+    "colour": "#6BCB77"
+  },
+  {
+    "tag": "Help",
+    "description": "Requests for assistance.",
+    "colour": "#4D96FF"
+  },
+  {
+    "tag": "Update",
+    "description": "Sharing progress or updates.",
+    "colour": "#FFAD69"
+  },
+  {
+    "tag": "Protocol",
+    "description": "Sharing or discussing experimental protocols.",
+    "colour": "#8E7DBE"
+  },
+  {
+    "tag": "Equipment",
+    "description": "Related to lab equipment.",
+    "colour": "#00C49A"
+  },
+  {
+    "tag": "Safety",
+    "description": "Related to lab safety.",
+    "colour": "#FF5D9E"
+  },
+  {
+    "tag": "Results",
+    "description": "Sharing experimental results.",
+    "colour": "#845EC2"
+  },
+  {
+    "tag": "Troubleshooting",
+    "description": "Discussing and resolving issues.",
+    "colour": "#FF9671"
+  },
+  {
+    "tag": "Meeting",
+    "description": "Related to lab meetings.",
+    "colour": "#00A8CC"
+  },
+  {
+    "tag": "Resource",
+    "description": "Sharing useful resources (papers, links, etc.).",
+    "colour": "#2D4059"
+  },
+  {
+    "tag": "Tip",
+    "description": "Sharing helpful tips or tricks.",
+    "colour": "#F9A826"
+  },
+  {
+    "tag": "Software",
+    "description": "Related to lab software or analysis tools.",
+    "colour": "#6A0572"
+  },
+  {
+    "tag": "Field Trip",
+    "description": "Related to planning or discussing field work.",
+    "colour": "#3EC1D3"
+  },
+  {
+    "tag": "Conference",
+    "description": "Discussing conferences or presentations.",
+    "colour": "#F76C6C"
+  },
+  {
+    "tag": "Technique",
+    "description": "Discussing specific experimental techniques.",
+    "colour": "#29C7AC"
+  },
+  {
+    "tag": "Project",
+    "description": "Related to specific research projects.",
+    "colour": "#FF6F91"
+  },
+  {
+    "tag": "Sample",
+    "description": "Related to sample preparation or analysis.",
+    "colour": "#6C5B7B"
+  },
+  {
+    "tag": "Data",
+    "description": "Related to data analysis or sharing.",
+    "colour": "#42C2FF"
+  },
+  {
+    "tag": "Collaboration",
+    "description": "Related to collaborative work.",
+    "colour": "#FFB86F"
+  },
+  {
+    "tag": "General",
+    "description": "General topics not covered by other tags.",
+    "colour": "#A0C4FF"
+  }
+]

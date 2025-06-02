@@ -42,6 +42,7 @@ async function main() {
     "labItemTag.json", // Depends on labInventoryItem and itemTag
     "instrument.json",    // Depends on lab
     "postReaction.json",  // Independent table
+    "replyReaction.json",  // Independent table
     "postTag.json",       // Independent table
     "discussion.json",    // Depends on lab
     "discussionPost.json", // Depends on discussion and labMember

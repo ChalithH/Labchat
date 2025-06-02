@@ -11,6 +11,7 @@ import memberRoutes from './member.routes';
 import adminRoutes from './admin.routes';
 import attendanceRoutes from './attendance.routes';
 import labAdmissionRoutes from './labAdmission.routes'; 
+import notificationRoutes from './notification.routes';
 
 const router = Router();
 
@@ -48,6 +49,7 @@ router.use('/calendar', calendarRoutes);
 router.use('/lab', labRoutes);
 router.use('/labAdmission', labAdmissionRoutes);
 router.use('/admin', adminRoutes);
+router.use('/notification', notificationRoutes);
 // Models
 router.use('/user', userRoutes);
 router.use('/member', memberRoutes);

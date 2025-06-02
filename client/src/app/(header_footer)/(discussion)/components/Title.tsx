@@ -4,22 +4,25 @@ import React from 'react'
 import { Button } from '@/components/ui/button';
 import { AddPostDialog } from './AddPostDialog'
 import { CategoryType } from '@/types/category.type';
+import getUserFromSession from '@/lib/get_user_server';
+import { UserType } from '@/types/User.type';
+
 
 type TitlePropTypes = {
+  user: any,
   category: CategoryType,
-  perm_to_add: string,
+  perm_to_add: boolean,
   b_view_all: boolean,
   b_categories: boolean,
-  user?: any // Add user as optional prop
 }
 
-const Title = ({ category, perm_to_add, b_view_all, b_categories, user }: TitlePropTypes) => {
+const Title = async ({ user, category, perm_to_add, b_view_all, b_categories }: TitlePropTypes) => {
   return (
     <div className="barlow-font">
       <div className="flex justify-between items-center mb-2">
         <Link href={ `/discussion/topic/${ category.id }` }>
           <h1 className="play-font text-3xl font-bold">
-            { category.tag[0].toUpperCase() + category.tag.slice(1) }
+            { category.name[0].toUpperCase() + category.name.slice(1) }
           </h1>
         </Link>
 

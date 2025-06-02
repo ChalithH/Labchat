@@ -5,25 +5,44 @@ import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import { LabProvider } from '@/contexts/lab-context'
 import TopicClient from '../../../components/clients/TopicClient'
+import { AxiosResponse } from 'axios'
+import api from '@/lib/api'
+import { CategoryType } from '@/types/category.type'
+import { PostType } from '@/types/post.type'
+import { PermissionConfig } from '@/config/permissions'
+
 
 type Params = Promise<{ id: number }>
 
 const DiscussionTopic = async (props:{ params: Params}) => {
     const params = await props.params
-    const id = params.id
-
-    setUsersLastViewed(`/discussion/topic/${ id }`)
+    const id  =  params.id
+    await setUsersLastViewed(`/discussion/topic/${ id }`)
     
     const user = await getUserFromSessionServer()
-    if (!user) {
+
+    const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
+    const userPermission = roleResponse.data.permissionLevel
+
+    const categoryRequest: AxiosResponse = await api.get(`/discussion/categories/${ id }`)
+    const category: CategoryType = categoryRequest.data
+
+    if (!user || (category.visiblePermission ?? 0 ) > userPermission) {
         redirect('/home')
     }
 
     const currentLabId = user.lastViewedLabId || 1
+    const postsRequest: AxiosResponse = await api.get(`/discussion/category-posts/${ id }`)
+    const allPosts: PostType[] = postsRequest.data
+
+    const posts = allPosts.filter(post => {
+      if (post.state !== 'HIDDEN' || post.member.userId === user.id ) return true
+      return userPermission >= PermissionConfig.HIDDEN_PERMISSION
+    })
 
     return (
       <LabProvider initialLabId={currentLabId}>
-        <TopicClient params={ {id: `${ id }`} } />
+        <TopicClient params={ {id: `${ id }`} } user={ user } userPermission={ userPermission } category={ category } posts={ posts } />
       </LabProvider>
     )
   }

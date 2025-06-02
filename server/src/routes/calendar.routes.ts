@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { assignMember, createEvent, updateEvent, removeMember, deleteEvent, getLabEvents, getEventTypes, getMemberEvents, getInstruments }  from '../controllers/calendar/calendar.controller';
+import { assignMember, createEvent, updateEvent, removeMember, deleteEvent, getLabEvents, getEventTypes, getMemberEvents, getInstruments, getSingleEvent }  from '../controllers/calendar/calendar.controller';
 
 /**
  * @swagger
@@ -19,5 +19,6 @@ router.get('/events/:labId', getLabEvents);
 router.get('/member-events/:labId/:memberId', getMemberEvents);
 router.get('/getEventTypes', getEventTypes)
 router.get('/get-instruments', getInstruments)
+router.get('/event/:eventId', getSingleEvent)
 
 export default router;

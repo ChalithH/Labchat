@@ -9,8 +9,9 @@ import { cookies } from 'next/headers'
 
 const getUserFromSessionServer = async () => {
   try {
-    const cookieStore = await cookies()
+    const cookieStore = await cookies() // Remove 'await' here
     const cookieHeader = cookieStore.toString()
+
 
     const status_response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/status`, {
       headers: {
@@ -27,6 +28,7 @@ const getUserFromSessionServer = async () => {
         cookie: cookieHeader,
       },
     })
+
 
     if (user_response.status !== 200) return false
 

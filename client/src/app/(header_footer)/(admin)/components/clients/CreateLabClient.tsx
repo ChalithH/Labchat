@@ -101,7 +101,7 @@ const CreateLabClient: React.FC = () => {
       {/* Instruction paragraph */}
       <div className="max-w-2xl mx-auto mb-8 text-left">
         <p className="text-gray-600 text-sm md:text-base">
-        Fill out the form with the lab's name, location, and status. After creation, you'll be redirected to the lab's management page to finish lab setup.
+        Fill out the form with the lab&apos;s name, location, and status. After creation, you&apos;ll be redirected to the lab&apos;s management page to finish lab setup.
         </p>
 
       </div>

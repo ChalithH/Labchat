@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useState, useEffect } from 'react'
 
 import Title from '../Title'
@@ -17,67 +15,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { UserType } from '@/types/User.type';
 
-const TopicClient = ({ params }: { params: { id: string } }) => {
-    const currentLabId = useCurrentLabId();
-    const [category, setCategory] = useState<CategoryType | null>(null);
-    const [posts, setPosts] = useState<PostType[]>([]);
-    const [user, setUser] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!currentLabId) return;
-
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                // Fetch user data
-                const userData = await getUserFromSession();
-                setUser(userData);
-
-                // Fetch category info
-                const categoryResponse = await api.get(`/discussion/tags/${params.id}`);
-                const categoryData: CategoryType = categoryResponse.data;
-                setCategory(categoryData);
-
-                // Fetch posts for this tag filtered by lab
-                const postsResponse = await api.get(`/discussion/lab/tags/${params.id}/posts?labId=${currentLabId}`);
-                const postsData: PostType[] = postsResponse.data;
-                setPosts(postsData);
-            } catch (err) {
-                console.error('Error fetching topic data:', err);
-                setError('Failed to load topic data');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [params.id, currentLabId]);
-
-    if (isLoading) {
-        return (
-            <main className="m-auto w-[90dvw]">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-lg">Loading topic data...</div>
-                </div>
-            </main>
-        );
-    }
-
-    if (error || !category) {
-        return (
-            <main className="m-auto w-[90dvw]">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-lg text-red-500">Error: {error || 'Category not found'}</div>
-                </div>
-            </main>
-        );
-    }
-
+const TopicClient = async ({ params, user, userPermission, category, posts }:{ params: { id: string }, user: UserType, userPermission: number, category: CategoryType, posts: PostType[]}) => {
     return (
         <main className="m-auto w-[90dvw]">
             <Breadcrumb className='mb-4'>
@@ -89,13 +30,13 @@ const TopicClient = ({ params }: { params: { id: string } }) => {
                     <BreadcrumbSeparator />
 
                     <BreadcrumbItem>
-                        <BreadcrumbPage>{ category.tag }</BreadcrumbPage>
+                        <BreadcrumbPage>{ category.name }</BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
 
             <div className="mb-8">
-                <Title b_categories={ true } b_view_all={ false } perm_to_add='*' category={ category } user={ user }/>
+                <Title b_categories={ true } b_view_all={ false } user={ user } perm_to_add={ userPermission >= (category.postPermission ?? 0) ? true : false } category={ category }/>
             </div>
 
             { posts.map( (thread, idx, arr) => (

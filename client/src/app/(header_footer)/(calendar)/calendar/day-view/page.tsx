@@ -1,4 +1,4 @@
-import { getUsers, getEvents, getEventTypes } from "@/calendar/requests";
+import { getUsers, getEvents, getEventTypes, getInstruments } from "@/calendar/requests";
 import { startOfDay, endOfDay } from 'date-fns';
 import { CalendarClient } from "@/calendar/components/calendar-client";
 import setUsersLastViewed from '@/lib/set_last_viewed';
@@ -20,11 +20,12 @@ export default async function DayViewPage() {
   const startDate = startOfDay(currentDate);
   const endDate = endOfDay(currentDate);
   
-  // Fetch initial data on the server with the user's current lab
-  const [initialEvents, users, eventTypes] = await Promise.all([
+  // Fetch initial data on the server
+  const [initialEvents, users, eventTypes, instruments] = await Promise.all([
     getEvents(startDate, endDate, currentLabId),
     getUsers(currentLabId),
-    getEventTypes()
+    getEventTypes(),
+    getInstruments()
   ]);
   
   return (
@@ -34,7 +35,8 @@ export default async function DayViewPage() {
         initialEvents={initialEvents} 
         users={users}
         eventTypes={eventTypes}
+        instruments={instruments}
       />
-    </LabProvider>
+    </ LabProvider>
   );
 }

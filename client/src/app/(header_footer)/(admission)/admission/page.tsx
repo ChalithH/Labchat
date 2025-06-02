@@ -4,15 +4,14 @@ import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import AdmissionClient from '../components/admission-client'
 import RequestAdmissionClient from '../components/request-admission-client'
-import { UserType } from '@/types/user.type'
+import { UserType } from '@/types/account_user.type'
 
-interface AdmissionPageProps {
-  searchParams: Promise<{
-    view?: 'requests' | 'submit'
-  }>
-}
+type SearchParams = Promise<{ view?: 'requests' | 'submit' }>
 
-const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
+const AdmissionPage = async (props: { 
+  params: Promise<{}>, 
+  searchParams: SearchParams 
+}) => {
   setUsersLastViewed(`/admission`)
 
   const user: UserType = await getUserFromSessionServer()
@@ -21,16 +20,17 @@ const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
   }
   console.log(user)
 
-  // Get the view from search params, default to 'requests' for admin view
-  const params = await searchParams
-  const view = params.view || 'requests'
+  // Get the view from search params, default to 'requests'
+  const searchParams = await props.searchParams
+  const view = searchParams.view || 'requests'
   
-  // Get the current lab ID from user's last viewed lab
-  const labId = Number(user.lastViewedLabId) || 1 // Fallback to lab 1 if no lab is set (change later)
+  console.log('Admission Page View:', view)
+  
+  const labId = Number(user.lastViewedLabId) || 1 
 
   return (
     <div>
-      {/* Navigation tabs or buttons could go here */}
+      {/* Navigation tabs */}
       <div className="flex justify-center mb-6">
         <div className="flex space-x-4">
           <a 
@@ -55,7 +55,7 @@ const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
           </a>
         </div>
       </div>
-
+      
       {/* Render the appropriate component based on view */}
       {view === 'submit' ? (
         <RequestAdmissionClient userId={user.id} />

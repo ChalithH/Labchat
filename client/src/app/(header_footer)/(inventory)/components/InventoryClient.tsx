@@ -20,22 +20,6 @@ type Tag = {
   description: string;
 };
 
-// This component is used to display the inventory items and provide options to search and filter them.
-// It fetches the inventory items from the server and manages the state of the inventory items, search query, and filter category.
-
-type InventoryItemData = {
-  id: number;
-  currentStock: number;
-  minStock: number;
-  itemUnit: string;
-  location: string;
-  item: {
-    name: string;
-    description: string;
-  };
-  itemTags: Tag[];
-};
-
 // Define the type for the user prop
 interface UserSessionData {
   id: number;

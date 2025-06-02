@@ -1,7 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Text, User, Tag, Microscope, Users } from "lucide-react";
+import { Calendar, Clock, Text, User, Tag, Microscope, Users, Edit, Trash2, ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EditEventDialog } from "@/calendar/components/dialogs/edit-event-dialog";
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { EventLink } from "@/calendar/components/event-link";
 
 import type { IEvent } from "@/calendar/interfaces";
 
@@ -151,14 +152,26 @@ export function EventDetailsDialog({ event, children }: IProps) {
             </div>
           </ScrollArea>
 
-          <DialogFooter className="flex justify-between sm:justify-end">
-            <DeleteEventDialog event={event} />
-            
-            <EditEventDialog event={event}>
-              <Button type="button" variant="outline">
-                Edit
-              </Button>
-            </EditEventDialog>
+          <DialogFooter className="flex flex-col-reverse gap-2 justify-end">
+            <div className="flex gap-2">
+              <EventLink eventId={event.id}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open Event Page
+              </EventLink>
+              <DeleteEventDialog event={event}>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
+                </Button>
+              </DeleteEventDialog>
+              
+              <EditEventDialog event={event}>
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              </EditEventDialog>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

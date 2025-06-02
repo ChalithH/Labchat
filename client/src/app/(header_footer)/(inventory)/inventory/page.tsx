@@ -5,9 +5,9 @@ import setUsersLastViewed from "@/lib/set_last_viewed"
 import { LabProvider } from "@/contexts/lab-context"
 
 const Inventory: React.FC = async () => {
-  setUsersLastViewed(`/inventory`)
+  await setUsersLastViewed(`/inventory`)
   const user = await getUserFromSessionServer()
-
+  console.log('user', user); 
   if (!user) {
     redirect('/home')
   }
