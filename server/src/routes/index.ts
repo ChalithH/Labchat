@@ -8,6 +8,7 @@ import discussionRoutes from './discussion.routes';
 import calendarRoutes from './calendar.routes';
 import labRoutes from './lab.routes';
 import memberRoutes from './member.routes';
+
 import adminRoutes from './admin.routes';
 import labAdmissionRoutes from './labAdmission.routes'; 
 import notificationRoutes from './notification.routes';
