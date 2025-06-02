@@ -16,13 +16,23 @@ import { DiscussionPost } from '@prisma/client';
 export const getRecentPosts = async (req: Request, res: Response): Promise<void> => {
   try {
     const amount = parseInt(req.params.amount, 10) || 9
-    const posts: DiscussionPost[] = await prisma.discussionPost.findMany({
+
+    const posts = await prisma.discussionPost.findMany({
       orderBy: { createdAt: 'desc' },
       take: amount,
+      include: {
+        member: { include: { user: true } },
+        tags: { include: { postTag: true } },
+        reactions: { include: { reaction: true } }
+      }
     })
 
-    res.status(200).json(posts)
+    const postsWithTags = posts.map(post => ({
+      ...post,
+      tags: post.tags.map(tag => tag.postTag)
+    }))
 
+    res.status(200).json(postsWithTags)
   } catch (err) {
     res.status(500).json({ error: 'Failed to obtain list of recent posts' })
   }

@@ -1,6 +1,6 @@
 [
   {
-    "discussionId": 1,
+    "discussionId": 2,
     "memberId": 2,
     "title": "Welcome to Lab Alpha Discussion!",
     "content": "This is the main discussion board for Lab Alpha. Feel free to post questions, announcements, or anything relevant to the lab.",
@@ -8,7 +8,7 @@
     "isAnnounce": true
   },
   {
-    "discussionId": 1,
+    "discussionId": 2,
     "memberId": 3,
     "title": "Upcoming Lab Meeting Schedule",
     "content": "Please note the updated schedule for our weekly lab meetings, attached as a PDF.",
@@ -16,7 +16,7 @@
     "isAnnounce": true
   },
   {
-    "discussionId": 2,
+    "discussionId": 3,
     "memberId": 4,
     "title": "Question about sample preparation for Project X",
     "content": "I'm having trouble with the consistency of my sample preparation for the tensile strength tests. Any tips or suggestions?",
@@ -24,7 +24,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 3,
+    "discussionId": 4,
     "memberId": 5,
     "title": "Sharing results from XRD analysis",
     "content": "I've uploaded the latest XRD data to the shared drive. Let me know if you have any questions.",
@@ -32,7 +32,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 4,
+    "discussionId": 5,
     "memberId": 6,
     "title": "Issue with Spectrophotometer booking",
     "content": "The spectrophotometer seems to be double-booked on Wednesday afternoon. Can someone please check the schedule?",
@@ -40,7 +40,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 5,
+    "discussionId": 6,
     "memberId": 13,
     "title": "Welcome to Lab Beta Discussion!",
     "content": "This is the main discussion board for Lab Beta. Please introduce yourselves and feel free to start new topics.",
@@ -48,7 +48,7 @@
     "isAnnounce": true
   },
   {
-    "discussionId": 6,
+    "discussionId": 7,
     "memberId": 14,
     "title": "New protocol for ester synthesis",
     "content": "I've developed a modified protocol for synthesizing ethyl acetate with higher yield. I've attached the details.",
@@ -56,7 +56,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 7,
+    "discussionId": 8,
     "memberId": 15,
     "title": "HPLC peak broadening issue",
     "content": "I'm observing significant peak broadening on my recent HPLC runs. Any ideas what might be causing this?",
@@ -64,7 +64,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 8,
+    "discussionId": 9,
     "memberId": 16,
     "title": "Chemical waste disposal reminder",
     "content": "Please ensure all chemical waste is disposed of in the correct containers and labeled properly.",
@@ -72,7 +72,7 @@
     "isAnnounce": true
   },
   {
-    "discussionId": 9,
+    "discussionId": 10,
     "memberId": 19,
     "title": "Welcome to the Biotech Lab Discussion!",
     "content": "This is the place for all discussions related to our biotechnology research.",
@@ -80,7 +80,7 @@
     "isAnnounce": true
   },
   {
-    "discussionId": 10,
+    "discussionId": 11,
     "memberId": 20,
     "title": "Troubleshooting cell contamination",
     "content": "I'm dealing with persistent contamination in my cell cultures. Any advice on sterilization or technique?",
@@ -88,7 +88,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 11,
+    "discussionId": 12,
     "memberId": 21,
     "title": "Discussing CRISPR-Cas9 applications",
     "content": "Let's discuss potential applications of CRISPR-Cas9 technology in our current genetics projects.",
@@ -96,7 +96,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 12,
+    "discussionId": 13,
     "memberId": 22,
     "title": "Welcome to the Physics Lab Discussion!",
     "content": "General discussion board for the Physics Simulation Lab.",
@@ -104,7 +104,7 @@
     "isAnnounce": true
   },
   {
-    "discussionId": 13,
+    "discussionId": 14,
     "memberId": 23,
     "title": "Help with COMSOL simulation setup",
     "content": "I'm new to COMSOL and need help setting up a basic fluid dynamics simulation.",
@@ -112,7 +112,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 14,
+    "discussionId": 15,
     "memberId": 19,
     "title": "Field trip planning for environmental sampling",
     "content": "Let's coordinate the logistics for our upcoming field trip to the river for water quality sampling.",
@@ -120,7 +120,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 15,
+    "discussionId": 16,
     "memberId": 5,
     "title": "Sharing recent nanotech conference findings",
     "content": "I attended the NanoTech 2025 conference and have some interesting findings to share.",
@@ -128,7 +128,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 16,
+    "discussionId": 17,
     "memberId": 6,
     "title": "Discussing fMRI data analysis techniques",
     "content": "What are the preferred methods for analyzing fMRI data in our lab?",
@@ -136,7 +136,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 17,
+    "discussionId": 18,
     "memberId": 7,
     "title": "Bioinformatics tool recommendations",
     "content": "What bioinformatics tools do you recommend for analyzing large genomic datasets?",
@@ -144,7 +144,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 18,
+    "discussionId": 19,
     "memberId": 8,
     "title": "Showcasing new robot arm capabilities",
     "content": "I've programmed the new robot arm to perform a complex task. Check out the video!",
@@ -152,7 +152,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 19,
+    "discussionId": 20,
     "memberId": 9,
     "title": "Progress update on solar cell efficiency project",
     "content": "We've made significant progress on improving solar cell efficiency. Details inside.",
@@ -160,7 +160,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 20,
+    "discussionId": 21,
     "memberId": 10,
     "title": "Identifying rock samples from recent field trip",
     "content": "Help needed identifying some unusual rock samples collected last week.",
@@ -168,7 +168,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 21,
+    "discussionId": 22,
     "memberId": 11,
     "title": "Discussing marine invertebrate species",
     "content": "Let's share information on the marine invertebrate species we've encountered in our recent surveys.",
@@ -176,7 +176,7 @@
     "isAnnounce": false
   },
   {
-    "discussionId": 22,
+    "discussionId": 23,
     "memberId": 12,
     "title": "Gene sequencing results interpretation",
     "content": "Need help interpreting the results from the latest gene sequencing run.",
