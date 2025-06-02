@@ -7,6 +7,9 @@ export const getMemberById = async (req: Request, res: Response): Promise<void> 
     const id = parseInt(req.params.id);
     const user = await prisma.labMember.findUnique({
       where: { id },
+      include: {
+        labRole: true,
+      },
     });
     
     if (!user) {
@@ -233,7 +236,10 @@ export const getMembershipsByUserId = async (req: Request, res: Response): Promi
   try {
     const userId = parseInt(req.params.id);
     const memberships = await prisma.labMember.findMany({
-      where: { userId: userId },
+      where: { 
+        userId: userId,
+        labRole: { permissionLevel: { gte: 0 } } // Only active memberships
+      },
     });
     
     if (!memberships || memberships.length === 0) {

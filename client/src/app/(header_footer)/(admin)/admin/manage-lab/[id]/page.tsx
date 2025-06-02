@@ -92,5 +92,5 @@ export default async function ManageLabPage({ params: paramsPromise }: ManageLab
 
   await setUsersLastViewed(`/admin/manage-lab/${labIdStr}`);
 
-  return <ManageLabClient params={params} />;
+  return <ManageLabClient params={params} isRootAdmin={apiResponseData.isRootAdmin || false} />;
 } 

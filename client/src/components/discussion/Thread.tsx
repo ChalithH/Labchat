@@ -8,7 +8,6 @@ import { PostType } from '@/types/post.type'
 import { AxiosResponse } from 'axios'
 import api from '@/lib/api'
 import { UserType } from '@/types/User.type'
-import ResolveRoleName from '@/lib/resolve_role_name.util'
 import getUserFromSession from '@/lib/get_user'
 import { Pencil, Trash } from 'lucide-react'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -40,30 +39,17 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 		const getUser = async () => {
 			try {
 				const response: AxiosResponse = await api.get(`/member/get/${ thread.memberId }`)
-				const user: AxiosResponse = await api.get(`/user/get/${ response.data.userId }`)
+				const memberData = response.data;
+				const user: AxiosResponse = await api.get(`/user/get/${ memberData.userId }`)
 				setAuthor(user.data)
-
+				// Set the lab role directly from memberData
+				setRole(memberData.labRole ? memberData.labRole.name : 'Lab Member');
 			} catch (err) {
 				console.error('Failed to fetch author', err)
 			}
 		}
 		getUser()
 	}, [thread.memberId])
-
-	useEffect(() => {
-		const getRole = async () => {
-			if (!author) return
-
-			try {
-				const roleName = await ResolveRoleName(author.roleId)
-				setRole(roleName)
-
-			} catch (err) {
-				console.error('Failed to resolve role name', err)
-			}
-		}
-		getRole()
-	}, [author])
 
   useEffect(() => {
     const getUser = async () => {

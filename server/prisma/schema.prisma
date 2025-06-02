@@ -481,7 +481,7 @@ model LabAttendance {
 // Inventory Logging System
 model InventoryLog {
   id                Int                @id @default(autoincrement())
-  labInventoryItemId Int               
+  labInventoryItemId Int?              // Made optional to preserve logs when items are deleted
   userId            Int                // Always present - who performed the action
   memberId          Int?               // Optional - null for non-member admin operations
   action            InventoryAction   
@@ -493,7 +493,7 @@ model InventoryLog {
   createdAt         DateTime          @default(now())
   
   // Relationships
-  labInventoryItem  LabInventoryItem  @relation(fields: [labInventoryItemId], references: [id], onDelete: Cascade)
+  labInventoryItem  LabInventoryItem?  @relation(fields: [labInventoryItemId], references: [id], onDelete: SetNull)
   user              User              @relation(fields: [userId], references: [id])
   member            LabMember?        @relation(fields: [memberId], references: [id])
   

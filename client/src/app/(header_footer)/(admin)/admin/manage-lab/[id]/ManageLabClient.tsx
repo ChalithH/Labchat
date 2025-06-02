@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, AlertCircle, UserCog, Users, Trash2, Edit3, Clock, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, AlertCircle, UserCog, Users, Trash2, Edit3, Clock, Calendar, ChevronLeft, ChevronRight, UserPlus, Key } from 'lucide-react';
 import api from '@/lib/api'; 
 import {
   Dialog,
@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { format } from 'date-fns';
 import LabInventoryComponent from './components/LabInventoryComponent';
 import InventoryLogComponent from './components/InventoryLogComponent';
+import AddMembersComponent from './components/AddMembersComponent';
 
 interface LabDetails {
   id: number;
@@ -58,7 +59,8 @@ interface UserData {
 interface LabRoleData {
   id: number;
   name: string;
-  // Add others if needed
+  permissionLevel: number;
+  description?: string;
 }
 
 
@@ -96,6 +98,7 @@ interface LabMemberData extends UserData {
   status: MemberStatusEntry[];
   labRoleName?: string;
   labRoleId?: number;
+  isUserAdmin?: boolean;
 }
 
 interface GlobalStatusType {
@@ -113,7 +116,7 @@ interface UserContact {
 
 interface ManageLabClientProps {
   params: { id: string };
- 
+  isRootAdmin: boolean;
 }
 
 interface AttendanceLog {
@@ -134,7 +137,7 @@ interface AttendancePagination {
   totalPages: number;
 }
 
-export default function ManageLabClient({ params }: ManageLabClientProps) {
+export default function ManageLabClient({ params, isRootAdmin }: ManageLabClientProps) {
   const [labDetails, setLabDetails] = useState<LabDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -196,6 +199,23 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
   const [isUpdatingPCIForMemberId, setIsUpdatingPCIForMemberId] = useState<number | null>(null);
   const [isUpdatingInductionForMemberId, setIsUpdatingInductionForMemberId] = useState<number | null>(null);
 
+  // State for Password Reset
+  const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
+  const [memberForPasswordReset, setMemberForPasswordReset] = useState<LabMemberData | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+
+  // State for Remove Lab confirmation
+  const [isRemoveLabConfirmOpen, setIsRemoveLabConfirmOpen] = useState(false);
+  const [isDeletingLab, setIsDeletingLab] = useState(false);
+
+  // State for Lab Roles tab
+  const [isCreatingRole, setIsCreatingRole] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleDescription, setNewRoleDescription] = useState('');
+  const [newRolePermissionLevel, setNewRolePermissionLevel] = useState<string>('');
+
   // State for Clock-in Log
   const [attendanceLogs, setAttendanceLogs] = useState<AttendanceLog[]>([]);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(false);
@@ -247,26 +267,72 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
       const response = await api.get(`/lab/getMembers/${params.id}`);
       const rawMembersDataFromApi = response.data; // This is the array from the backend (already flattened)
 
-      const initialMappedMembers: LabMemberData[] = rawMembersDataFromApi.map((member: any) => ({
-        // User-related fields are now at the top-level of the 'member' object from the API
-        id: member.id, // This is User ID
-        firstName: member.firstName,
-        lastName: member.lastName,
-        displayName: member.displayName,
-        jobTitle: member.jobTitle,
-        office: member.office,
-        bio: member.bio,
-        
-        // LabMember specific fields from the API response
-        memberID: member.memberID, // This is the LabMember ID
-        labID: member.labID,
-        labRoleId: member.labRoleId,
-        createdAt: member.createdAt,
-        inductionDone: member.inductionDone,
-        isPCI: member.isPCI, 
-        status: member.status, // Check if the server sends this as 'status' or 'memberStatus'
-                                // The server controller maps it as 'status: member.memberStatus'
-      }));
+      // Fetch user role information for each member to check if they're admin
+      const memberPromises = rawMembersDataFromApi.map(async (member: any) => {
+        try {
+          // Get the user details including role to check if they're admin
+          const userResponse = await api.get(`/user/get/${member.id}`);
+          const userData = userResponse.data;
+          
+          // Fetch role details from roleId
+          let isUserAdmin = false;
+          if (userData.roleId) {
+            try {
+              const roleResponse = await api.get(`/role/get/${userData.roleId}`);
+              const roleData = roleResponse.data;
+              isUserAdmin = roleData && roleData.permissionLevel >= 100;
+            } catch (roleErr) {
+              console.error(`Failed to fetch role for user ${member.id}`, roleErr);
+            }
+          }
+          
+          return {
+            // User-related fields are now at the top-level of the 'member' object from the API
+            id: member.id, // This is User ID
+            firstName: member.firstName,
+            lastName: member.lastName,
+            displayName: member.displayName,
+            jobTitle: member.jobTitle,
+            office: member.office,
+            bio: member.bio,
+            
+            // LabMember specific fields from the API response
+            memberID: member.memberID, // This is the LabMember ID
+            labID: member.labID,
+            labRoleId: member.labRoleId,
+            createdAt: member.createdAt,
+            inductionDone: member.inductionDone,
+            isPCI: member.isPCI, 
+            status: member.status, // Check if the server sends this as 'status' or 'memberStatus'
+                                    // The server controller maps it as 'status: member.memberStatus'
+            isUserAdmin: isUserAdmin
+          };
+        } catch (err) {
+          console.error(`Failed to fetch user role for member ${member.id}`, err);
+          // If user role fetch fails, assume they aren't admin (safety)
+          return {
+            id: member.id, // User ID
+            firstName: member.firstName,
+            lastName: member.lastName,
+            displayName: member.displayName,
+            jobTitle: member.jobTitle,
+            office: member.office,
+            bio: member.bio,
+            
+            // LabMember specific fields from the API response
+            memberID: member.memberID, // LabMember ID
+            labID: member.labID,
+            labRoleId: member.labRoleId,
+            createdAt: member.createdAt,
+            inductionDone: member.inductionDone,
+            isPCI: member.isPCI, 
+            status: member.status,
+            isUserAdmin: false // Default to false if we can't determine
+          };
+        }
+      });
+
+      const initialMappedMembers: LabMemberData[] = await Promise.all(memberPromises);
 
       setRawLabMembers(initialMappedMembers);
       setLabMembers(initialMappedMembers);
@@ -410,19 +476,32 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
   const handleSetActiveStatus = async (memberStatusIdToActivate: number) => {
     if (!memberForStatusModal) return;
 
-    // Refetching for now, update/show loader later
     try {
       console.log(`Attempting to activate MemberStatus ID: ${memberStatusIdToActivate}`);
       await api.put(`/admin/member-status/${memberStatusIdToActivate}/activate`);
       
-      // Placeholder for toast: alert('Status activated successfully! Refreshing member data.');
+      // Optimistically update member status - set this status as active, and all others as inactive
+      const updateMemberStatus = (member: LabMemberData) => {
+        if (member.memberID !== memberForStatusModal.memberID) return member;
+        
+        const updatedStatuses = member.status.map(status => ({
+          ...status,
+          isActive: status.id === memberStatusIdToActivate
+        }));
+        
+        return { ...member, status: updatedStatuses };
+      };
 
-      // Refetch lab members to update status list
-      // Triggers useEffect to update labMembers and memberForStatusModal
-      await fetchLabMembers(); 
+      // Update both state arrays
+      setLabMembers(prevMembers => prevMembers.map(updateMemberStatus));
+      setRawLabMembers(prevMembers => prevMembers.map(updateMemberStatus));
+      
+      // Update modal member data
+      setMemberForStatusModal(prevMember => 
+        prevMember ? updateMemberStatus(prevMember) : null
+      );
 
-      // Post-refetch, useEffect will find the updated memberForStatusModal data
-      // from the refreshed labMembers list and update the modal content
+      // Toast alert? (Todo)
 
     } catch (err: any) {
       console.error(`Failed to activate MemberStatus ID: ${memberStatusIdToActivate}`, err);
@@ -441,13 +520,35 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
   };
 
   const handleSaveDescription = async () => {
-    if (editingMemberStatusId === null) return;
+    if (editingMemberStatusId === null || !memberForStatusModal) return;
     setIsSavingDescription(true);
     try {
       await api.put(`/admin/member-status/${editingMemberStatusId}`, { description: currentEditingDescription });
+      
+      // Optimistically update the description
+      const updateMemberDescription = (member: LabMemberData) => {
+        if (member.memberID !== memberForStatusModal.memberID) return member;
+        
+        const updatedStatuses = member.status.map(status =>
+          status.id === editingMemberStatusId 
+            ? { ...status, description: currentEditingDescription }
+            : status
+        );
+        
+        return { ...member, status: updatedStatuses };
+      };
+
+      // Update both state arrays
+      setLabMembers(prevMembers => prevMembers.map(updateMemberDescription));
+      setRawLabMembers(prevMembers => prevMembers.map(updateMemberDescription));
+      
+      // Update modal member data
+      setMemberForStatusModal(prevMember => 
+        prevMember ? updateMemberDescription(prevMember) : null
+      );
+
       // Placeholder for toast: alert("Description updated!");
-      await fetchLabMembers(); // Refetch to update UI
-      setEditingMemberStatusId(null); // Close editing input
+      setEditingMemberStatusId(null);
       setCurrentEditingDescription("");
     } catch (err: any) {
       console.error("Failed to update description", err);
@@ -463,12 +564,29 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
   };
 
   const handleConfirmDeleteStatus = async () => {
-    if (statusToDeleteId === null) return;
+    if (statusToDeleteId === null || !memberForStatusModal) return;
     setIsDeletingStatus(true);
     try {
       await api.delete(`/admin/member-status/${statusToDeleteId}`);
+      
+      // Optimistically remove the status entry
+      const updateMemberStatuses = (member: LabMemberData) => {
+        if (member.memberID !== memberForStatusModal.memberID) return member;
+        
+        const updatedStatuses = member.status.filter(status => status.id !== statusToDeleteId);
+        return { ...member, status: updatedStatuses };
+      };
+
+      // Update both state arrays
+      setLabMembers(prevMembers => prevMembers.map(updateMemberStatuses));
+      setRawLabMembers(prevMembers => prevMembers.map(updateMemberStatuses));
+      
+      // Update modal member data
+      setMemberForStatusModal(prevMember => 
+        prevMember ? updateMemberStatuses(prevMember) : null
+      );
+
       // Placeholder for toast: alert("Status entry deleted!");
-      await fetchLabMembers(); // Refresh data
       setIsConfirmDeleteDialogOpen(false);
       setStatusToDeleteId(null);
     } catch (err: any) {
@@ -492,10 +610,45 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
         description: newStatusDescription,
       };
       
-      await api.post(`/admin/lab-member/${memberForStatusModal.memberID}/status`, payload);
+      const response = await api.post(`/admin/lab-member/${memberForStatusModal.memberID}/status`, payload);
       
+      // Get the created status data from response
+      
+      const newStatusEntry: MemberStatusEntry = response.data || {
+        id: Date.now(), // Will be replaced on next refresh if needed
+        contactId: parseInt(newStatusSelectedContactId),
+        statusId: parseInt(newStatusSelectedGlobalStatusId),
+        isActive: false,
+        description: newStatusDescription,
+        contact: selectedMemberContacts?.find(c => c.id === parseInt(newStatusSelectedContactId)) || {
+          id: parseInt(newStatusSelectedContactId),
+          type: 'Unknown',
+          info: 'Unknown',
+          name: 'Unknown'
+        },
+        status: globalStatuses.find(s => s.id === parseInt(newStatusSelectedGlobalStatusId)) || {
+          id: parseInt(newStatusSelectedGlobalStatusId),
+          statusName: 'Unknown',
+          statusWeight: 0
+        }
+      };
+
+      // Optimistically add the new status entry
+      const updateMemberWithNewStatus = (member: LabMemberData) => {
+        if (member.memberID !== memberForStatusModal.memberID) return member;
+        return { ...member, status: [...member.status, newStatusEntry] };
+      };
+
+      // Update both state arrays
+      setLabMembers(prevMembers => prevMembers.map(updateMemberWithNewStatus));
+      setRawLabMembers(prevMembers => prevMembers.map(updateMemberWithNewStatus));
+      
+      // Update modal member data
+      setMemberForStatusModal(prevMember => 
+        prevMember ? updateMemberWithNewStatus(prevMember) : null
+      );
+
       // Placeholder for toast: alert("New status entry created successfully!");
-      await fetchLabMembers(); 
 
       // Clear form fields
       setNewStatusSelectedGlobalStatusId("");
@@ -552,8 +705,28 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
       await api.put(`/admin/lab-member/${memberForRoleChange.memberID}/role`, { 
         newLabRoleId: parseInt(selectedNewLabRoleId)
       });
+      
+      // Find the new role name for optimistic update
+      const newRole = availableLabRoles.find(role => role.id === parseInt(selectedNewLabRoleId));
+      const newRoleName = newRole ? newRole.name : 'Unknown Role';
+      
+      // Update both labMembers and rawLabMembers states optimistically to preserve order on frontend
+      setLabMembers(prevMembers =>
+        prevMembers.map(member =>
+          member.memberID === memberForRoleChange.memberID 
+            ? { ...member, labRoleId: parseInt(selectedNewLabRoleId), labRoleName: newRoleName }
+            : member
+        )
+      );
+      setRawLabMembers(prevMembers => 
+        prevMembers.map(member =>
+          member.memberID === memberForRoleChange.memberID 
+            ? { ...member, labRoleId: parseInt(selectedNewLabRoleId) }
+            : member
+        )
+      );
+      
       // Placeholder for toast: alert("Lab role updated successfully!");
-      await fetchLabMembers(); // Refresh list
       setIsChangeRoleModalOpen(false); 
       setMemberForRoleChange(null);
       setSelectedNewLabRoleId("");
@@ -629,8 +802,16 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
           userId: memberToRemove.id // member.id is the User ID
         } 
       });
+      
+      // Optimistically remove the member from the UI (since now a former member)
+      setLabMembers(prevMembers => 
+        prevMembers.filter(member => member.memberID !== memberToRemove.memberID)
+      );
+      setRawLabMembers(prevMembers => 
+        prevMembers.filter(member => member.memberID !== memberToRemove.memberID)
+      );
+
       // Placeholder for toast: alert(`${memberToRemove.displayName} has been removed from the lab.`);
-      await fetchLabMembers();
       setIsRemoveMemberConfirmOpen(false);
       setMemberToRemove(null);
     } catch (err: any) {
@@ -642,41 +823,91 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
   };
 
   const handleTogglePCIMember = async (memberToUpdate: LabMemberData) => {
-    if (!memberToUpdate || typeof memberToUpdate.memberID === 'undefined') {
-      console.error("handleTogglePCIMember: Invalid member data provided.");
-      toast.error("Error", {
-        description: "Could not update PCI status due to invalid member data.",
-      });
-      return;
-    }
-    
+    if (isUpdatingPCIForMemberId) return; // Prevent multiple/concurrent requests
     setIsUpdatingPCIForMemberId(memberToUpdate.memberID);
     try {
       const response = await api.put(`/admin/lab-member/${memberToUpdate.memberID}/pci`, {
-        isPCI: !memberToUpdate.isPCI,
+        isPCI: !memberToUpdate.isPCI // Send new value in req body
       });
+      console.log("PIC toggle API response:", response.data);
       
-      setLabMembers(prevMembers =>
-        prevMembers.map(member =>
-          member.memberID === memberToUpdate.memberID ? { ...member, isPCI: !memberToUpdate.isPCI } : member
-        )
-      );
-      setRawLabMembers(prevMembers => 
-        prevMembers.map(member =>
-            member.memberID === memberToUpdate.memberID ? { ...member, isPCI: !memberToUpdate.isPCI } : member
-        )
-      );
+      // Update in state (both labMembers and rawLabMembers) 
+      const updatePCI = (member: LabMemberData) => 
+        member.memberID === memberToUpdate.memberID ? 
+          { ...member, isPCI: !member.isPCI } : member;
+      
+      setLabMembers(prevMembers => prevMembers.map(updatePCI));
+      setRawLabMembers(prevMembers => prevMembers.map(updatePCI));
+      
+      toast.success(`PIC ${!memberToUpdate.isPCI ? 'assigned to' : 'removed from'} ${memberToUpdate.displayName}`);
 
-      toast.success("Success", {
-        description: `${memberToUpdate.displayName}'s PCI status updated.`,
-      });
-    } catch (error: any) {
-      console.error("Failed to toggle PCI status for member:", memberToUpdate.memberID, error);
-      toast.error("Error updating PCI status", {
-        description: error.response?.data?.message || "Could not update PCI status.",
-      });
+    } catch (err: any) {
+      console.error("Failed to toggle PIC for member:", err);
+      toast.error(err.response?.data?.error || 'Failed to update PIC status');
     } finally {
       setIsUpdatingPCIForMemberId(null);
+    }
+  };
+
+  // Password Reset Handlers
+  const handleOpenPasswordResetModal = (member: LabMemberData) => {
+    setMemberForPasswordReset(member);
+    setNewPassword('');
+    setConfirmPassword('');
+    setIsPasswordResetModalOpen(true);
+  };
+
+  const handleClosePasswordResetModal = () => {
+    setIsPasswordResetModalOpen(false);
+    setMemberForPasswordReset(null);
+    setNewPassword('');
+    setConfirmPassword('');
+  };
+
+  const handlePasswordReset = async () => {
+    if (!memberForPasswordReset || newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 1) {
+      toast.error("Password must be at least 1 character");
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      await api.put(`/admin/lab/${params.id}/reset-member-password`, {
+        userId: memberForPasswordReset.id,
+        newPassword: newPassword
+      });
+      
+      toast.success(`Password reset successfully for ${memberForPasswordReset.displayName}`);
+      handleClosePasswordResetModal();
+    } catch (error: any) {
+      console.error('Failed to reset password:', error);
+      toast.error(error.response?.data?.error || 'Failed to reset password');
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
+  const handleDeleteLab = async () => {
+    if (!labDetails) return;
+    
+    setIsDeletingLab(true);
+    try {
+      await api.delete(`/admin/lab/${params.id}`);
+      toast.success(`Lab "${labDetails.name}" has been permanently deleted`);
+      
+      // Redirect to admin dashboard after successful deletion
+      window.location.href = '/admin/dashboard';
+    } catch (error: any) {
+      console.error('Failed to delete lab:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete lab');
+    } finally {
+      setIsDeletingLab(false);
+      setIsRemoveLabConfirmOpen(false);
     }
   };
 
@@ -704,8 +935,45 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
       endDate: '',
       memberId: 'all'
     });
-    // Trigger refetch after state update
-    setTimeout(() => fetchAttendanceLogs(1), 0);
+    fetchAttendanceLogs(1);
+  };
+
+  // Lab Roles handlers
+  const handleCreateLabRole = async () => {
+    if (!newRoleName.trim() || !newRolePermissionLevel) {
+      toast.error('Role name and permission level are required');
+      return;
+    }
+
+    const permissionLevel = parseInt(newRolePermissionLevel);
+    if (isNaN(permissionLevel) || permissionLevel < 0 || permissionLevel > 100) {
+      toast.error('Permission level must be a number between 0 and 100');
+      return;
+    }
+
+    setIsCreatingRole(true);
+    try {
+      const response = await api.post('/admin/create-lab-role', {
+        name: newRoleName.trim(),
+        description: newRoleDescription.trim() || null,
+        permissionLevel: permissionLevel
+      });
+
+      toast.success(`Lab role "${newRoleName}" created successfully!`);
+      
+      // Clear form
+      setNewRoleName('');
+      setNewRoleDescription('');
+      setNewRolePermissionLevel('');
+      
+      // Refresh lab roles
+      await fetchLabRoles();
+    } catch (err: any) {
+      console.error('Error creating lab role:', err);
+      toast.error(err.response?.data?.error || 'Failed to create lab role');
+    } finally {
+      setIsCreatingRole(false);
+    }
   };
 
   return (
@@ -716,9 +984,11 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
       
       <Tabs defaultValue="details" className="w-full" value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto pb-2 mb-4">
-          <TabsList className="min-w-max sm:w-full grid grid-flow-col sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 auto-cols-max sm:auto-cols-fr gap-2">
+          <TabsList className="min-w-max sm:w-full grid grid-flow-col sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 auto-cols-max sm:auto-cols-fr gap-2">
             <TabsTrigger value="details" className="px-4 py-2">Lab Details</TabsTrigger>
-            <TabsTrigger value="members" className="px-4 py-2">Members</TabsTrigger>
+            <TabsTrigger value="lab_roles" className="px-4 py-2">Lab Roles</TabsTrigger>
+            <TabsTrigger value="members" className="px-4 py-2">Manage Members</TabsTrigger>
+            <TabsTrigger value="add_members" className="px-4 py-2">Add Members</TabsTrigger>
             <TabsTrigger value="inventory" className="px-4 py-2">Inventory</TabsTrigger>
             <TabsTrigger value="clock_log" className="px-4 py-2">Clock-in Log</TabsTrigger>
             <TabsTrigger value="inventory_log" className="px-4 py-2">Inventory Log</TabsTrigger>
@@ -787,13 +1057,77 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
               )}
             </CardContent>
             {!loading && !error && labDetails && (
-              <CardFooter className="border-t px-6 py-4">
+              <CardFooter className="border-t px-6 py-4 flex justify-between items-center">
                 <Button onClick={handleUpdateLabDetails} disabled={!hasUnsavedChanges || isUpdating}>
                   {isUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Save Changes
                 </Button>
+                
+                {/* Delete Lab Button - Only visible to Root Admins */}
+                {isRootAdmin && (
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-px bg-gray-300"></div>
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => setIsRemoveLabConfirmOpen(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete Lab
+                    </Button>
+                  </div>
+                )}
               </CardFooter>
             )}
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="lab_roles">
+          <Card>
+            <CardHeader>
+              <CardTitle>Create Lab Role</CardTitle>
+              <p className="text-sm text-gray-600">
+                Create new lab roles when needed. View role assignments and permission levels in the &quot;Manage Members&quot; tab.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {/* Create New Role Section */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    value={newRoleName}
+                    onChange={(e) => setNewRoleName(e.target.value)}
+                    placeholder="Role name (e.g., Senior Technician)"
+                    disabled={isCreatingRole}
+                  />
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={newRolePermissionLevel}
+                    onChange={(e) => setNewRolePermissionLevel(e.target.value)}
+                    placeholder="Permission level (0-100)"
+                    disabled={isCreatingRole}
+                  />
+                </div>
+                <Input
+                  value={newRoleDescription}
+                  onChange={(e) => setNewRoleDescription(e.target.value)}
+                  placeholder="Description (optional)"
+                  disabled={isCreatingRole}
+                />
+
+                <div className="flex justify-end">
+                  <Button
+                    onClick={handleCreateLabRole}
+                    disabled={!newRoleName.trim() || !newRolePermissionLevel || isCreatingRole}
+                  >
+                    {isCreatingRole ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Create Role
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
 
@@ -825,7 +1159,14 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
                     <div key={member.memberID} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center">
                       <div className="mb-2 sm:mb-0">
                         <p className="text-lg font-semibold">{member.displayName || 'N/A'}</p>
-                        <p className="text-sm text-gray-600">Role: {member.labRoleName || 'N/A'}</p>
+                        <p className="text-sm text-gray-600">
+                          Role: {member.labRoleName || 'N/A'}
+                          {member.labRoleId && availableLabRoles.length > 0 && (
+                            <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">
+                              Permission Level: {availableLabRoles.find(role => role.id === member.labRoleId)?.permissionLevel || '?'}
+                            </span>
+                          )}
+                        </p>
                         <p className="text-sm text-gray-500">
                           Induction: {member.inductionDone ? 
                             <span className="text-green-600 font-medium">Completed</span> : 
@@ -833,9 +1174,9 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
                           }
                         </p>
                         <p className="text-sm text-gray-500">
-                          PCI Access: {member.isPCI ? 
-                            <span className="text-blue-600 font-medium">Enabled</span> : 
-                            <span className="text-gray-600 font-medium">Disabled</span>
+                          PIC Status: {member.isPCI ? 
+                            <span className="text-blue-600 font-medium">Active</span> : 
+                            <span className="text-gray-600 font-medium">Not Assigned</span>
                           }
                         </p>
                       </div>
@@ -846,10 +1187,10 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
                                 checked={member.isPCI}
                                 onCheckedChange={() => handleTogglePCIMember(member)}
                                 disabled={isUpdatingPCIForMemberId === member.memberID}
-                                aria-label={`Toggle PCI Access for ${member.displayName}`}
+                                aria-label={`Toggle PIC Status for ${member.displayName}`}
                             />
                             <Label htmlFor={`pci-toggle-${member.memberID}`} className="text-sm cursor-pointer select-none">
-                                PCI Access
+                                PIC Status
                             </Label>
                             {isUpdatingPCIForMemberId === member.memberID && <Loader2 className="h-4 w-4 animate-spin ml-1" />}
                         </div>
@@ -872,6 +1213,12 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
                         <Button variant="outline" size="sm" onClick={() => handleOpenChangeRoleModal(member)} className="flex items-center">
                           <Users className="mr-1 h-4 w-4" /> Role
                         </Button>
+                        {/* Only show Reset Password button if current user is admin OR target member is not admin */}
+                        {(isRootAdmin || !member.isUserAdmin) && (
+                          <Button variant="outline" size="sm" onClick={() => handleOpenPasswordResetModal(member)} className="flex items-center">
+                            <Key className="mr-1 h-4 w-4" /> Reset Password
+                          </Button>
+                        )}
                         <Button variant="destructive" size="sm" onClick={() => handleOpenRemoveMemberConfirm(member)} className="flex items-center">
                           <Trash2 className="mr-1 h-4 w-4" /> Remove
                         </Button>
@@ -882,6 +1229,25 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="add_members">
+          {activeTab === "add_members" ? (
+            <AddMembersComponent 
+              labId={parseInt(params.id)} 
+              availableLabRoles={availableLabRoles}
+              onUserAdded={fetchLabMembers}
+            />
+          ) : (
+            <Card>
+              <CardContent className="flex justify-center items-center min-h-[200px]">
+                <div className="text-center text-gray-500">
+                  <UserPlus className="h-12 w-12 mx-auto mb-4" />
+                  <p>Select this tab to load available users</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="inventory">
@@ -1255,12 +1621,16 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
                   <SelectValue placeholder="Select a new lab role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableLabRoles.map(role => (
-                    <SelectItem key={role.id} value={String(role.id)}>{role.name}</SelectItem>
+                  {availableLabRoles
+                    .filter(role => role.name.toLowerCase() !== 'former member') // Filter out "Former Member" role
+                    .map(role => (
+                      <SelectItem key={role.id} value={String(role.id)}>{role.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {availableLabRoles.length === 0 && <p className="text-xs text-red-500">No lab roles available to select.</p>}
+              {availableLabRoles.filter(role => role.name.toLowerCase() !== 'former member').length === 0 && 
+                <p className="text-xs text-red-500">No lab roles available to select.</p>
+              }
             </div>
             <DialogFooter>
               <DialogClose asChild>
@@ -1301,6 +1671,99 @@ export default function ManageLabClient({ params }: ManageLabClientProps) {
           </AlertDialogContent>
         </AlertDialog>
       )}
+
+      {/* Password Reset Modal */}
+      {memberForPasswordReset && (
+        <Dialog open={isPasswordResetModalOpen} onOpenChange={setIsPasswordResetModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reset Password for {memberForPasswordReset.displayName}</DialogTitle>
+              {/* <DialogDescription>
+              Set a temporary password. The member should change it after logging in.
+              </DialogDescription> */}
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password (min 1 character)"
+                  disabled={isResettingPassword}
+                />
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  disabled={isResettingPassword}
+                />
+              </div>
+              <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
+                <p className="font-medium">Note:</p>
+                <ul className="mt-1 space-y-1 text-xs">
+                  <li>• Share this temporary password with the member</li>
+                  <li>• The member should change this password after logging in</li>
+                  {/* <li>• This action will be logged for security purposes</li> */}
+                  
+                </ul>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={handleClosePasswordResetModal}
+                disabled={isResettingPassword}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handlePasswordReset}
+                disabled={
+                  isResettingPassword || 
+                  !newPassword || 
+                  !confirmPassword || 
+                  newPassword !== confirmPassword ||
+                  newPassword.length < 1
+                }
+              >
+                {isResettingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Reset Password
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Remove Lab Confirmation Dialog */}
+      <AlertDialog open={isRemoveLabConfirmOpen} onOpenChange={setIsRemoveLabConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Lab Permanently?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete this lab and all associated data?
+              This will remove all members, inventory, discussions, events, and attendance records.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingLab}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteLab} 
+              disabled={isDeletingLab}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isDeletingLab ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Delete Lab
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   );

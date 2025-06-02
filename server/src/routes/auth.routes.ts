@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { login, logout, locked, status, checkLabAccessPermission } from '../controllers/auth/auth.controller';
+import { login, logout, locked, status, checkLabAccessPermission, checkAdminPermission } from '../controllers/auth/auth.controller';
 import { requirePermission } from '../middleware/permission.middleware';
 
 /**
@@ -104,6 +104,27 @@ router.get('/status', status);
  *         description: "Internal server error during authorization check."
  */
 router.get('/check-lab-access/:labId', checkLabAccessPermission);
+
+/**
+ * @swagger
+ * /auth/check-admin-permission:
+ *   get:
+ *     summary: Check if the current authenticated user has admin permission
+ *     description: >
+ *       Verifies if the session user has admin permission (permissionLevel >= 100).
+ *       This endpoint requires the user to be authenticated.
+ *     tags: [Auth]
+ *     responses:
+ *       200: 
+ *         description: "User has admin permission. Response includes { hasAdminPermission: true }"
+ *       401: 
+ *         description: "User not authenticated (no session)."
+ *       403: 
+ *         description: "User authenticated but doesn't have admin permission. Response includes { hasAdminPermission: false, ... }"
+ *       500: 
+ *         description: "Internal server error during permission check."
+ */
+router.get('/check-admin-permission', checkAdminPermission);
 
 /**
  * @swagger

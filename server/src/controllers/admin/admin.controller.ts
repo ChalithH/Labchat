@@ -71,7 +71,7 @@ export const getAllLabs = async (req: Request, res: Response): Promise<void> => 
                     where: {
                         labRole: {
                             permissionLevel: {
-                                gte: 70,  // Consider manager roles with permission level 70+
+                                gte: 70,  // Assumption: Manager roles have permission level 70+ AND are active members
                             },
                         }
                     },
@@ -300,6 +300,272 @@ export const updateLab = async (req: Request, res: Response): Promise<void> => {
             }
         }
         res.status(500).json({ error: 'Internal server error while updating lab' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/lab/{id}:
+ *   delete:
+ *     summary: Delete a lab
+ *     description: Permanently deletes a lab and all its associated data including members, inventory, discussions, events, etc.
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab to delete
+ *     responses:
+ *       200:
+ *         description: Lab deleted successfully
+ *       400:
+ *         description: Invalid lab ID
+ *       403:
+ *         description: User not authorized to delete this lab
+ *       404:
+ *         description: Lab not found
+ *       500:
+ *         description: Internal server error
+ */
+export const deleteLab = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.id);
+    const sessionUserId = (req.session as any)?.passport?.user;
+
+    if (isNaN(labId)) {
+        res.status(400).json({ error: 'Invalid lab ID' });
+        return;
+    }
+
+    if (!sessionUserId) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+    }
+
+    try {
+        // Get current user and their global role
+        const currentUser = await prisma.user.findUnique({
+            where: { id: sessionUserId },
+            include: { role: true },
+        });
+
+        if (!currentUser || !currentUser.role) {
+            res.status(403).json({ error: 'User role not found or user not found.' });
+            return;
+        }
+
+        let authorized = false;
+        
+        // Only allow Root Admins (permission level 100+) to delete labs
+        if (currentUser.role.permissionLevel >= 100) {
+            authorized = true;
+        }
+
+        if (!authorized) {
+            res.status(403).json({ error: 'Only administrators can delete labs' });
+            return;
+        }
+
+        // Check if lab exists
+        const labToDelete = await prisma.lab.findUnique({
+            where: { id: labId },
+            include: {
+                labMembers: true,
+                inventoryItems: true,
+                discussions: true,
+                events: true,
+                instruments: true,
+                LabAdmission: true,
+                auditLogs: true,
+            }
+        });
+
+        if (!labToDelete) {
+            res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        // Perform the deletion using a transaction to ensure data consistency
+        await prisma.$transaction(async (tx) => {
+            // Set last viewed lab = null for users who have this lab as last viewed lab
+            await tx.user.updateMany({
+                where: { lastViewedLabId: labId },
+                data: { lastViewedLabId: null }
+            });
+
+            // Delete lab admissions
+            await tx.labAdmission.deleteMany({
+                where: { labId: labId }
+            });
+
+            // Discussion deletions
+            // Find all posts, replies for lab members
+            const labMembersToDelete = await tx.labMember.findMany({
+                where: { labId: labId },
+                select: { id: true }
+            });
+            
+            const labMemberIds = labMembersToDelete.map(member => member.id);
+
+            // Delete all discussion replies by lab members in this lab
+            await tx.discussionReply.deleteMany({
+                where: { memberId: { in: labMemberIds } }
+            });
+
+            // Delete discussion post reactions by lab members in this lab
+            await tx.discussionPostReaction.deleteMany({
+                where: { memberId: { in: labMemberIds } }
+            });
+
+            // Delete discussion posts created by lab members
+            await tx.discussionPost.deleteMany({
+                where: { memberId: { in: labMemberIds } }
+            });
+
+            // Get all discussion posts in this lab's discussions (if any remain)
+            const discussionPostsToDelete = await tx.discussionPost.findMany({
+                where: { discussion: { labId: labId } },
+                select: { id: true }
+            });
+            
+            const discussionPostIds = discussionPostsToDelete.map(post => post.id);
+
+            // Delete remaining discussion post reactions (from any member)
+            if (discussionPostIds.length > 0) {
+                await tx.discussionPostReaction.deleteMany({
+                    where: { postId: { in: discussionPostIds } }
+                });
+
+                // Delete discussion post tags
+                await tx.discussionPostTag.deleteMany({
+                    where: { postId: { in: discussionPostIds } }
+                });
+
+                // Delete remaining discussion replies (from any member)
+                await tx.discussionReply.deleteMany({
+                    where: { postId: { in: discussionPostIds } }
+                });
+
+                // Delete discussion posts
+                await tx.discussionPost.deleteMany({
+                    where: { discussion: { labId: labId } }
+                });
+            }
+
+            // Delete discussions
+            await tx.discussion.deleteMany({
+                where: { labId: labId }
+            });
+
+            // Event deletions
+            // Delete event assignments for lab members
+            await tx.eventAssignment.deleteMany({
+                where: { memberId: { in: labMemberIds } }
+            });
+
+            // Get events in this lab and delete their assignments
+            const eventsToDelete = await tx.event.findMany({
+                where: { labId: labId },
+                select: { id: true }
+            });
+            
+            const eventIds = eventsToDelete.map(event => event.id);
+
+            // Delete remaining event assignments (from any member)
+            await tx.eventAssignment.deleteMany({
+                where: { eventId: { in: eventIds } }
+            });
+
+            // Delete events
+            await tx.event.deleteMany({
+                where: { labId: labId }
+            });
+
+            // Delete instruments
+            await tx.instrument.deleteMany({
+                where: { labId: labId }
+            });
+
+            // Inventory deletions
+            // Get lab inventory items to handle their relationships
+            const inventoryItemsToDelete = await tx.labInventoryItem.findMany({
+                where: { labId: labId },
+                select: { id: true }
+            });
+            
+            const inventoryItemIds = inventoryItemsToDelete.map(item => item.id);
+
+            // Delete lab item tags
+            await tx.labItemTag.deleteMany({
+                where: { inventoryItemId: { in: inventoryItemIds } }
+            });
+
+            // Update inventory logs to preserve them but remove the reference to deleted items
+            await tx.inventoryLog.updateMany({
+                where: { labInventoryItemId: { in: inventoryItemIds } },
+                data: { labInventoryItemId: null }
+            });
+
+            // Delete lab inventory items
+            await tx.labInventoryItem.deleteMany({
+                where: { labId: labId }
+            });
+
+            // Member deletions
+            // Delete member statuses
+            await tx.memberStatus.deleteMany({
+                where: { memberId: { in: labMemberIds } }
+            });
+
+            // Delete lab attendance records
+            await tx.labAttendance.deleteMany({
+                where: { memberId: { in: labMemberIds } }
+            });
+
+            // Update inventory logs to remove member references (preserve logs but make reference null)
+            await tx.inventoryLog.updateMany({
+                where: { memberId: { in: labMemberIds } },
+                data: { memberId: null }
+            });
+
+            // Delete lab members
+            await tx.labMember.deleteMany({
+                where: { labId: labId }
+            });
+
+            // Audit cleanup
+            // Delete audit log details (audit not currently implemented, just putting for future referenc)
+            await tx.auditDetail.deleteMany({
+                where: { auditLog: { labId: labId } }
+            });
+            
+            // Delete audit logs related to this lab
+            await tx.auditLog.deleteMany({
+                where: { labId: labId }
+            });
+
+            // Finally delete the lab
+            await tx.lab.delete({
+                where: { id: labId }
+            });
+        });
+
+        res.status(200).json({ 
+            message: 'Lab deleted successfully',
+            deletedLabId: labId,
+            deletedLabName: labToDelete.name
+        });
+
+    } catch (error) {
+        console.error('Error deleting lab:', error);
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === 'P2025') {
+                res.status(404).json({ error: 'Lab not found during deletion' });
+                return;
+            }
+        }
+        res.status(500).json({ error: 'Internal server error while deleting lab' });
     }
 };
 
@@ -565,6 +831,134 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
     }
 }
 
+/**
+ * @swagger
+ * /admin/lab/{labId}/reset-member-password:
+ *   put:
+ *     summary: Reset a lab member's password (lab-specific)
+ *     description: Allows lab managers or admins to reset a lab member's password with security restrictions
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - newPassword
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: ID of the user whose password to reset
+ *               newPassword:
+ *                 type: string
+ *                 description: New password for the user
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       403:
+ *         description: Forbidden - cannot reset admin user password as lab manager
+ *       404:
+ *         description: User not found or not a lab member
+ *       500:
+ *         description: Internal server error
+ */
+export const resetLabMemberPassword = async (req: Request, res: Response): Promise<void> => {
+    const { labId } = req.params;
+    const { userId, newPassword } = req.body;
+    const sessionUserId = (req.session as any)?.passport?.user;
+
+    try {
+        const labIdInt = parseInt(labId);
+        if (isNaN(labIdInt)) {
+            res.status(400).json({ error: 'Invalid lab ID' });
+            return;
+        }
+
+        // Get the user who sent reset request
+        const requestor = await prisma.user.findUnique({
+            where: { id: sessionUserId },
+            include: { role: true }
+        });
+
+        if (!requestor || !requestor.role) {
+            res.status(401).json({ error: 'Authentication required' });
+            return;
+        }
+
+        // Get the target user
+        const targetUser = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { role: true }
+        });
+
+        if (!targetUser || !targetUser.role) {
+            res.status(404).json({ error: 'Target user not found' });
+            return;
+        }
+
+        // Verify target user is a member of this lab
+        const targetLabMember = await prisma.labMember.findFirst({
+            where: {
+                userId: userId,
+                labId: labIdInt
+            },
+            include: {
+                labRole: true
+            }
+        });
+
+        if (!targetLabMember) {
+            res.status(404).json({ error: 'User is not a member of this lab' });
+            return;
+        }
+
+        // Security: Prevent lab managers from resetting admin passwords
+        const ADMIN_PERMISSION_LEVEL = 100;
+        const isRequestorAdmin = requestor.role.permissionLevel >= ADMIN_PERMISSION_LEVEL;
+        const isTargetAdmin = targetUser.role.permissionLevel >= ADMIN_PERMISSION_LEVEL;
+
+        if (isTargetAdmin && !isRequestorAdmin) {
+            res.status(403).json({ 
+                error: 'Lab managers cannot reset passwords of admin users. Please contact a system administrator.' 
+            });
+            return;
+        }
+
+        // Reset the password
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                loginPassword: await hashPassword(newPassword)
+            },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                displayName: true,
+            }
+        });
+
+        console.log(`Password reset successful: User ${requestor.displayName} (ID: ${sessionUserId}) reset password for user ${targetUser.displayName} (ID: ${userId}) in lab ${labIdInt}`);
+
+        res.status(200).json({ 
+            message: 'Password reset successfully',
+            user: updatedUser 
+        });
+    } catch (error) {
+        console.error('Error resetting lab member password:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
 // Lab Managers:
 
 /**
@@ -607,7 +1001,9 @@ export const removeUserFromLab = async (req: Request, res: Response): Promise<vo
         });
         if (!lab) {
             res.status(404).json({ error: 'Lab not found' });
+            return;
         }
+        
         const userInLab = await prisma.labMember.findFirst({
             where: {
                 labId: labId,
@@ -617,14 +1013,45 @@ export const removeUserFromLab = async (req: Request, res: Response): Promise<vo
 
         if (!userInLab) {
             res.status(404).json({ error: 'User not in lab' });
-            throw new Error('User not in lab');
+            return;
         }
 
-        await prisma.labMember.delete({
-            where: {
-                id: userInLab.id
-            }
+        // Find the "Former Member" role (permission level -1)
+        const formerMemberRole = await prisma.labRole.findFirst({
+            where: { permissionLevel: -1 }
         });
+
+        if (!formerMemberRole) {
+            res.status(500).json({ error: 'Former Member role not found. Please ensure the role exists.' });
+            return;
+        }
+
+        // Use transaction to update both lab member role and admission status
+        await prisma.$transaction(async (tx) => {
+            // Soft delete: Update role to "Former Member" instead of deleting
+            await tx.labMember.update({
+                where: {
+                    id: userInLab.id
+                },
+                data: {
+                    labRoleId: formerMemberRole.id
+                }
+            });
+
+            // Update any APPROVED admission requests to WITHDRAWN so user can reapply
+            await tx.labAdmission.updateMany({
+                where: {
+                    userId: userId,
+                    labId: labId,
+                    status: 'APPROVED'
+                },
+                data: {
+                    status: 'WITHDRAWN',
+                    updatedAt: new Date()
+                }
+            });
+        });
+
         res.status(200).json({ message: 'User removed from lab' });
     } catch (error) {
         console.error('Error removing user from lab:', error);
@@ -1022,6 +1449,113 @@ export const getAllLabRoles = async (req: Request, res: Response): Promise<void>
     }
 };
 
+/**
+ * @swagger
+ * /admin/create-lab-role:
+ *   post:
+ *     summary: Create a new lab role
+ *     description: Creates a new lab role that will be available across all labs
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - permissionLevel
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the lab role
+ *                 example: "Senior Technician"
+ *               description:
+ *                 type: string
+ *                 description: Description of the lab role
+ *                 example: "Experienced technician with advanced equipment knowledge"
+ *               permissionLevel:
+ *                 type: integer
+ *                 description: Permission level of the role (higher numbers = more permissions)
+ *                 example: 45
+ *     responses:
+ *       201:
+ *         description: Lab role created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: ID of the created lab role
+ *                 name:
+ *                   type: string
+ *                   description: Name of the lab role
+ *                 description:
+ *                   type: string
+ *                   description: Description of the lab role
+ *                 permissionLevel:
+ *                   type: integer
+ *                   description: Permission level of the role
+ *       400:
+ *         description: Invalid input or role name already exists
+ *       500:
+ *         description: Internal server error
+ */
+export const createLabRole = async (req: Request, res: Response): Promise<void> => {
+    const { name, description, permissionLevel } = req.body;
+
+    // Validate required fields
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+        res.status(400).json({ error: 'Role name is required and must be a non-empty string' });
+        return;
+    }
+
+    if (permissionLevel === undefined || typeof permissionLevel !== 'number') {
+        res.status(400).json({ error: 'Permission level is required and must be a number' });
+        return;
+    }
+
+    // Validate permission level range (assumption: Permissino level must be between 0-100)
+    if (permissionLevel < 0 || permissionLevel > 100) {
+        res.status(400).json({ error: 'Permission level must be between 0 and 100' });
+        return;
+    }
+
+    try {
+        // Check if a role with the same name already exists
+        const existingRole = await prisma.labRole.findFirst({
+            where: { name: name.trim() }
+        });
+
+        if (existingRole) {
+            res.status(400).json({ error: 'A lab role with this name already exists' });
+            return;
+        }
+
+        // Create the new lab role
+        const newLabRole = await prisma.labRole.create({
+            data: {
+                name: name.trim(),
+                description: description?.trim() || null,
+                permissionLevel: permissionLevel
+            }
+        });
+
+        res.status(201).json(newLabRole);
+    } catch (error) {
+        console.error('Error creating lab role:', error);
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === 'P2002') {
+                res.status(400).json({ error: 'A lab role with this name already exists' });
+                return;
+            }
+        }
+        res.status(500).json({ error: 'Internal server error while creating lab role' });
+    }
+};
+
 export const activateMemberStatus = async (req: Request, res: Response): Promise<void> => {
     const memberStatusId = parseInt(req.params.memberStatusId);
     // TODO: Add robust authorization checks (e.g. is the requester an admin of the lab this member belongs to?)
@@ -1229,6 +1763,14 @@ export const updateLabMemberRole = async (req: Request, res: Response): Promise<
         const labRoleExists = await prisma.labRole.findUnique({ where: { id: parseInt(newLabRoleId) } });
         if (!labRoleExists) {
             res.status(404).json({ error: 'Specified LabRole ID not found' });
+            return;
+        }
+
+        // Prevent manual assignment of "Former Member" role
+        if (labRoleExists.name.toLowerCase() === 'former member') {
+            res.status(400).json({ 
+                error: 'Cannot manually assign "Former Member" role. This role is system-managed and only assigned during member removal.' 
+            });
             return;
         }
 
@@ -1497,10 +2039,11 @@ export const addItemToLab = async (req: Request, res: Response): Promise<void> =
                     location: newLabItem.location,
                     itemUnit: newLabItem.itemUnit,
                     currentStock: newLabItem.currentStock,
-                    minStock: newLabItem.minStock
+                    minStock: newLabItem.minStock,
+                    labId: labId 
                 },
                 permissionCheck.source,
-                `Item added to lab via ${permissionCheck.source === InventorySource.ADMIN_PANEL ? 'admin panel' : 'lab interface'}${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
+                `Item added to lab via admin panel${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
                 permissionCheck.memberId
             );
         }
@@ -1740,10 +2283,16 @@ export const removeItemFromLab = async (req: Request, res: Response): Promise<vo
                     location: existingItem.location,
                     itemUnit: existingItem.itemUnit,
                     currentStock: existingItem.currentStock,
-                    minStock: existingItem.minStock
+                    minStock: existingItem.minStock,
+                    labId: labId,  
+                    item: {        // Include full item info for frontend display
+                        id: existingItem.item.id,
+                        name: existingItem.item.name,
+                        description: existingItem.item.description
+                    }
                 },
                 permissionCheck.source,
-                `Item removed from lab via ${permissionCheck.source === InventorySource.ADMIN_PANEL ? 'admin panel' : 'lab interface'}${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
+                `Item removed from lab via admin panel${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
                 permissionCheck.memberId
             );
         }
@@ -2294,4 +2843,460 @@ export const getLabInventoryLogs = async (req: Request, res: Response): Promise<
     }
 };
 
-// TODO: Change item threshold in lab
+/**
+ * @swagger
+ * /admin/lab/{labId}/available-users:
+ *   get:
+ *     summary: Get users available to be added to a lab
+ *     description: Retrieves users who are not currently active members of the specified lab, including former members and users who were never in the lab. Supports search and pagination.
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term to filter users by name, email, or username
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Number of users per page
+ *     responses:
+ *       200:
+ *         description: List of available users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       firstName:
+ *                         type: string
+ *                       lastName:
+ *                         type: string
+ *                       displayName:
+ *                         type: string
+ *                       loginEmail:
+ *                         type: string
+ *                       jobTitle:
+ *                         type: string
+ *                       office:
+ *                         type: string
+ *                       isFormerMember:
+ *                         type: boolean
+ *                         description: Whether this user was previously a member of the lab
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     totalCount:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *       400:
+ *         description: Invalid lab ID or query parameters
+ *       404:
+ *         description: Lab not found
+ *       500:
+ *         description: Internal server error
+ */
+export const getAvailableUsersForLab = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.labId);
+    const search = req.query.search as string || '';
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100); // Cap at 100 users per page
+
+    if (isNaN(labId)) {
+        res.status(400).json({ error: 'Invalid lab ID' });
+        return;
+    }
+
+    if (page < 1 || limit < 1) {
+        res.status(400).json({ error: 'Invalid pagination parameters' });
+        return;
+    }
+
+    try {
+        // Verify lab exists
+        const lab = await prisma.lab.findUnique({
+            where: { id: labId }
+        });
+
+        if (!lab) {
+            res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        // Get all current active lab members (not former members)
+        const activeLabMembers = await prisma.labMember.findMany({
+            where: {
+                labId: labId,
+                labRole: {
+                    permissionLevel: {
+                        gte: 0 
+                    }
+                }
+            },
+            select: {
+                userId: true
+            }
+        });
+
+        const activeUserIds = activeLabMembers.map(member => member.userId);
+
+        // Build search conditions
+        const searchConditions = search ? {
+            OR: [
+                { displayName: { contains: search, mode: 'insensitive' as const } },
+                { firstName: { contains: search, mode: 'insensitive' as const } },
+                { lastName: { contains: search, mode: 'insensitive' as const } },
+                { loginEmail: { contains: search, mode: 'insensitive' as const } },
+                { username: { contains: search, mode: 'insensitive' as const } }
+            ]
+        } : {};
+
+        // Get users who are not active members
+        const whereCondition = {
+            ...searchConditions,
+            id: {
+                notIn: activeUserIds
+            }
+        };
+
+        // Get total count for pagination support
+        const totalCount = await prisma.user.count({
+            where: whereCondition
+        });
+
+        // Get paginated users
+        const users = await prisma.user.findMany({
+            where: whereCondition,
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                displayName: true,
+                loginEmail: true,
+                jobTitle: true,
+                office: true,
+                labMembers: {
+                    where: {
+                        labId: labId,
+                        labRole: {
+                            permissionLevel: -1 // Former member
+                        }
+                    },
+                    select: {
+                        id: true
+                    }
+                }
+            },
+            orderBy: [
+                { displayName: 'asc' },
+                { lastName: 'asc' },
+                { firstName: 'asc' }
+            ],
+            skip: (page - 1) * limit,
+            take: limit
+        });
+
+        // Format response with isFormerMember flag
+        const formattedUsers = users.map(user => ({
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            displayName: user.displayName,
+            loginEmail: user.loginEmail,
+            jobTitle: user.jobTitle,
+            office: user.office,
+            isFormerMember: user.labMembers.length > 0
+        }));
+
+        const totalPages = Math.ceil(totalCount / limit);
+
+        res.status(200).json({
+            users: formattedUsers,
+            pagination: {
+                page,
+                limit,
+                totalCount,
+                totalPages
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching available users for lab:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/lab/{labId}/add-user:
+ *   post:
+ *     summary: Add a user to a lab or reactivate a former member
+ *     description: Adds a new user to a lab with a specified role, or reactivates a former member with a new role.
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - labRoleId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: ID of the user to add to the lab
+ *               labRoleId:
+ *                 type: integer
+ *                 description: ID of the lab role to assign to the user
+ *     responses:
+ *       201:
+ *         description: User added to lab successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 labMember:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     userId:
+ *                       type: integer
+ *                     labId:
+ *                       type: integer
+ *                     labRoleId:
+ *                       type: integer
+ *                     isReactivated:
+ *                       type: boolean
+ *                       description: Whether this was a reactivation of a former member
+ *       400:
+ *         description: Invalid request data
+ *       404:
+ *         description: Lab not found, user not found, or lab role not found
+ *       409:
+ *         description: User is already an active member of the lab
+ *       500:
+ *         description: Internal server error
+ */
+export const addUserToLabEndpoint = async (req: Request, res: Response): Promise<void> => {
+    const labId = parseInt(req.params.labId);
+    const { userId, labRoleId } = req.body;
+
+    if (isNaN(labId) || !userId || !labRoleId) {
+        res.status(400).json({ error: 'Lab ID, user ID, and lab role ID are required' });
+        return;
+    }
+
+    try {
+        // Verify lab exists
+        const lab = await prisma.lab.findUnique({
+            where: { id: labId }
+        });
+
+        if (!lab) {
+            res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        // Verify user exists
+        const user = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!user) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+
+        // Verify lab role exists and is not the "Former Member" role
+        const labRole = await prisma.labRole.findUnique({
+            where: { id: labRoleId }
+        });
+
+        if (!labRole) {
+            res.status(404).json({ error: 'Lab role not found' });
+            return;
+        }
+
+        if (labRole.permissionLevel === -1) {
+            res.status(400).json({ error: 'Cannot assign Former Member role directly' });
+            return;
+        }
+
+        // Check if user is already an active member
+        const existingActiveMember = await prisma.labMember.findFirst({
+            where: {
+                userId: userId,
+                labId: labId,
+                labRole: {
+                    permissionLevel: {
+                        gte: 0 
+                    }
+                }
+            }
+        });
+
+        if (existingActiveMember) {
+            res.status(409).json({ error: 'User is already an active member of this lab' });
+            return;
+        }
+
+        // Check if user is a former member that can be reactivated
+        const formerMember = await prisma.labMember.findFirst({
+            where: {
+                userId: userId,
+                labId: labId,
+                labRole: {
+                    permissionLevel: -1 
+                }
+            }
+        });
+
+        // Get user's first contact for member status creation
+        const userFirstContact = await prisma.contact.findFirst({
+            where: { 
+                userId: userId,
+            },
+            orderBy: { id: 'asc' } 
+        });
+
+        if (!userFirstContact) {
+            res.status(400).json({ error: 'User has no contact information' });
+            return;
+        }
+
+        let labMember;
+        let isReactivated = false;
+
+        // Use transaction to ensure consistency across admission and member records
+        const result = await prisma.$transaction(async (tx) => {
+            let updatedLabMember;
+
+            if (formerMember) {
+                // Reactivate former member by updating their role
+                updatedLabMember = await tx.labMember.update({
+                    where: { id: formerMember.id },
+                    data: {
+                        labRoleId: labRoleId,
+                        updatedAt: new Date()
+                    }
+                });
+                isReactivated = true;
+            } else {
+                // Create new lab member
+                updatedLabMember = await tx.labMember.create({
+                    data: {
+                        userId: userId,
+                        labId: labId,
+                        labRoleId: labRoleId,
+                        inductionDone: false,
+                        isPCI: false
+                    }
+                });
+            }
+
+            // Create member statuses only for new members (not reactivated ones)
+            if (!isReactivated) {
+                await tx.memberStatus.create({
+                    data: {
+                        description: 'Default online status',
+                        contactId: userFirstContact.id,
+                        memberId: updatedLabMember.id,
+                        isActive: false,
+                        statusId: 1, 
+                    }
+                });
+                
+                await tx.memberStatus.create({
+                    data: {
+                        description: 'Default offline status',
+                        contactId: userFirstContact.id,
+                        memberId: updatedLabMember.id,
+                        isActive: true,
+                        statusId: 3, 
+                    }
+                });
+            }
+
+            // Create 'approved' admission record to maintain consistency with admission process
+            const admissionRecord = await tx.labAdmission.create({
+                data: {
+                    labId: labId,
+                    userId: userId,
+                    roleId: labRoleId,
+                    status: 'APPROVED' as any, 
+                    isPCI: false, // Default to false, can make this configurable later if needed (otherwise, manager/admin can change via 'Manage Members' tab)
+                }
+            });
+
+            // Update user's last viewed lab if not set
+            if (!user.lastViewedLabId) {
+                await tx.user.update({
+                    where: { id: userId },
+                    data: {
+                        lastViewedLabId: labId,
+                        lastViewed: `/lab/${labId}`
+                    }
+                });
+            }
+
+            return { updatedLabMember, admissionRecord };
+        });
+
+        res.status(201).json({
+            message: isReactivated ? 'User reactivated in lab successfully' : 'User added to lab successfully',
+            labMember: {
+                id: result.updatedLabMember.id,
+                userId: result.updatedLabMember.userId,
+                labId: result.updatedLabMember.labId,
+                labRoleId: result.updatedLabMember.labRoleId,
+                isReactivated
+            },
+            admissionRecord: {
+                id: result.admissionRecord.id,
+                status: result.admissionRecord.status
+            }
+        });
+
+    } catch (error) {
+        console.error('Error adding user to lab:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

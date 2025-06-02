@@ -106,7 +106,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
             const userRes = await api.get(`/user/get/${memberData.userId}`);
             const userData = userRes.data;
             authorName = userData.displayName || userData.username || 'Unknown';
-            authorRole = userData.roleId ? await ResolveRoleName(userData.roleId) : (userData.jobTitle || 'User');
+            authorRole = memberData.labRole ? memberData.labRole.name : 'Lab Member';
             authorImage = userData.image || '/default_pfp.svg';
           } catch (error) {
             console.error('Error fetching announcement author details:', error);

@@ -25,8 +25,8 @@ const AdmissionPage = async ({ searchParams }: AdmissionPageProps) => {
   const params = await searchParams
   const view = params.view || 'requests'
   
-  // You might want to get the current lab ID from user session or route params
-  const labId = 2 // Replace with actual lab ID logic
+  // Get the current lab ID from user's last viewed lab
+  const labId = Number(user.lastViewedLabId) || 1 // Fallback to lab 1 if no lab is set (change later)
 
   return (
     <div>

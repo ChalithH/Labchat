@@ -18,7 +18,7 @@ export interface InventoryLogEntry {
       name: string;
       description: string | null;
     };
-  };
+  } | null;
   user: {
     id: number;
     firstName: string;

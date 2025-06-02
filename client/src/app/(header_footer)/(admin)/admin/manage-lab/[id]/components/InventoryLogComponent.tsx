@@ -66,6 +66,7 @@ export default function InventoryLogComponent({ labId }: InventoryLogComponentPr
   const [showFilters, setShowFilters] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<UserType[]>([]);
   const [availableMembers, setAvailableMembers] = useState<Member[]>([]);
+  const [hideDeletedItems, setHideDeletedItems] = useState(false);
 
   const [filters, setFilters] = useState<InventoryLogFilters>({
     action: 'all',
@@ -212,6 +213,30 @@ export default function InventoryLogComponent({ labId }: InventoryLogComponentPr
     return log.user.displayName || `${log.user.firstName} ${log.user.lastName}`;
   };
 
+  const getItemName = (log: InventoryLogEntry) => {
+    // If item exists (not deleted), use it
+    if (log.labInventoryItem?.item?.name) {
+      return log.labInventoryItem.item.name;
+    }
+    
+    // For deleted items, try get name from previousValues
+    if (log.action === InventoryAction.ITEM_REMOVED && log.previousValues?.item?.name) {
+      return `${log.previousValues.item.name} (Deleted)`;
+    }
+    
+    // Fallback to any item name in previousValues
+    if (log.previousValues?.itemName) {
+      return `${log.previousValues.itemName} (Deleted)`;
+    }
+    
+    return 'Unknown Item (Deleted)';
+  };
+
+  // Filter logs based on hideDeletedItems
+  const displayedLogs = hideDeletedItems 
+    ? logs.filter(log => log.labInventoryItem !== null)
+    : logs;
+
   if (error) {
     return (
       <Card>
@@ -236,19 +261,33 @@ export default function InventoryLogComponent({ labId }: InventoryLogComponentPr
           <h2 className="text-2xl font-bold">Inventory Activity Log</h2>
           <p className="text-gray-600">Track all inventory changes for this lab</p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-            size="sm"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
-          </Button>
-          <Button onClick={() => fetchLogs(currentPage)} size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="hideDeletedItems"
+              checked={hideDeletedItems}
+              onChange={(e) => setHideDeletedItems(e.target.checked)}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="hideDeletedItems" className="text-sm text-gray-700 whitespace-nowrap">
+              Hide deleted item logs
+            </label>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              size="sm"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+            </Button>
+            <Button onClick={() => fetchLogs(currentPage)} size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -346,7 +385,7 @@ export default function InventoryLogComponent({ labId }: InventoryLogComponentPr
 
       {/* Results Summary */}
       <div className="text-sm text-gray-600">
-        Showing {logs.length} of {totalCount} entries
+        Showing {displayedLogs.length} of {totalCount} entries
         {currentPage > 1 && ` (Page ${currentPage} of ${totalPages})`}
       </div>
 
@@ -358,13 +397,15 @@ export default function InventoryLogComponent({ labId }: InventoryLogComponentPr
               <Loader2 className="h-8 w-8 animate-spin" />
               <span className="ml-2">Loading logs...</span>
             </div>
-          ) : logs.length === 0 ? (
+          ) : displayedLogs.length === 0 ? (
             <div className="text-center p-8 text-gray-500">
-              No inventory logs found for the selected filters.
+              {hideDeletedItems && logs.length > 0 
+                ? 'No active item logs to display. Uncheck "Hide deleted item logs" to see all logs.'
+                : 'No inventory logs found for the selected filters.'}
             </div>
           ) : (
             <div className="divide-y">
-              {logs.map((log) => (
+              {displayedLogs.map((log) => (
                 <div key={log.id} className="p-4 hover:bg-gray-50">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -377,7 +418,7 @@ export default function InventoryLogComponent({ labId }: InventoryLogComponentPr
                         </Badge>
                         <div className="flex items-center text-sm text-gray-600">
                           <Package className="h-4 w-4 mr-1" />
-                          {log.labInventoryItem.item.name}
+                          {getItemName(log)}
                         </div>
                       </div>
 

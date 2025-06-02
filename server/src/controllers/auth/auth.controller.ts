@@ -234,3 +234,56 @@ export const checkLabAccessPermission = async (req: Request, res: Response): Pro
     res.status(500).json({ authorized: false, isRootAdmin: false, isLabManager: false, error: 'Internal server error during authorization' });
   }
 };
+
+/*
+ * CHECK ADMIN PERMISSION
+ * Verifies if the authenticated user has admin permission (permissionLevel >= 100).
+ * This is used for admin dashboard and other admin-only pages.
+ * 
+ * Responses:
+ *   200 : User has admin permission (returns { hasAdminPermission: true }).
+ *   401 : User not authenticated (no session).
+ *   403 : User authenticated but doesn't have admin permission.
+ *   500 : Internal server error during the permission check.
+ */
+export const checkAdminPermission = async (req: Request, res: Response): Promise<void> => {
+  try {
+    let sessionUserId: number | undefined;
+
+    if (typeof req.user === 'number') {
+      sessionUserId = req.user;
+    } else if (req.user && typeof (req.user as any).id === 'number') {
+      sessionUserId = (req.user as any).id;
+    }
+
+    if (!sessionUserId) {
+      res.status(401).json({ hasAdminPermission: false, error: 'User not authenticated' });
+      return;
+    }
+
+    // Fetch user with their user role for permission checks
+    const userWithRole = await prisma.user.findUnique({
+      where: { id: sessionUserId },
+      include: { role: true },
+    });
+
+    if (!userWithRole || !userWithRole.role) {
+      console.error(`User role not found for authenticated user ID: ${sessionUserId}`);
+      res.status(403).json({ hasAdminPermission: false, error: 'User role information missing' });
+      return;
+    }
+
+    // Check for admin privileges (permissionLevel >= 100)
+    const hasAdminPermission = userWithRole.role.permissionLevel >= 100;
+
+    if (hasAdminPermission) {
+      res.status(200).json({ hasAdminPermission: true });
+    } else {
+      res.status(403).json({ hasAdminPermission: false, error: 'User does not have admin permission' });
+    }
+
+  } catch (error) {
+    console.error('Critical error in checkAdminPermission:', error);
+    res.status(500).json({ hasAdminPermission: false, error: 'Internal server error during permission check' });
+  }
+};

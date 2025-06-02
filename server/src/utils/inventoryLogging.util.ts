@@ -146,14 +146,20 @@ export const logStockAdd = async (
   reason?: string,
   memberId?: number | null
 ): Promise<void> => {
+  // Get the labId from the inventory item
+  const inventoryItem = await prisma.labInventoryItem.findUnique({
+    where: { id: labInventoryItemId },
+    select: { labId: true }
+  });
+  
   await createInventoryLog({
     labInventoryItemId,
     userId,
     memberId: memberId ?? undefined,
     action: InventoryAction.STOCK_ADD,
     source,
-    previousValues: { currentStock: previousStock },
-    newValues: { currentStock: newStock },
+    previousValues: { currentStock: previousStock, labId: inventoryItem?.labId },
+    newValues: { currentStock: newStock, labId: inventoryItem?.labId },
     quantityChanged: amountAdded,
     reason,
   });
@@ -170,14 +176,20 @@ export const logStockRemove = async (
   reason?: string,
   memberId?: number | null
 ): Promise<void> => {
+  // Get the labId from the inventory item
+  const inventoryItem = await prisma.labInventoryItem.findUnique({
+    where: { id: labInventoryItemId },
+    select: { labId: true }
+  });
+  
   await createInventoryLog({
     labInventoryItemId,
     userId,
     memberId: memberId ?? undefined,
     action: InventoryAction.STOCK_REMOVE,
     source,
-    previousValues: { currentStock: previousStock },
-    newValues: { currentStock: newStock },
+    previousValues: { currentStock: previousStock, labId: inventoryItem?.labId },
+    newValues: { currentStock: newStock, labId: inventoryItem?.labId },
     quantityChanged: -amountRemoved, // Negative for take
     reason,
   });
@@ -192,14 +204,19 @@ export const logStockUpdate = async (
   reason?: string,
   memberId?: number | null
 ): Promise<void> => {
+  const inventoryItem = await prisma.labInventoryItem.findUnique({
+    where: { id: labInventoryItemId },
+    select: { labId: true }
+  });
+  
   await createInventoryLog({
     labInventoryItemId,
     userId,
     memberId: memberId ?? undefined,
     action: InventoryAction.STOCK_UPDATE,
     source,
-    previousValues: { currentStock: previousStock },
-    newValues: { currentStock: newStock },
+    previousValues: { currentStock: previousStock, labId: inventoryItem?.labId },
+    newValues: { currentStock: newStock, labId: inventoryItem?.labId },
     quantityChanged: newStock - previousStock,
     reason,
   });
@@ -215,14 +232,19 @@ export const logLocationChange = async (
   reason?: string,
   memberId?: number | null
 ): Promise<void> => {
+  const inventoryItem = await prisma.labInventoryItem.findUnique({
+    where: { id: labInventoryItemId },
+    select: { labId: true }
+  });
+  
   await createInventoryLog({
     labInventoryItemId,
     userId,
     memberId: memberId ?? undefined,
     action: InventoryAction.LOCATION_CHANGE,
     source,
-    previousValues: { location: previousLocation },
-    newValues: { location: newLocation },
+    previousValues: { location: previousLocation, labId: inventoryItem?.labId },
+    newValues: { location: newLocation, labId: inventoryItem?.labId },
     reason,
   });
 };
@@ -237,14 +259,19 @@ export const logMinStockUpdate = async (
   reason?: string,
   memberId?: number | null
 ): Promise<void> => {
+  const inventoryItem = await prisma.labInventoryItem.findUnique({
+    where: { id: labInventoryItemId },
+    select: { labId: true }
+  });
+  
   await createInventoryLog({
     labInventoryItemId,
     userId,
     memberId: memberId ?? undefined,
     action: InventoryAction.MIN_STOCK_UPDATE,
     source,
-    previousValues: { minStock: previousMinStock },
-    newValues: { minStock: newMinStock },
+    previousValues: { minStock: previousMinStock, labId: inventoryItem?.labId },
+    newValues: { minStock: newMinStock, labId: inventoryItem?.labId },
     reason,
   });
 };
@@ -263,7 +290,7 @@ export const logItemAdded = async (
     userId,
     memberId: memberId ?? undefined,
     action: InventoryAction.ITEM_ADDED,
-    source,
+    source: InventorySource.ADMIN_PANEL,
     newValues: itemData,
     reason,
   });
@@ -283,7 +310,7 @@ export const logItemRemoved = async (
     userId,
     memberId: memberId ?? undefined,
     action: InventoryAction.ITEM_REMOVED,
-    source,
+    source: InventorySource.ADMIN_PANEL,
     previousValues: itemData,
     reason,
   });
@@ -299,14 +326,19 @@ export const logItemUpdate = async (
   reason?: string,
   memberId?: number | null
 ): Promise<void> => {
+  const inventoryItem = await prisma.labInventoryItem.findUnique({
+    where: { id: labInventoryItemId },
+    select: { labId: true }
+  });
+  
   await createInventoryLog({
     labInventoryItemId,
     userId,
     memberId: memberId ?? undefined,
     action: InventoryAction.ITEM_UPDATE,
     source,
-    previousValues,
-    newValues,
+    previousValues: { ...previousValues, labId: inventoryItem?.labId },
+    newValues: { ...newValues, labId: inventoryItem?.labId },
     reason,
   });
 };
@@ -338,41 +370,75 @@ export const getInventoryLogsForLab = async (
     memberId
   } = options;
 
+  // Handle both existing items and deleted items
   const whereClause: any = {
-    labInventoryItem: {
-      labId: labId,
-    },
+    OR: [
+      // for existing items
+      {
+        labInventoryItem: {
+          labId: labId,
+        },
+      },
+      // for deleted items (labInventoryItemId is null)
+      // find labId from previousValues
+      {
+        AND: [
+          {
+            labInventoryItemId: null,
+          },
+          {
+            previousValues: {
+              path: ['labId'],
+              equals: labId
+            }
+          }
+        ]
+      }
+    ]
   };
 
+  // Add additional filters
+  const additionalFilters: any = {};
+
   if (action) {
-    whereClause.action = action;
+    additionalFilters.action = action;
   }
 
   if (source) {
-    whereClause.source = source;
+    additionalFilters.source = source;
   }
 
   if (startDate || endDate) {
-    whereClause.createdAt = {};
+    additionalFilters.createdAt = {};
     if (startDate) {
-      whereClause.createdAt.gte = startDate;
+      additionalFilters.createdAt.gte = startDate;
     }
     if (endDate) {
-      whereClause.createdAt.lte = endDate;
+      additionalFilters.createdAt.lte = endDate;
     }
   }
 
   if (userId) {
-    whereClause.userId = userId;
+    additionalFilters.userId = userId;
   }
 
   if (memberId) {
-    whereClause.memberId = memberId;
+    additionalFilters.memberId = memberId;
   }
+
+  // Combine OR clause with additional filters using AND
+  const finalWhereClause = Object.keys(additionalFilters).length > 0 
+    ? {
+        AND: [
+          whereClause,
+          additionalFilters
+        ]
+      }
+    : whereClause;
 
   const [logs, totalCount] = await Promise.all([
     prisma.inventoryLog.findMany({
-      where: whereClause,
+      where: finalWhereClause,
       include: {
         labInventoryItem: {
           include: {
@@ -406,7 +472,7 @@ export const getInventoryLogsForLab = async (
       skip: offset,
     }),
     prisma.inventoryLog.count({
-      where: whereClause,
+      where: finalWhereClause,
     })
   ]);
 

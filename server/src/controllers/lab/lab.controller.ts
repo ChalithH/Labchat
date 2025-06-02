@@ -80,7 +80,10 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
     const labId = req.params.labId;
     try {
         const labMembersFromDb = await prisma.labMember.findMany({
-            where: { labId: Number(labId) },
+            where: { 
+                labId: Number(labId),
+                labRole: { permissionLevel: { gte: 0 } } // Only active members
+            },
             select: {
                 id: true,
                 userId: true,
@@ -215,7 +218,10 @@ export const getLabMembersList = async (req: Request, res: Response): Promise<vo
     const labIdParam = req.params.labId;
     try {
         const labMembers = await prisma.labMember.findMany({
-            where: { labId: Number(labIdParam) },
+            where: { 
+                labId: Number(labIdParam),
+                labRole: { permissionLevel: { gte: 0 } }
+            },
             select: {
                 id: true,      
                 user: { 
@@ -248,8 +254,8 @@ export const getLabMembersList = async (req: Request, res: Response): Promise<vo
  * @swagger
  * /lab/roles:
  *   get:
- *     summary: Get all lab roles
- *     description: Retrieve all available lab roles ordered by permission level (ascending). Used for admission requests and role assignments.
+ *     summary: Get available lab roles for admission requests
+ *     description: Retrieve available lab roles ordered by permission level (ascending). Used for admission requests and role assignments. Excludes 'Former Member' role and other roles with permission level < 0.
  *     tags: [Lab]
  *     responses:
  *       200:
@@ -309,6 +315,9 @@ export const getLabMembersList = async (req: Request, res: Response): Promise<vo
 export const getLabRoles = async (req: Request, res: Response): Promise<void> => {
   try {
     const roles = await prisma.labRole.findMany({
+      where: {
+        permissionLevel: { gte: 0 } // Exclude Former Member and other negative permission roles
+      },
       orderBy: { permissionLevel: 'asc' },
       take: 3, 
     });
@@ -470,7 +479,10 @@ export const getUserLabs = async (req: Request, res: Response): Promise<void> =>
     }
 
     const memberships = await prisma.labMember.findMany({
-      where: { userId: Number(userId) },
+      where: { 
+        userId: Number(userId),
+        labRole: { permissionLevel: { gte: 0 } } // Only active memberships
+      },
       select : { labId: true }
       })
       

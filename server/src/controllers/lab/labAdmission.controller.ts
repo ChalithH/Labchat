@@ -102,16 +102,21 @@ export const createAdmissionRequest = async (req: Request, res: Response): Promi
             return;
         }
 
-        // Check if user is already a member of this lab
-        const existingMember = await prisma.labMember.findFirst({
+        // Check if user is already an active member of this lab
+        const existingActiveMember = await prisma.labMember.findFirst({
             where: {
                 userId: Number(userId),
-                labId: Number(labId)
+                labId: Number(labId),
+                labRole: {
+                    permissionLevel: {
+                        gte: 0 // Only check for active members (permission level >= 0)
+                    }
+                }
             }
         });
 
-        if (existingMember) {
-            res.status(400).json({ error: 'User is already a member of this lab' });
+        if (existingActiveMember) {
+            res.status(400).json({ error: 'User is already an active member of this lab' });
             return;
         }
 
@@ -260,8 +265,21 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
         });
 
         if (existingMember) {
-            res.status(400).json({ error: 'User is already a member of this lab' });
-            return;
+            // Check if it's a former member that can be reactivated
+            const formerMember = await prisma.labMember.findFirst({
+                where: {
+                    userId: admissionRequest.userId,
+                    labId: admissionRequest.labId,
+                    labRole: {
+                        permissionLevel: -1 // Former member (with lab role = 'Former Member')
+                    }
+                }
+            });
+
+            if (!formerMember) {
+                res.status(400).json({ error: 'User is already an active member of this lab' });
+                return;
+            }
         }
 
         const userFirstContact = await prisma.contact.findFirst({
@@ -275,6 +293,17 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
             res.status(400).json({ error: 'User has no contact information' });
             return;
         }
+
+        // Check if user is a former member
+        const formerMember = await prisma.labMember.findFirst({
+            where: {
+                userId: admissionRequest.userId,
+                labId: admissionRequest.labId,
+                labRole: {
+                    permissionLevel: -1 
+                }
+            }
+        });
 
         // Use transaction to ensure both operations succeed or fail together
         const result = await prisma.$transaction(async (tx) => {
@@ -310,56 +339,96 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 }
             });
 
-            // Create lab member
-            const newLabMember = await tx.labMember.create({
-                data: {
-                    userId: admissionRequest.userId,
-                    labId: admissionRequest.labId,
-                    labRoleId: roleId,
-                    isPCI: isPCI,
-                },
-                include: {
-                    user: {
-                        select: {
-                            firstName: true,
-                            lastName: true,
-                            displayName: true
-                        }
+            let labMember;
+            let isReactivated = false;
+
+            if (formerMember) {
+                // Reactivate former member by updating their role
+                labMember = await tx.labMember.update({
+                    where: { id: formerMember.id },
+                    data: {
+                        labRoleId: roleId,
+                        isPCI: isPCI,
+                        updatedAt: new Date()
                     },
-                    lab: {
-                        select: {
-                            name: true,
-                            location: true
-                        }
-                    },
-                    labRole: {
-                        select: {
-                            name: true,
-                            description: true
+                    include: {
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                displayName: true
+                            }
+                        },
+                        lab: {
+                            select: {
+                                name: true,
+                                location: true
+                            }
+                        },
+                        labRole: {
+                            select: {
+                                name: true,
+                                description: true
+                            }
                         }
                     }
-                }
-            });
+                });
+                isReactivated = true;
+            } else {
+                // Create new lab member
+                labMember = await tx.labMember.create({
+                    data: {
+                        userId: admissionRequest.userId,
+                        labId: admissionRequest.labId,
+                        labRoleId: roleId,
+                        isPCI: isPCI,
+                    },
+                    include: {
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                displayName: true
+                            }
+                        },
+                        lab: {
+                            select: {
+                                name: true,
+                                location: true
+                            }
+                        },
+                        labRole: {
+                            select: {
+                                name: true,
+                                description: true
+                            }
+                        }
+                    }
+                });
+            }
 
-
-            const onlineStatus: MemberStatus = await tx.memberStatus.create({
-                data: {
-                    description: 'Default online status',
-                    contactId: userFirstContact.id,
-                    memberId: newLabMember.id,
-                    isActive: false,
-                    statusId: 1, 
-                }
-            });
-             const offlineStatus: MemberStatus = await tx.memberStatus.create({
-                data: {
-                    description: 'Default offline status',
-                    contactId: userFirstContact.id,
-                    memberId: newLabMember.id,
-                    isActive: true,
-                    statusId: 3, 
-                }
-            });
+            // Create default member statuses only for new members (not reactivated ones)
+            if (!isReactivated) {
+                const onlineStatus = await tx.memberStatus.create({
+                    data: {
+                        description: 'Default online status',
+                        contactId: userFirstContact.id,
+                        memberId: labMember.id,
+                        isActive: false,
+                        statusId: 1, 
+                    }
+                });
+                
+                const offlineStatus = await tx.memberStatus.create({
+                    data: {
+                        description: 'Default offline status',
+                        contactId: userFirstContact.id,
+                        memberId: labMember.id,
+                        isActive: true,
+                        statusId: 3, 
+                    }
+                });
+            }
 
             let updatedUser = null;
             if (!admissionRequest.user.lastViewedLabId) {
@@ -372,13 +441,16 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 });
             }
 
-            return { updatedAdmission, newLabMember, onlineStatus, offlineStatus };
+            return { updatedAdmission, newLabMember: labMember, isReactivated };
         });
 
         res.status(200).json({
-            message: 'Admission request approved and lab member created successfully',
+            message: result.isReactivated 
+                ? 'Admission request approved and user reactivated successfully' 
+                : 'Admission request approved and lab member created successfully',
             admissionRequest: result.updatedAdmission,
-            labMember: result.newLabMember
+            labMember: result.newLabMember,
+            isReactivated: result.isReactivated
         });
 
     } catch (error) {

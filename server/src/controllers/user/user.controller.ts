@@ -1054,7 +1054,10 @@ export const getUserAvailableLabs = async (req: Request, res: Response): Promise
 
     // Get all labs where user is a member
     const memberships = await prisma.labMember.findMany({
-      where: { userId: userIdNum },
+      where: { 
+        userId: userIdNum,
+        labRole: { permissionLevel: { gte: 0 } } // Only active memberships (not 'Former Members')
+      },
       include: {
         lab: {
           select: {
