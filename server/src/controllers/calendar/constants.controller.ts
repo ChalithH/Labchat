@@ -24,9 +24,14 @@ const prisma = new PrismaClient();
  *                   name:
  *                     type: string
  *                     description: Name of the event type
+ *                   color:
+ *                     type: string
+ *                     description: Hex color code for the event type
+ *                     example: "#3B82F6"
  *                 example:
  *                   id: 1
  *                   name: "Meeting"
+ *                   color: "#3B82F6"
  *       500:
  *         description: Failed to retrieve event types
  *         content:
@@ -45,6 +50,7 @@ export const getEventTypes = async (req: Request, res: Response): Promise<void> 
             select: {
                 id: true,
                 name: true,
+                color: true, // Now includes the hex color code
             }
         });
         res.json(eventTypes);

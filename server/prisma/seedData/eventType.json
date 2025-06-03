@@ -1,19 +1,22 @@
 [
-    {
-      "name": "Lab Booking",
-      "description": "Scheduled time for using a lab instrument."
-    },
-    {
-      "name": "Task",
-      "description": "Lab task assigned to lab members."
-    },
-    {
-      "name": "Instrument Booking",
-      "description": "Scheduled time for using a lab instrument."
-    },
-    {
-      "name": "Other",
-      "description": "Scheduled maintenance for lab equipment."
-    }
-  ]
-  
+  {
+    "name": "Lab Booking",
+    "description": "Scheduled time for using a lab instrument.",
+    "color": "#1E90FF" 
+  },
+  {
+    "name": "Task",
+    "description": "Lab task assigned to lab members.",
+    "color": "#32CD32" 
+  },
+  {
+    "name": "Instrument Booking",
+    "description": "Scheduled time for using a lab instrument.",
+    "color": "#FFA500" 
+  },
+  {
+    "name": "Other",
+    "description": "Scheduled maintenance for lab equipment.",
+    "color": "#A9A9A9" 
+  }
+]
