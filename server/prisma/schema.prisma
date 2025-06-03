@@ -466,6 +466,7 @@ model EventType {
   id          Int     @id @default(autoincrement())
   name        String
   description String?
+  color       String? @db.VarChar(7) // Hex color code, e.g. "#FF5733"
 
   // Relationships
   events      Event[]

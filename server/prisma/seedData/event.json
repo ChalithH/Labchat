@@ -250,7 +250,7 @@
     "status": "Scheduled",
     "startTime": "2025-06-25T09:00:00Z",
     "endTime": "2025-06-25T12:00:00Z",
-    "typeId": 10
+    "typeId": 2
   },
   {
     "labId": 2,
@@ -261,7 +261,7 @@
     "status": "Scheduled",
     "startTime": "2025-06-25T13:00:00Z",
     "endTime": "2025-06-25T17:00:00Z",
-    "typeId": 11
+    "typeId": 3
   },
   {
     "labId": 3,
@@ -272,6 +272,6 @@
     "status": "Scheduled",
     "startTime": "2025-06-26T10:00:00Z",
     "endTime": "2025-06-26T11:00:00Z",
-    "typeId": 12
+    "typeId": 4
   }
 ]
