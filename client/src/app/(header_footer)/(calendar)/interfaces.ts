@@ -1,4 +1,3 @@
-import type { TEventColor } from "@/calendar/types";
 
 export interface IUser {
   id: string;
@@ -25,7 +24,7 @@ export interface IAssignment {
 export interface IEventType {
   id: number;
   name: string;
-  color?: TEventColor;
+  color?: string;
 }
 
 export interface IEvent {
@@ -33,7 +32,7 @@ export interface IEvent {
   startDate: string;
   endDate: string;
   title: string;
-  color: TEventColor;
+  color: string;
   description: string;
   status?: string | null;
   user: IUser;  // This is the assigner

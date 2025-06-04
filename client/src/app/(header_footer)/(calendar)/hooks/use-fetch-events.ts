@@ -21,14 +21,15 @@ type FetchCache = {
   view: TCalendarView;
   userId: string;
   typeId: string;
+  instrumentId: string;
   labId: number;
   events: IEvent[];
 };
 
 export const useFetchEvents = () => {
-  const { selectedDate, selectedUserId, selectedTypeId, setLocalEvents } = useCalendar();
-  const currentLabId = useCurrentLabId(); // Get current lab ID from context
+  const { selectedDate, selectedUserId, selectedTypeId, selectedInstrumentId, setLocalEvents } = useCalendar();
   const [loading, setLoading] = useState(false);
+  const currentLabId = useCurrentLabId(); // Get current lab ID from context
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<TCalendarView>('month');
   
@@ -64,7 +65,15 @@ export const useFetchEvents = () => {
     return { startDate, endDate };
   }, []);
   
-  const fetchEventsForDateRange = useCallback(async (date: Date, viewType: TCalendarView, userId: string, typeId: string, labId: number, force = false) => {
+  const fetchEventsForDateRange = useCallback(async (
+    date: Date, 
+    viewType: TCalendarView, 
+    userId: string, 
+    typeId: string, 
+    instrumentId: string,
+    labId: number, 
+    force = false
+  ) => {
     const { startDate, endDate } = getDateRange(date, viewType);
     
     // Create a cache key
@@ -80,7 +89,8 @@ export const useFetchEvents = () => {
       fetchCacheRef.current.view === viewType && 
       fetchCacheRef.current.userId === userId &&
       fetchCacheRef.current.typeId === typeId &&
-      fetchCacheRef.current.labId === labId
+      fetchCacheRef.current.labId === labId &&
+      fetchCacheRef.current.instrumentId === instrumentId
     ) {
       return;
     }
@@ -91,7 +101,7 @@ export const useFetchEvents = () => {
     try {
       console.log(`Fetching events for ${viewType} view from ${startDate.toDateString()} to ${endDate.toDateString()} for lab ${labId}`);
       
-      const fetchedEvents = await getEvents(startDate, endDate, labId); // Pass lab ID to getEvents
+      const fetchedEvents = await getEvents(startDate, endDate, labId);
       
       // Filter events by user if needed - now checks assignments
       let filteredEvents = fetchedEvents;
@@ -117,6 +127,16 @@ export const useFetchEvents = () => {
         );
       }
       
+      // Filter events by instrument if needed
+      if (instrumentId !== "all") {
+        filteredEvents = filteredEvents.filter(event => {
+          if (instrumentId === "none") {
+            return !event.instrument || event.instrument === null;
+          }
+          return event.instrument && event.instrument.id.toString() === instrumentId;
+        });
+      }
+      
       // Store in cache
       fetchCacheRef.current = {
         startDate: startKey,
@@ -124,6 +144,7 @@ export const useFetchEvents = () => {
         view: viewType,
         userId,
         typeId,
+        instrumentId,
         labId,
         events: filteredEvents
       };
@@ -137,16 +158,31 @@ export const useFetchEvents = () => {
     }
   }, [getDateRange, setLocalEvents]);
   
-  // Fetch events when selected parameters change (including lab ID)
+  // Fetch events when selected parameters change
   useEffect(() => {
-    fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId), currentLabId);
-  }, [selectedDate, view, selectedUserId, selectedTypeId, currentLabId, fetchEventsForDateRange]);
+    fetchEventsForDateRange(
+      selectedDate, 
+      view, 
+      String(selectedUserId), 
+      String(selectedTypeId),
+      String(selectedInstrumentId),
+      currentLabId
+    );
+  }, [selectedDate, view, selectedUserId, selectedTypeId, selectedInstrumentId, currentLabId, fetchEventsForDateRange]);
   
   return {
     loading,
     error,
     view,
     setView,
-    refreshEvents: () => fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId), currentLabId, true)
+    refreshEvents: () => fetchEventsForDateRange(
+      selectedDate, 
+      view, 
+      String(selectedUserId), 
+      String(selectedTypeId),
+      String(selectedInstrumentId),
+      currentLabId,
+      true
+    )
   };
 };

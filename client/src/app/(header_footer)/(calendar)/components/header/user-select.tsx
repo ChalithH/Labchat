@@ -32,7 +32,7 @@ export function UserSelect({ onRefresh, isLoading }: UserSelectProps) {
   
   return (
     <Select value={selectedUserId} onValueChange={handleUserChange} disabled={isLoading}>
-      <SelectTrigger className="flex-1 md:w-48">
+      <SelectTrigger className="w-full md:w-48">
         <SelectValue />
       </SelectTrigger>
 

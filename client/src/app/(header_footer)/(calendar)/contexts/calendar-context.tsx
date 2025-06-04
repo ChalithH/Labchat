@@ -1,3 +1,5 @@
+// client/src/app/(header_footer)/(calendar)/contexts/calendar-context.tsx
+
 "use client";
 
 import { createContext, useContext, useState } from "react";
@@ -9,10 +11,12 @@ import type { TBadgeVariant, TVisibleHours, TWorkingHours } from "@/calendar/typ
 interface ICalendarContext {
   selectedDate: Date;
   setSelectedDate: (date: Date | undefined) => void;
-  selectedUserId: IUser["id"] | "all"; // Now filters by assigned users, not assigners
+  selectedUserId: IUser["id"] | "all";
   setSelectedUserId: (userId: IUser["id"] | "all") => void;
   selectedTypeId: IEventType["id"] | "all";
   setSelectedTypeId: (typeId: IEventType["id"] | "all") => void;
+  selectedInstrumentId: IInstrument["id"] | "all" | "none";
+  setSelectedInstrumentId: (instrumentId: IInstrument["id"] | "all" | "none") => void;
   badgeVariant: TBadgeVariant;
   setBadgeVariant: (variant: TBadgeVariant) => void;
   users: IUser[];
@@ -60,6 +64,7 @@ export function CalendarProvider({
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">("all");
   const [selectedTypeId, setSelectedTypeId] = useState<IEventType["id"] | "all">("all");
+  const [selectedInstrumentId, setSelectedInstrumentId] = useState<IInstrument["id"] | "all" | "none">("all");
 
   // Initialize with server-provided data instead of empty array
   const [localEvents, setLocalEvents] = useState<IEvent[]>(initialEvents);
@@ -78,6 +83,8 @@ export function CalendarProvider({
         setSelectedUserId,
         selectedTypeId,
         setSelectedTypeId,
+        selectedInstrumentId,
+        setSelectedInstrumentId,
         badgeVariant,
         setBadgeVariant,
         users,

@@ -21,7 +21,7 @@ interface IProps {
 }
 
 export function ClientContainer({ view }: IProps) {
-  const { selectedDate, selectedUserId, selectedTypeId, events } = useCalendar();
+  const { selectedDate, selectedUserId, selectedTypeId, selectedInstrumentId, events } = useCalendar();
   const { loading, error, setView, refreshEvents } = useFetchEvents();
 
   // Set the current view in our hook
@@ -40,6 +40,14 @@ export function ClientContainer({ view }: IProps) {
     return event.assignments.some((assignment: any) => 
       assignment.memberId?.toString() === userId
     );
+  };
+
+  // Helper function to check if an event has a specific instrument
+  const eventHasInstrument = (event: any, instrumentId: string | number) => {
+    if (instrumentId === "none") {
+      return !event.instrument || event.instrument === null;
+    }
+    return event.instrument && event.instrument.id.toString() === instrumentId.toString();
   };
 
   // Memoize event filtering for better performance
@@ -74,15 +82,18 @@ export function ClientContainer({ view }: IProps) {
         isInDateRange = eventStartDate <= dayEnd && eventEndDate >= dayStart;
       }
 
-      // Updated user filtering logic - now checks assignments
+      // User filtering logic - now checks assignments
       const isUserMatch = selectedUserId === "all" || eventHasUserAssigned(event, selectedUserId);
       
       // Type filtering remains the same
       const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
 
-      return isInDateRange && isUserMatch && isTypeMatch;
+      // Instrument filtering logic
+      const isInstrumentMatch = selectedInstrumentId === "all" || eventHasInstrument(event, selectedInstrumentId);
+
+      return isInDateRange && isUserMatch && isTypeMatch && isInstrumentMatch;
     });
-  }, [selectedDate, selectedUserId, selectedTypeId, events, view]);
+  }, [selectedDate, selectedUserId, selectedTypeId, selectedInstrumentId, events, view]);
 
   // Memoize the separation of single and multi-day events
   const { singleDayEvents, multiDayEvents } = useMemo(() => {

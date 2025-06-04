@@ -83,7 +83,7 @@ export const getEventTypes = async (): Promise<IEventType[]> => {
       const transformedTypes = response.data.map((type: ApiEventType) => ({
         id: type.id,
         name: type.name,
-        color: getColorForEventType(type.id, type.name)
+        color: type.color || getColorForEventType(type.id, type.name) // Use DB color or fallback
       }));
       
       // Cache the result
@@ -100,18 +100,17 @@ export const getEventTypes = async (): Promise<IEventType[]> => {
   }
 };
 
-// Default event types (fallback)
+// Default event types (fallback) - now with hex colors
 const getDefaultEventTypes = (): IEventType[] => {
   return [
-    { id: 1, name: "Booking", color: "blue" },
-    { id: 2, name: "Meeting", color: "green" },
-    { id: 3, name: "Training", color: "green" },
-    { id: 4, name: "Equipment", color: "blue" },
-    { id: 5, name: "Task", color: "purple" },
+    { id: 1, name: "Booking", color: "#3B82F6" },     // Blue
+    { id: 2, name: "Meeting", color: "#10B981" },     // Green
+    { id: 3, name: "Training", color: "#10B981" },    // Green
+    { id: 4, name: "Equipment", color: "#3B82F6" },   // Blue
+    { id: 5, name: "Task", color: "#8B5CF6" },        // Purple
   ];
 };
 
-// Updated getEvents function with optional labId parameter
 export const getEvents = async (startDate: Date, endDate: Date, labId?: number): Promise<IEvent[]> => {
   try {
     // Use toISOString() instead of date-fns-tz format to avoid timezone issues
@@ -250,4 +249,4 @@ export const getSingleEvent = async (eventId: number): Promise<IEvent | null> =>
 };
 
 // Export color utilities
-export { getColorForEventType } from "./transform-api-event";
+export { getColorForEventType, hexToRgb, isLightColor } from "./transform-api-event";

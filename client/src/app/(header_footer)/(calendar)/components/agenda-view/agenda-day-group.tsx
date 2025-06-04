@@ -15,7 +15,7 @@ export function AgendaDayGroup({ date, events, multiDayEvents, searchQuery }: IP
   const sortedEvents = [...events].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-2 sm:px-0">
       <div className="sticky top-0 flex items-center gap-4 bg-background py-2">
         <p className="text-sm font-semibold">{format(date, "EEEE, MMMM d, yyyy")}</p>
       </div>

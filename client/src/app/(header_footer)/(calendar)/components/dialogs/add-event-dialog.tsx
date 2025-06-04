@@ -117,7 +117,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     const result = await addEvent({
       title: values.title,
       description: values.description,
-      color: selectedType?.color || "green", // Use color from type or default to green
+      color: selectedType?.color || "#10B981", // Use hex color from type or default to green
       user,
       type: selectedType,
       instrument: selectedInstrument,
@@ -190,8 +190,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
 
       <DialogContent className="max-h-[85vh] py-3 overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Add New Event</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-gray-900">Add New Event</DialogTitle>
+          <DialogDescription className="text-gray-600">
             Input values to create a task/booking. Fill in all required fields to create a calendar event.
           </DialogDescription>
         </DialogHeader>
@@ -212,7 +212,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   name="user"
                   render={({ field, fieldState }) => (
                     <FormItem className="w-full">
-                      <FormLabel>Assigner (Required)</FormLabel>
+                      <FormLabel className="text-gray-900">Assigner (Required)</FormLabel>
                       <FormControl>
                         <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger data-invalid={fieldState.invalid}>
@@ -225,9 +225,9 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                                 <div className="flex items-center gap-2">
                                   <Avatar key={user.id} className="size-6">
                                     <AvatarImage src={user.picturePath ?? undefined} alt={user.name} />
-                                    <AvatarFallback className="text-xxs">{user.name[0]}</AvatarFallback>
+                                    <AvatarFallback className="text-xxs bg-gray-100 text-gray-700">{user.name[0]}</AvatarFallback>
                                   </Avatar>
-                                  <p className="truncate">{user.name}</p>
+                                  <p className="truncate text-gray-900">{user.name}</p>
                                 </div>
                               </SelectItem>
                             ))}
@@ -246,7 +246,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="type"
                     render={({ field, fieldState }) => (
                       <FormItem className="w-full">
-                        <FormLabel>Event Type (Required)</FormLabel>
+                        <FormLabel className="text-gray-900">Event Type (Required)</FormLabel>
                         <FormControl>
                           <Select value={field.value} onValueChange={field.onChange} disabled={loadingTypes}>
                             <SelectTrigger className="w-full" data-invalid={fieldState.invalid}>
@@ -256,8 +256,11 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                               {eventTypes.map(type => (
                                 <SelectItem key={type.id} value={type.id.toString()}>
                                   <div className="flex items-center gap-2">
-                                    <div className={`size-3.5 rounded-full bg-${type.color || 'green'}-600`} />
-                                    {type.name}
+                                    <div 
+                                      className="size-3.5 rounded-full" 
+                                      style={{ backgroundColor: type.color || '#10B981' }}
+                                    />
+                                    <span className="text-gray-900">{type.name}</span>
                                   </div>
                                 </SelectItem>
                               ))}
@@ -275,7 +278,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="instrumentId"
                     render={({ field, fieldState }) => (
                       <FormItem className="w-full">
-                        <FormLabel>Instrument</FormLabel>
+                        <FormLabel className="text-gray-900">Instrument</FormLabel>
                         <FormControl>
                           <Select
                             value={field.value !== null ? field.value : "none"}
@@ -287,14 +290,14 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                             <SelectContent>
                               <SelectItem value="none">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground">No instrument</span>
+                                  <span className="text-gray-600">No instrument</span>
                                 </div>
                               </SelectItem>
                               {instruments.map(instrument => (
                                 <SelectItem key={instrument.id} value={instrument.id.toString()}>
                                   <div className="flex items-center gap-2">
-                                    <Microscope className="h-4 w-4 text-muted-foreground" />
-                                    {instrument.name}
+                                    <Microscope className="h-4 w-4 text-gray-600" />
+                                    <span className="text-gray-900">{instrument.name}</span>
                                   </div>
                                 </SelectItem>
                               ))}
@@ -307,10 +310,10 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   />
                 </div>
 
-                {/* Assignees section - only show for non-equipment events */}
+                {/* Assignees section */}
                 <div className="space-y-3 border rounded-md p-3">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium">Assigned Members</h3>
+                    <h3 className="text-sm font-medium text-gray-900">Assigned Members</h3>
                     <div className="flex gap-2 items-center">
                       <Select onValueChange={handleAddAssignee}>
                         <SelectTrigger className="w-[180px] h-8">
@@ -321,9 +324,9 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                             <SelectItem key={user.id} value={user.id}>
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-5 w-5">
-                                  <AvatarFallback className="text-[10px]">{user.name[0]}</AvatarFallback>
+                                  <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">{user.name[0]}</AvatarFallback>
                                 </Avatar>
-                                <span className="truncate">{user.name}</span>
+                                <span className="truncate text-gray-900">{user.name}</span>
                               </div>
                             </SelectItem>
                           ))}
@@ -347,16 +350,16 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   )}
                   
                   {selectedAssignees.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No members assigned yet</p>
+                    <p className="text-xs text-gray-600 italic">No members assigned yet</p>
                   ) : (
                     <div className="space-y-2 mt-2">
                       {selectedAssignees.map(assignee => (
                         <div key={assignee.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
-                              <AvatarFallback>{assignee.name[0]}</AvatarFallback>
+                              <AvatarFallback className="bg-gray-100 text-gray-700">{assignee.name[0]}</AvatarFallback>
                             </Avatar>
-                            <span className="text-sm">{assignee.name}</span>
+                            <span className="text-sm text-gray-900">{assignee.name}</span>
                           </div>
                           <Button
                             type="button"
@@ -372,12 +375,13 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     </div>
                   )}
                 </div>
+
                 <FormField
                   control={form.control}
                   name="title"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel htmlFor="title">Title (Required)</FormLabel>
+                      <FormLabel htmlFor="title" className="text-gray-900">Title (Required)</FormLabel>
 
                       <FormControl>
                         <Input id="title" placeholder="Enter a title" data-invalid={fieldState.invalid} {...field} />
@@ -394,7 +398,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="startDate"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel htmlFor="startDate">Start Date (Required)</FormLabel>
+                        <FormLabel htmlFor="startDate" className="text-gray-900">Start Date (Required)</FormLabel>
 
                         <FormControl>
                           <SingleDayPicker
@@ -416,7 +420,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="startTime"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>Start Time (Required)</FormLabel>
+                        <FormLabel className="text-gray-900">Start Time (Required)</FormLabel>
 
                         <FormControl>
                           <TimeInput value={field.value as TimeValue} onChange={field.onChange} hourCycle={12} data-invalid={fieldState.invalid} />
@@ -434,7 +438,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="endDate"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>End Date (Required)</FormLabel>
+                        <FormLabel className="text-gray-900">End Date (Required)</FormLabel>
                         <FormControl>
                           <SingleDayPicker
                             value={field.value}
@@ -453,7 +457,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="endTime"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>End Time (Required)</FormLabel>
+                        <FormLabel className="text-gray-900">End Time (Required)</FormLabel>
 
                         <FormControl>
                           <TimeInput value={field.value as TimeValue} onChange={field.onChange} hourCycle={12} data-invalid={fieldState.invalid} />
@@ -470,7 +474,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   name="description"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Description (Required)</FormLabel>
+                      <FormLabel className="text-gray-900">Description (Required)</FormLabel>
 
                       <FormControl>
                         <Textarea {...field} value={field.value} data-invalid={fieldState.invalid} />

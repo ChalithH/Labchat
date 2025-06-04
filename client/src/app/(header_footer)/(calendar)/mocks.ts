@@ -1,4 +1,3 @@
-import type { TEventColor } from "@/calendar/types";
 import type { IEvent, IUser } from "@/calendar/interfaces";
 
 // ================================== //
@@ -26,7 +25,19 @@ export const USERS_MOCK: IUser[] = [
   },
 ];
 
-const COLORS: TEventColor[] = ["blue", "green", "red", "yellow", "purple", "orange", "gray"];
+// Hex color palette for events
+const COLORS: string[] = [
+  "#3B82F6", // Blue
+  "#10B981", // Green
+  "#EF4444", // Red
+  "#F59E0B", // Yellow
+  "#8B5CF6", // Purple
+  "#F97316", // Orange
+  "#6B7280", // Gray
+  "#EC4899", // Pink
+  "#14B8A6", // Teal
+  "#84CC16", // Lime
+];
 
 const EVENTS = [
   "Doctor's appointment",
@@ -124,7 +135,7 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
       startDate: new Date("2025-09-20T00:00:00-03:00").toISOString(),
       endDate: new Date("2025-09-20T23:59:00-03:00").toISOString(),
       title: "My wedding :)",
-      color: "red",
+      color: "#EF4444", // Red hex color
       description: "Can't wait to see the most beautiful woman in that dress!",
       user: USERS_MOCK[0],
     },

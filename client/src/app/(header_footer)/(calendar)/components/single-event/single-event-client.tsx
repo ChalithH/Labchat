@@ -59,17 +59,6 @@ export function SingleEventClient({
 
   // Get the type name with proper formatting
   const typeName = event.type?.name || "Event";
-  
-  // Determine the badge variant based on the event color
-  const getBadgeVariant = (color: string) => {
-    if (color === "blue") return "default";
-    if (color === "purple") return "secondary";
-    return "outline";
-  };
-
-  const handleEventUpdate = (updatedEvent: IEvent) => {
-    setEvent(updatedEvent);
-  };
 
   const handleEventDelete = async () => {
     const success = await removeEvent(event.id);
@@ -116,7 +105,6 @@ export function SingleEventClient({
             
             <EditEventDialog 
               event={event}
-              onEventUpdate={handleEventUpdate}
             >
               <Button variant="outline" size="sm" disabled={isUpdating || isDeleting}>
                 <Edit className="h-4 w-4 mr-1" />
@@ -175,7 +163,13 @@ export function SingleEventClient({
                   <Tag className="mt-1 h-4 w-4 shrink-0 text-primary" />
                   <div>
                     <p className="text-sm font-medium">Type</p>
-                    <Badge variant={getBadgeVariant(event.color)}>
+                    <Badge 
+                      className="text-white border-0 font-medium"
+                      style={{
+                        backgroundColor: event.type?.color || event.color,
+                        color: 'white'
+                      }}
+                    >
                       {typeName}
                     </Badge>
                   </div>
@@ -196,7 +190,7 @@ export function SingleEventClient({
                     <Tag className="mt-1 h-4 w-4 shrink-0 text-primary" />
                     <div>
                       <p className="text-sm font-medium">Status</p>
-                      <Badge variant="outline" className="capitalize">
+                      <Badge className="capitalize bg-black text-white border-black">
                         {event.status}
                       </Badge>
                     </div>
