@@ -11,7 +11,10 @@ import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 import { swaggerDocs } from './middleware/swaggerDocs.middleware';
 import routes from './routes';
 import { setupLogger } from './middleware/morgan.middleware';
+import type { CorsOptions } from 'cors';
+import { initializeStatusUpdateService } from './services/eventStatusService';
 
+// ==== EXPRESS APP SETUP ====
 const app: Application = express();
 
 app.set('trust proxy', 1);
@@ -27,8 +30,6 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 const ENV = process.env.NODE_ENV;
 
 // ===== CORS CONFIGURATION =====
-import type { CorsOptions } from 'cors';
-
 const corsOptions: CorsOptions = {
   origin: process.env.CORS_ORIGIN,
   credentials: true
@@ -70,6 +71,9 @@ app.use(session(sessionOptions));
 // ===== AUTHENTICATION =====
 app.use(passport.initialize());
 app.use(passport.session());
+
+// ===== EVENT STATUS UPDATE SERVICE =====
+initializeStatusUpdateService();
 
 // ===== API DOCUMENTATION =====
 swaggerDocs(app);

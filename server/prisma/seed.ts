@@ -50,6 +50,7 @@ async function main() {
     "discussionPostReaction.json", // Depends on discussionPost, labMember, and postReaction
     "discussionPostTag.json", // Depends on discussionPost and postTag
     "eventType.json",       // Independent table
+    "eventStatus.json",    // Independent table
     "event.json",          // Depends on lab, labMember, and instrument and eventType
     "eventAssignment.json", // Depends on event and labMember
   ];

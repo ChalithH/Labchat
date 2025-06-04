@@ -7,7 +7,7 @@ export type EventRequestBody = {
     memberId: number;
     title: string;
     description?: string;
-    status?: string;
+    statusId?: number; 
     startTime: string | Date;
     endTime: string | Date;
     instrumentId?: number | null;
@@ -22,7 +22,7 @@ export interface UpdateEventRequestBody {
     instrumentId?: number | null;
     title?: string;
     description?: string | null;
-    status?: string | null;
+    statusId?: number; 
     startTime?: string | Date;
     endTime?: string | Date;
     typeId?: number; 
@@ -42,6 +42,14 @@ export type EventWithRelations = Prisma.EventGetPayload<{
             select: {
                 id: true;
                 name: true;
+                color: true;
+            }
+        };
+        status: {
+            select: {
+                id: true;
+                name: true;
+                color: true;
             }
         };
         assigner: {

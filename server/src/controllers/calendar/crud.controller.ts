@@ -43,10 +43,10 @@ const prisma = new PrismaClient();
  *                 type: string
  *                 nullable: true
  *                 description: Optional detailed description of the event
- *               status:
- *                 type: string
+ *               statusId:
+ *                 type: integer
  *                 nullable: true
- *                 description: Status of the event (e.g., "scheduled", "canceled", "completed")
+ *                 description: Status ID of the event (will use default if not provided)
  *               startTime:
  *                 type: string
  *                 format: date-time
@@ -79,7 +79,7 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
             instrumentId,
             title,
             description,
-            status,
+            statusId,
             startTime,
             endTime,
             typeId,
@@ -102,6 +102,24 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
             return;
         }
 
+        // Get event type to determine default status
+        const eventType = await prisma.eventType.findUnique({
+            where: { id: typeId }
+        });
+
+        if (!eventType) {
+            res.status(400).json({ error: 'Invalid event type' });
+            return;
+        }
+
+        // Determine the status ID to use
+        let finalStatusId = statusId;
+        if (!finalStatusId) {
+            // Get default status based on event type
+            const { getDefaultStatusForEventType } = await import('../../services/eventStatusService');
+            finalStatusId = await getDefaultStatusForEventType(eventType.name);
+        }
+
         // Create the event with a transaction to ensure event and assignments are created together
         const event = await prisma.$transaction(async (tx) => {
             // Create the event
@@ -112,7 +130,7 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
                     instrumentId: instrumentId || null,
                     title,
                     description,
-                    status,
+                    statusId: finalStatusId,
                     startTime: parsedStartTime,
                     endTime: parsedEndTime,
                     typeId: typeId,
@@ -151,17 +169,10 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
 
 /**
  * @swagger
- * /calendar/events/{id}:
+ * /calendar/update-event:
  *   put:
- *     summary: Updates an existing event (rostering or equipment)
+ *     summary: Updates an existing event
  *     tags: [Calendar]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID of the event to update
  *     requestBody:
  *       required: true
  *       content:
@@ -189,9 +200,9 @@ export const createEvent = async (req: Request<{}, {}, EventRequestBody>, res: R
  *                 type: string
  *                 nullable: true
  *                 description: Optional description of the event
- *               status:
- *                 type: string
- *                 description: Status of the event (e.g., scheduled, cancelled)
+ *               statusId:
+ *                 type: integer
+ *                 description: Status ID of the event
  *               startTime:
  *                 type: string
  *                 format: date-time
@@ -235,7 +246,7 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
             instrumentId,
             title,
             description,
-            status,
+            statusId,
             startTime,
             endTime,
             typeId,
@@ -245,7 +256,9 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
         const existingEvent = await prisma.event.findUnique({
             where: { id: eventId },
             include: {
-                eventAssignments: true, 
+                eventAssignments: true,
+                type: true,
+                status: true
             },
         });
 
@@ -254,13 +267,33 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
             return;
         }
 
+        // Validate status change if provided
+        if (statusId !== undefined) {
+            const newStatus = await prisma.eventStatus.findUnique({
+                where: { id: statusId }
+            });
+
+            if (!newStatus) {
+                res.status(400).json({ error: 'Invalid status ID' });
+                return;
+            }
+
+            const { isValidStatusChange } = await import('../../services/eventStatusService');
+            if (!isValidStatusChange(existingEvent.type!.name, newStatus.name)) {
+                res.status(400).json({ 
+                    error: `Cannot change ${existingEvent.type!.name} event to ${newStatus.name} status` 
+                });
+                return;
+            }
+        }
+
         const updateData: any = {};
         if (labId !== undefined) updateData.labId = labId;
         if (memberId !== undefined) updateData.memberId = memberId;
         if (instrumentId !== undefined) updateData.instrumentId = instrumentId;
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
-        if (status !== undefined) updateData.status = status;
+        if (statusId !== undefined) updateData.statusId = statusId;
         if (startTime !== undefined) updateData.startTime = typeof startTime === 'string' ? new Date(startTime) : startTime;
         if (endTime !== undefined) updateData.endTime = typeof endTime === 'string' ? new Date(endTime) : endTime;
         if (typeId !== undefined) updateData.typeId = typeId;
@@ -362,7 +395,6 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
     try {
         const eventId: number = req.body.id;
 
-        // Check if the event exists
         const event = await prisma.event.findUnique({
             where: { id: eventId },
         });

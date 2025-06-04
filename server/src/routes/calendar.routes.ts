@@ -13,6 +13,12 @@ import {
     getInstruments 
 } from '../controllers/calendar/constants.controller';
 
+import {
+    changeEventStatus,
+    getEventStatuses
+} from '../controllers/calendar/status.controller';
+
+
 import { 
     getLabEvents, 
     getMemberEvents, 
@@ -38,6 +44,10 @@ router.delete('/remove-member', removeMember);
 router.get('/events/:labId', getLabEvents);
 router.get('/member-events/:labId/:memberId', getMemberEvents);
 router.get('/event/:eventId', getSingleEvent);
+
+// Status Operations
+router.put('/change-status', changeEventStatus);
+router.get('/get-statuses', getEventStatuses);
 
 // Constants/Reference Data Operations
 router.get('/getEventTypes', getEventTypes);

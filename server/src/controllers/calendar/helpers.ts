@@ -100,13 +100,6 @@ export function validateStartEndDates(start: any, end: any): DateValidationResul
 }
 
 /**
- * Validates hex color code format
- */
-export function isValidHexColor(color: string): boolean {
-    return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
-}
-
-/**
  * Transforms event data by flattening nested structures
  * @param events The events retrieved from the database with their relations
  * @returns Transformed events with flattened structure
@@ -143,7 +136,14 @@ export const EVENT_INCLUDE = {
         select: {
             id: true,
             name: true,
-            color: true 
+            color: true
+        }
+    },
+    status: {
+        select: {
+            id: true,
+            name: true,
+            color: true
         }
     },
     assigner: {
