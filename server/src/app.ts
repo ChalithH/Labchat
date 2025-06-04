@@ -14,6 +14,8 @@ import { setupLogger } from './middleware/morgan.middleware';
 
 const app: Application = express();
 
+app.set('trust proxy', 1);
+
 // ===== LOGGER =====
 setupLogger(app);
 
