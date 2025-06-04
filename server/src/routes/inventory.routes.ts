@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getInventory, takeItem, getAllLowStockItems, replenishStock, getInventoryLocal, getInventoryItemByName, getItemTags } from "../controllers/inventory/inventory.controller";
+import { requirePermission } from '../middleware/permission.middleware';
 
 /**
  * @swagger
@@ -9,20 +10,22 @@ import { getInventory, takeItem, getAllLowStockItems, replenishStock, getInvento
  */
 const router = Router();
 
-router.get('/item-tags', getItemTags); // <-- Place the specific '/item-tags' route first
+// Async wrapper to catch errors and pass them to error handler
+const asyncHandler = (fn: any) => (req: any, res: any, next: any) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+router.get('/item-tags', asyncHandler(getItemTags)); 
 
 // Keep other specific routes before the general one as well
-router.get('/name/:name', getInventoryItemByName);
-router.get('/low-stock', getAllLowStockItems);
-router.get('/local', getInventoryLocal);
+router.get('/name/:name', asyncHandler(getInventoryItemByName));
+router.get('/low-stock', asyncHandler(getAllLowStockItems));
+router.get('/local', asyncHandler(getInventoryLocal));
 
 // Now define the general route with the parameter
-router.get('/:labId', getInventory); // <-- Place the general '/:labId' route later
+router.get('/:labId', asyncHandler(getInventory)); 
 
-// POST routes ordering usually doesn't conflict with GET like this, but good practice
-// is to group similar types or maintain a logical order.
-router.post('/take', takeItem);
-router.post('/replenish', replenishStock);
-
+router.post('/take', requirePermission(0), asyncHandler(takeItem));
+router.post('/replenish', requirePermission(0), asyncHandler(replenishStock));
 
 export default router;

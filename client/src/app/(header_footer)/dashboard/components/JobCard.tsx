@@ -12,9 +12,9 @@ export default function JobCard({ job }: JobCardProps) {
   const formattedTime = format(new Date(job.time), 'MMM d, yyyy h:mm a');
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white rounded shadow p-3 gap-2">
-      <span className="text-gray-600 text-base">{job.name}</span>
-      <span className="text-black font-medium text-base">{formattedTime}</span>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-card text-card-foreground rounded-md border border-border shadow p-3 gap-2">
+      <span className="font-medium text-base">{job.name}</span>
+      <span className="font-medium text-base">{formattedTime}</span>
     </div>
   );
 } 

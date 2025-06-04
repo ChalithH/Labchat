@@ -7,6 +7,7 @@ import { DiscussionPost } from '@prisma/client';
  *
  *    Body Parameters:
  *      amount?: number
+ *      labId?: number (optional - filters posts by lab)
  * 
  *    200:
  *      - Successfully returned most recent posts
@@ -16,13 +17,23 @@ import { DiscussionPost } from '@prisma/client';
 export const getRecentPosts = async (req: Request, res: Response): Promise<void> => {
   try {
     const amount = parseInt(req.params.amount, 10) || 9
-    const posts: DiscussionPost[] = await prisma.discussionPost.findMany({
+
+    const posts = await prisma.discussionPost.findMany({
       orderBy: { createdAt: 'desc' },
       take: amount,
+      include: {
+        member: { include: { user: true } },
+        tags: { include: { postTag: true } },
+        reactions: { include: { reaction: true } }
+      }
     })
 
-    res.status(200).json(posts)
+    const postsWithTags = posts.map(post => ({
+      ...post,
+      tags: post.tags.map(tag => tag.postTag)
+    }))
 
+    res.status(200).json(postsWithTags)
   } catch (err) {
     res.status(500).json({ error: 'Failed to obtain list of recent posts' })
   }
@@ -33,6 +44,7 @@ export const getRecentPosts = async (req: Request, res: Response): Promise<void>
  *
  *    Body Parameters:
  *      amount?: number
+ *      labId?: number (optional - filters posts by lab)
  * 
  *    200:
  *      - Successfully returned most popular posts
@@ -42,7 +54,18 @@ export const getRecentPosts = async (req: Request, res: Response): Promise<void>
 export const getPopularPosts = async (req: Request, res: Response): Promise<void> => {
   try {
     const amount = parseInt(req.params.amount, 10) || 9
+    const labId = req.query.labId ? parseInt(req.query.labId as string, 10) : undefined
+
+    const whereClause = labId 
+      ? {
+          discussion: {
+            labId: labId
+          }
+        }
+      : {}
+
     const posts: DiscussionPost[] = await prisma.discussionPost.findMany({
+      where: whereClause,
       take: amount,
       orderBy: {
         replies: { _count: 'desc' }},
@@ -63,6 +86,7 @@ export const getPopularPosts = async (req: Request, res: Response): Promise<void
  *
  *    Body Parameter:
  *      amount?: number
+ *      labId?: number (optional - filters posts by lab)
  * 
  *    200:
  *      - Successfully returned mixed posts
@@ -72,12 +96,24 @@ export const getPopularPosts = async (req: Request, res: Response): Promise<void
 export const getMixedPosts = async (req: Request, res: Response): Promise<void> => {
   try {
     const amount = parseInt(req.params.amount, 10) || 9
+    const labId = req.query.labId ? parseInt(req.query.labId as string, 10) : undefined
+
+    const whereClause = labId 
+      ? {
+          discussion: {
+            labId: labId
+          }
+        }
+      : {}
+
     const recent: DiscussionPost[] = await prisma.discussionPost.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
       take: amount,
     })
 
     const popular: DiscussionPost[] = await prisma.discussionPost.findMany({
+      where: whereClause,
       take: amount,
       orderBy: {
         replies: { _count: 'desc' }},
@@ -91,5 +127,41 @@ export const getMixedPosts = async (req: Request, res: Response): Promise<void> 
 
   } catch (err) {
     res.status(500).json({ error: 'Failed to obtain list of mixed posts' })
+  }
+}
+
+/*
+ *      Get Discussions for Lab
+ *
+ *    Parameters:
+ *      labId?: number (optional query parameter)
+ * 
+ *    200:
+ *      - Successfully returned discussions for the lab
+ *    500:
+ *      - Internal server error
+ */
+export const getDiscussionsForLab = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const labId = req.query.labId ? parseInt(req.query.labId as string, 10) : undefined
+
+    const whereClause = labId ? { labId: labId } : {}
+
+    const discussions = await prisma.discussion.findMany({
+      where: whereClause,
+      include: {
+        _count: {
+          select: {
+            posts: true
+          }
+        }
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    res.status(200).json(discussions)
+
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to obtain list of discussions' })
   }
 }

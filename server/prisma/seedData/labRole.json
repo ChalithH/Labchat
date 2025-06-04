@@ -108,5 +108,10 @@
     "name": "Volunteer",
     "description": "Volunteer assisting with lab tasks.",
     "permissionLevel": 15
+  },
+  {
+    "name": "Former Member",
+    "description": "User removed from lab (soft deletion).",
+    "permissionLevel": -1
   }
 ]

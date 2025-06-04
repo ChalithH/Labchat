@@ -7,9 +7,24 @@ export interface Announcement {
 }
 
 export interface Member {
+  memberID: number;
   name: string;
-  title: string;
+  role: string;
   image?: string;
+  statusName: string;
+  permissionLevel: number;
+  clockIn: string;
+  status: Array<{
+    status: {
+      id: number;
+      statusName: string;
+      statusWeight: number;
+    };
+    isActive: boolean;
+    contactType?: string;
+    contactInfo?: string;
+    contactName?: string;
+  }>;
 }
 
 export interface Job {
@@ -21,4 +36,5 @@ export interface InventoryItem {
   name: string;
   remaining: number;
   minStock: number;
-} 
+  tags?: { name: string; description?: string }[];
+}

@@ -1,80 +1,23 @@
 "use client"
-import axios from "axios";
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import type { LabMember } from "@/app/(header_footer)/(members)/types"
 import { MobileRow, DesktopRow } from "@/app/(header_footer)/(members)/components/member-row"
 
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 type Props = {
+  members: LabMember[];
   searchQuery: string;
   statusFilter: string;
+  getFilteredMembers: (searchQuery: string, statusFilter: string) => LabMember[];
 };
 
-export default function MembersTable({ searchQuery, statusFilter }: Props) {
-  const [members, setMembers] = useState<LabMember[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export default function MembersTable({ members, searchQuery, statusFilter, getFilteredMembers }: Props) {
   const [expandedId, setExpandedId] = useState<number | null>(null)
-
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/lab/getMembers/1`
-
-        );
-        if (response.status !== 200) {
-          throw new Error("Failed to fetch members")
-        }
-
-        const data = await response.data;
-        setMembers(data)
-      } catch (err) {
-        setError("Failed to load members. Please try again later.")
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchMembers()
-  }, [])
 
   const toggleExpand = (id: number) => {
     setExpandedId(expandedId === id ? null : id)
   }
 
-  const sortedMembers = members.sort((a, b) => {
-    const aStatusWeight = a.status.find((s) => s.isActive)?.status.statusWeight || 0
-    const bStatusWeight = b.status.find((s) => s.isActive)?.status.statusWeight || 0
-
-    if (bStatusWeight !== aStatusWeight) {
-      return bStatusWeight - aStatusWeight
-    }
-
-    return a.displayName.localeCompare(b.displayName)
-  })
-
-  const filteredMembers = sortedMembers.filter((member) => {
-  const matchesSearch =
-    member.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.jobTitle.toLowerCase().includes(searchQuery.toLowerCase());
-
-  const activeStatus = member.status.find((s) => s.isActive)?.status.statusName.toLowerCase();
-  const matchesStatus =
-    statusFilter === "" || (activeStatus && activeStatus === statusFilter.toLowerCase());
-
-  return matchesSearch && matchesStatus;
-});
-
-  if (loading) {
-    return <div className="text-center py-8">Loading members...</div>
-  }
-
-  if (error) {
-    return <div className="text-center py-8 text-red-500">{error}</div>
-  }
+  const filteredMembers = getFilteredMembers(searchQuery, statusFilter);
 
   return (
     <div className="overflow-hidden border rounded-lg shadow bg-white">

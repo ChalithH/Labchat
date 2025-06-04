@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AnnouncementCard from "./AnnouncementCard";
 import MemberCard from "./MemberCard";
 import JobCard from "./JobCard";
@@ -13,74 +13,281 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import type { Announcement, Member, Job, InventoryItem } from "./types";
+import type { Member, Job, InventoryItem } from "./types";
+import { PostType } from "@/types/post.type";
 import Link from "next/link";
+import api from '@/lib/api';
+import { DashboardStatusModal } from "./DashboardStatusModal";
+import { getEvents } from "@/app/(header_footer)/(calendar)/requests";
+import { useCurrentLabId } from "@/contexts/lab-context";
+import ResolveRoleName from '@/lib/resolve_role_name.util';
+import { parseISO, startOfDay, startOfToday, format, isAfter, isSameDay } from 'date-fns';
+
+// Attendance API helpers
+async function clockIn(labId: number) {
+  const res = await api.post('/attendance/clock-in', { labId });
+  return res.data;
+}
+async function clockOut(labId: number) {
+  const res = await api.post('/attendance/clock-out', { labId });
+  return res.data;
+}
+async function getAttendanceStatus(labId: number) {
+  const res = await api.get(`/attendance/status?labId=${labId}`);
+  return res.data;
+}
+async function getCurrentMembers(labId: number) {
+  const res = await api.get(`/attendance/current-members?labId=${labId}`);
+  return res.data;
+}
 
 interface DashboardClientProps {
   user: {
-    username?: string;
     firstName?: string;
-    jobTitle?: string;
     image?: string;
-    // ...other fields if needed
+    role?: string;
+    statusName?: string;
+    memberID?: number;
+    lastViewedLabId: number;
+    userId: number;
   };
-  announcements: Announcement[];
-  members: Member[];
-  jobs: Job[];
-  inventory: InventoryItem[];
 }
 
-export default function DashboardClient({ user, announcements, members: initialMembers, jobs, inventory }: DashboardClientProps) {
-    // console.log('debugging');
-    // console.log(user);
-    // console.log('debugging');
-    console.log("DashboardClient jobs prop:", jobs);
-  // Announcements carousel state
-  const [activeAnnouncement, setActiveAnnouncement] = useState<number>(0);
-  // Clock in/out state and members list
-  const [clockedIn, setClockedIn] = useState<boolean>(false);
-  const [members, setMembers] = useState<Member[]>(initialMembers);
-  
-  // Expanded state for sections
-  const [membersExpanded, setMembersExpanded] = useState<boolean>(false);
-  const [jobsExpanded, setJobsExpanded] = useState<boolean>(false);
-  const [inventoryExpanded, setInventoryExpanded] = useState<boolean>(false);
+export default function DashboardClient({ user }: DashboardClientProps) {
+  const currentLabId = useCurrentLabId(); // Get current lab ID from context
+  const [isClockedIn, setIsClockedIn] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [currentMembers, setCurrentMembers] = useState<Member[]>([]);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [statusModalLoading, setStatusModalLoading] = useState(false);
+  const [statusModalError, setStatusModalError] = useState<string | null>(null);
+  const [fullCurrentUserMember, setFullCurrentUserMember] = useState<Member | null>(null);
+  const [showAllJobs, setShowAllJobs] = useState(false);
+  const [showAllInventory, setShowAllInventory] = useState(false);
 
-  // Constants for item limits
-  const MEMBERS_LIMIT = 5;
-  const JOBS_LIMIT = 3;
-  const INVENTORY_LIMIT = 3;
+  // State for data previously passed as props
+  const [announcements, setAnnouncements] = useState<PostType[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [currentMemberId, setCurrentMemberId] = useState<number | null>(user.memberID || null);
 
-  const handleClockInOut = () => {
-    if (!clockedIn) {
-      // Clock in - add current user to members list
-      const currentUserMember: Member = {
-        name: user?.firstName || "User",
-        title: user?.jobTitle || "Lab Member",
-        image: user?.image || '/default_pfp.svg'
-      };
-      setMembers(prev => [...prev, currentUserMember]);
-    } else {
-      // Clock out - remove current user from members list
-      setMembers(prev => prev.filter(member => member.name !== (user?.firstName || "User")));
+  useEffect(() => {
+    const sessionUserId = user.userId;
+
+    if (!currentLabId || !sessionUserId) return;
+
+    // Fetch memberId for the current user and lab
+    api.get(`/member/memberships/user/${sessionUserId}`)
+      .then(memberRes => {
+        const currentLabMembership = memberRes.data.find((mem: any) => mem.labId === currentLabId);
+        if (currentLabMembership) {
+          setCurrentMemberId(currentLabMembership.id);
+        } else {
+          setCurrentMemberId(null);
+          console.warn(`User is not a member of lab ${currentLabId}`);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching member data:', err);
+        setCurrentMemberId(null);
+      });
+
+    // Fetch announcements
+    api.get(`/discussion/announcements/lab/${currentLabId}`)
+      .then(async announcementRes => {
+        const posts = announcementRes.data;
+        const announcementsInfo = await Promise.all(posts.map(async (post: any) => {
+          let authorName = 'Unknown';
+          let authorRole = 'User';
+          let authorImage = '/default_pfp.svg';
+          try {
+            const memberRes = await api.get(`/member/get/${post.memberId}`);
+            const memberData = memberRes.data;
+            const userRes = await api.get(`/user/get/${memberData.userId}`);
+            const userData = userRes.data;
+            authorName = userData.displayName || userData.username || 'Unknown';
+            authorRole = memberData.labRole ? memberData.labRole.name : 'Lab Member';
+            authorImage = userData.image || '/default_pfp.svg';
+          } catch (error) {
+            console.error('Error fetching announcement author details:', error);
+          }
+          return {
+            id: post.id,
+            discussionId: post.discussionId,
+            memberId: post.memberId,
+            title: post.title,
+            content: post.content,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            isPinned: post.isPinned,
+            isAnnounce: post.isAnnounce,
+            authorName,
+            authorRole,
+            authorImage,
+          };
+        }));
+        setAnnouncements(announcementsInfo);
+      })
+      .catch(err => {
+        console.error(`[Lab ${currentLabId}] Failed to get announcements:`, err);
+        setAnnouncements([]);
+      });
+
+    // Fetch inventory
+    api.get(`/inventory/${currentLabId}`)
+      .then(inventoryRes => {
+        const lowStockInventory = inventoryRes.data
+          .filter((item: any) => item.currentStock <= item.minStock)
+          .map((item: any) => ({
+            name: item.item.name,
+            remaining: item.currentStock,
+            minStock: item.minStock,
+            tags: item.itemTags
+              ? item.itemTags.map((apiTag: any) => ({
+                  name: apiTag.name,
+                  description: apiTag.description
+                }))
+              : [],
+          }));
+        setInventory(lowStockInventory);
+      })
+      .catch(err => {
+        console.error("Failed to get inventory:", err);
+        setInventory([]);
+      });
+    
+    // Fetch attendance status and current members
+    getAttendanceStatus(currentLabId).then(data => {
+      setIsClockedIn(data.isClockedIn);
+    }).catch(err => console.error("Failed to get attendance status:", err));
+    getCurrentMembers(currentLabId).then(data => {
+      setCurrentMembers(data.members || []);
+    }).catch(err => console.error("Failed to get current members:", err));
+
+  }, [currentLabId, user.userId]);
+
+ useEffect(() => {
+    // Fetch jobs (calendar events) using the current lab context
+    if (!currentLabId || currentMemberId === null) {
+      setJobs([]); // Clear jobs if no lab or member ID
+      return;
     }
-    setClockedIn(!clockedIn);
+
+    // Start from beginning of today instead of current time
+    const startDate = startOfToday();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+
+    getEvents(startDate, endDate, currentLabId) // Pass currentLabId to getEvents
+      .then(allEvents => {
+        const userEvents = allEvents
+          .filter((event: any) => {
+            const isAssigned = event.assignments?.some(
+              (assignment: any) => String(assignment.memberId) === String(currentMemberId)
+            );
+            
+            const eventStart = parseISO(event.startDate);
+            const today = new Date();
+            
+            // Compare only the date parts (ignore time) to avoid timezone issues
+            const eventDate = format(eventStart, 'yyyy-MM-dd');
+            const todayDate = format(today, 'yyyy-MM-dd');
+            const isToday = eventDate === todayDate;
+            const isFuture = eventDate > todayDate;
+            
+            return isAssigned && (isToday || isFuture);
+          })
+          .sort((a: any, b: any) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime());
+        
+        const formattedJobs = userEvents.map((event: any) => ({
+          name: event.title,
+          time: event.startDate,
+        }));
+        
+        setJobs(formattedJobs);
+      })
+      .catch(err => {
+        console.error("Failed to get events/jobs:", err);
+        setJobs([]);
+      });
+  }, [currentLabId, currentMemberId]);
+
+  useEffect(() => {
+    if (currentMemberId) {
+      api.get(`/member/get-with-status/${currentMemberId}`)
+        .then(res => {
+          setFullCurrentUserMember(res.data);
+        })
+        .catch(err => {
+          console.error('Failed to fetch member with status', err);
+          setFullCurrentUserMember(null);
+        });
+    } else {
+      setFullCurrentUserMember(null);
+    }
+  }, [currentMemberId]);
+
+  // Refresh attendance and current members after clock in/out or status change
+  const refreshAttendanceAndMembers = async () => {
+    if (currentLabId) {
+      try {
+        const status = await getAttendanceStatus(currentLabId);
+    setIsClockedIn(status.isClockedIn);
+        const membersData = await getCurrentMembers(currentLabId);
+        setCurrentMembers(membersData.members || []);
+      } catch (err) {
+        console.error("Failed to refresh attendance and members:", err);
+      }
+    }
   };
 
-  const handlePrevAnnouncement = () => {
-    setActiveAnnouncement((prev: number) => (prev - 1 + announcements.length) % announcements.length);
-  };
-  const handleNextAnnouncement = () => {
-    setActiveAnnouncement((prev: number) => (prev + 1) % announcements.length);
+  const handleClockIn = async () => {
+    setStatusModalOpen(true);
   };
 
-  // Get displayed items based on expanded state
-  const displayedMembers = membersExpanded ? members : members.slice(0, MEMBERS_LIMIT);
-  const displayedJobs = jobsExpanded ? jobs : jobs.slice(0, JOBS_LIMIT);
-  const displayedInventory = inventoryExpanded ? inventory : inventory.slice(0, INVENTORY_LIMIT);
+  const handleClockOut = async () => {
+    setLoading(true);
+    if (currentLabId) {
+      try {
+        await clockOut(currentLabId);
+        await refreshAttendanceAndMembers();
+      } catch (err) {
+        console.error("Failed to clock out:", err);
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleStatusModalConfirm = async (statusId: number | undefined) => {
+    setStatusModalLoading(true);
+    setStatusModalError(null);
+    try {
+      if (statusId && fullCurrentUserMember) {
+        await api.post("/member/set-status", {
+          memberId: fullCurrentUserMember.memberID,
+          statusId,
+        });
+      }
+      if (currentLabId) {
+        await clockIn(currentLabId);
+      setStatusModalOpen(false);
+        await refreshAttendanceAndMembers();
+      // Refetch full member info after status change
+        if (currentMemberId) {
+          api.get(`/member/get-with-status/${currentMemberId}`).then(res => {
+          setFullCurrentUserMember(res.data);
+        });
+        }
+      }
+    } catch (err: any) {
+      setStatusModalError(err.message || "Failed to update status or clock in");
+    } finally {
+      setStatusModalLoading(false);
+    }
+  };
 
   return (
-    <main className="barlow-font px-6 py-8 space-y-10 max-w-6xl mx-auto">
+    <main className="barlow-font px-6 py-8 space-y-10 max-w-6xl mx-auto bg-background text-foreground">
       {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
@@ -103,152 +310,120 @@ export default function DashboardClient({ user, announcements, members: initialM
       </section>
 
       {/* Row 1: Announcements + Currently in Lab */}
-      <section className="grid gap-8 md:grid-cols-2 items-start">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
         {/* Announcements */}
-        <div>
-          <div className="flex items-center mb-2 md:pr-8">
+        <div className="md:mr-4">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex-grow">Recent Announcements</h2>
             <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
               <Link href="/discussion/topic/1">View All</Link>
             </Button>
           </div>
-          <div className="relative">
-            <div className="flex justify-center items-center">
-              <div className="w-full max-w-xl relative">
-                <button
-                  onClick={handlePrevAnnouncement}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-black text-3xl"
-                  aria-label="Previous announcement"
-                >◀</button>
-                <AnnouncementCard announcement={announcements[activeAnnouncement]} />
-                <button
-                  onClick={handleNextAnnouncement}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-black text-3xl"
-                  aria-label="Next announcement"
-                >▶</button>
-              </div>
-            </div>
+          <div className="overflow-visible w-full" style={{ overflow: 'visible' }}>
+            <AnnouncementCard announcement={announcements} />
           </div>
         </div>
 
         {/* Currently in Lab */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Currently in Lab: {members.length}</h2>
+        <div className="md:ml-4 p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Currently in Lab ({currentMembers.length})</h2>
             <div className="flex gap-2">
-              <Button
-                className={clockedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}
-                onClick={handleClockInOut}
-              >
-                {clockedIn ? 'Clock Out' : 'Clock In'}
-              </Button>
+              {isClockedIn !== null && (
+                <Button
+                  className={isClockedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}
+                  onClick={isClockedIn ? handleClockOut : handleClockIn}
+                  disabled={loading}
+                >
+                  {isClockedIn ? 'Clock Out' : 'Clock In'}
+                </Button>
+              )}
               <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
-                <a href="/members">View All</a>
+                <Link href="/members">View All</Link>
               </Button>
             </div>
           </div>
           <div className="space-y-2">
-            {displayedMembers
-              .sort((a: Member, b: Member) => (a.title === 'Lab Manager' && b.title !== 'Lab Manager' ? -1 : 1))
-              .map((member: Member, idx: number) => (
-                <MemberCard key={idx} member={member} />
-              ))}
-            {!membersExpanded && members.length > MEMBERS_LIMIT && (
-              <Button 
-                variant="ghost" 
-                className="w-full text-blue-500 hover:text-blue-600 mt-2"
-                onClick={() => setMembersExpanded(true)}
-              >
-                View {members.length - MEMBERS_LIMIT} more members
-              </Button>
-            )}
-            {membersExpanded && (
-              <Button 
-                variant="ghost" 
-                className="w-full text-blue-500 hover:text-blue-600 mt-2"
-                onClick={() => setMembersExpanded(false)}
-              >
-                Show less
-              </Button>
+            {currentMembers.length === 0 ? (
+              <div className="text-muted-foreground">No members currently in lab.</div>
+            ) : (
+              currentMembers
+                .slice()
+                .sort((a, b) => b.permissionLevel - a.permissionLevel)
+                .map((member, idx) => (
+                  <MemberCard key={idx} member={member} />
+                ))
             )}
           </div>
         </div>
       </section>
 
       {/* Upcoming Jobs */}
-      <section>
+      <section className="p-4">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-semibold">Your Calendar</h2>
           <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
-            <a href="/calendar">View All</a>
+            <Link href="/calendar">View All</Link>
           </Button>
         </div>
         <div className="space-y-2">
-          {jobs.length === 0 ? (
-            <div className="text-gray-500">No upcoming jobs.</div>
+          {(showAllJobs ? jobs : jobs.slice(0, 3)).map((job: Job, idx: number) => (
+            <JobCard key={idx} job={job} />
+          ))}
+          {jobs.length > 3 && (
+            <button
+              className="text-blue-500 hover:underline text-sm mt-2"
+              onClick={() => setShowAllJobs((prev) => !prev)}
+            >
+              {showAllJobs ? "Show less" : `Show ${jobs.length - 3} more`}
+            </button>
+          )}
+          {jobs.length === 0 && (
+            <div className="text-muted-foreground">No upcoming jobs.</div>
+          )}
+        </div>
+      </section>
+
+      {/* Inventory Warnings */}
+      <section className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">Inventory Warnings</h2>
+          <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
+            <Link href="/inventory">View All</Link>
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {inventory.length === 0 ? (
+            <div className="text-muted-foreground">No inventory warnings.</div>
           ) : (
             <>
-              {displayedJobs.map((job: Job, idx: number) => (
-                <JobCard key={idx} job={job} />
+              {(showAllInventory ? inventory : inventory.slice(0, 3)).map((item: InventoryItem, idx: number) => (
+                <InventoryCard key={idx} item={item} />
               ))}
-              {!jobsExpanded && jobs.length > JOBS_LIMIT && (
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-blue-500 hover:text-blue-600 mt-2"
-                  onClick={() => setJobsExpanded(true)}
+              {inventory.length > 3 && (
+                <button
+                  className="text-blue-500 hover:underline text-sm mt-2"
+                  onClick={() => setShowAllInventory((prev) => !prev)}
                 >
-                  View {jobs.length - JOBS_LIMIT} more events
-                </Button>
-              )}
-              {jobsExpanded && (
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-blue-500 hover:text-blue-600 mt-2"
-                  onClick={() => setJobsExpanded(false)}
-                >
-                  Show less
-                </Button>
+                  {showAllInventory ? "Show less" : `Show ${inventory.length - 3} more`}
+                </button>
               )}
             </>
           )}
         </div>
       </section>
 
-      {/* Inventory Warnings */}
-      <section>
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">Inventory Warnings</h2>
-        </div>
-        <div className="space-y-2">
-          {inventory.length === 0 ? (
-            <div className="text-gray-500">No inventory warnings.</div>
-          ) : (
-            <>
-              {displayedInventory.map((item: InventoryItem, idx: number) => (
-                <InventoryCard key={idx} item={item} />
-              ))}
-              {!inventoryExpanded && inventory.length > INVENTORY_LIMIT && (
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-blue-500 hover:text-blue-600 mt-2"
-                  onClick={() => setInventoryExpanded(true)}
-                >
-                  View {inventory.length - INVENTORY_LIMIT} more warnings
-                </Button>
-              )}
-              {inventoryExpanded && (
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-blue-500 hover:text-blue-600 mt-2"
-                  onClick={() => setInventoryExpanded(false)}
-                >
-                  Show less
-                </Button>
-              )}
-            </>
-          )}
-        </div>
-      </section>
+      {/* Status Modal for current user */}
+      {fullCurrentUserMember && (
+        <DashboardStatusModal
+          open={statusModalOpen}
+          onOpenChange={setStatusModalOpen}
+          member={fullCurrentUserMember}
+          onConfirm={handleStatusModalConfirm}
+          loading={statusModalLoading}
+          error={statusModalError}
+        />
+      )}
     </main>
   );
 } 

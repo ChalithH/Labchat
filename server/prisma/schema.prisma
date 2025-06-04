@@ -45,6 +45,8 @@ model User {
   LabAdmission LabAdmission[]
   contacts      Contact[]
   auditLogs     AuditLog[]
+  inventoryLogs InventoryLog[]
+  notifications Notification[]
   @@map("user")
 }
 
@@ -78,7 +80,7 @@ model Contact {
 // Status Management
 model Status {
   id           Int            @id @default(autoincrement())
-  statusName   String
+  statusName   String         @unique
   statusWeight Int
 
   // Relationships
@@ -169,8 +171,11 @@ model LabMember {
   discussionPosts         DiscussionPost[]
   discussionReplies       DiscussionReply[]
   discussionPostReactions DiscussionPostReaction[]
+  discussionReplyReactions DiscussionReplyReaction[]
   events                  Event[]
   eventAssignments        EventAssignment[]
+  labAttendance           LabAttendance[]
+  inventoryLogs           InventoryLog[]
 
   @@map("lab_member")
 }
@@ -220,6 +225,7 @@ model LabInventoryItem {
   item            Item         @relation(fields: [itemId], references: [id])
   lab             Lab          @relation(fields: [labId], references: [id])
   labItemTags     LabItemTag[]
+  inventoryLogs   InventoryLog[]
 
   @@map("lab_inventory_item")
 }
@@ -247,15 +253,36 @@ model LabItemTag {
   @@map("lab_item_tag")
 }
 
+
+
+enum DiscussionCategoryState {
+  OPEN
+  HIDDEN
+}
+
+enum DiscussionPostReplyState {
+  REPLIES_OPEN      // Visible to all, open to replies
+  REPLIES_CLOSED    // Visible to all, replies closed
+}
+
+enum DiscussionPostState {
+  DEFAULT
+  HIDDEN            // Visible to lab managers+, open to replies to those who can see
+  STICKY            // Stuck to top of category
+}
+
 // Discussion Board
 model Discussion {
-  id          Int              @id @default(autoincrement())
-  labId       Int
-  name        String
-  description String?
+  id                    Int              @id @default(autoincrement())
+  labId                 Int
+  name                  String
+  description           String?
+  
+  visiblePermission     Int?   // Permission to be able to see the category at all
+  postPermission        Int?   // Permission to be able to post within the category
 
   // Relationships
-  lab         Lab              @relation(fields: [labId], references: [id])
+  lab         Lab                        @relation(fields: [labId], references: [id])
   posts       DiscussionPost[]
 
   @@map("discussion")
@@ -271,6 +298,9 @@ model DiscussionPost {
   updatedAt               DateTime                 @updatedAt
   isPinned                Boolean                  @default(false)
   isAnnounce              Boolean                  @default(false)
+
+  replyState              DiscussionPostReplyState      @default(REPLIES_OPEN)
+  state                   DiscussionPostState           @default(DEFAULT)
 
   // Relationships
   discussion              Discussion               @relation(fields: [discussionId], references: [id])
@@ -289,10 +319,14 @@ model DiscussionReply {
   content   String    @db.Text
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  parentId  Int?
 
   // Relationships
-  post      DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  member    LabMember      @relation(fields: [memberId], references: [id])
+  post      DiscussionPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  member    LabMember          @relation(fields: [memberId], references: [id])
+  parent    DiscussionReply?  @relation("ReplyToReply", fields: [parentId], references: [id])
+  children  DiscussionReply[] @relation("ReplyToReply")
+  reactions DiscussionReplyReaction[]
 
   @@map("discussion_reply")
 }
@@ -323,11 +357,39 @@ model DiscussionPostReaction {
   @@map("discussion_post_reaction")
 }
 
+// Reply Reaction
+model ReplyReaction {
+  id            Int         @id @default(autoincrement())
+  reactionName  String      @db.VarChar(64)
+  reaction      String      @db.VarChar(64)
+
+  // Relationships
+  replyReactions DiscussionReplyReaction[]
+
+  @@map("reply_reaction")
+}
+
+model DiscussionReplyReaction {
+  id          Int           @id @default(autoincrement())
+  replyId     Int
+  memberId    Int
+  reactionId  Int
+
+  // Relationships
+  reply       DiscussionReply   @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  member      LabMember         @relation(fields: [memberId], references: [id])
+  reaction    ReplyReaction     @relation(fields: [reactionId], references: [id], onDelete: Cascade)
+
+  @@map("discussion_reply_reaction")
+  @@unique([replyId, memberId, reactionId])
+}
+
 // Post Tag System
 model PostTag {
   id          Int                 @id @default(autoincrement())
   tag         String
   description String?             @db.Text
+  colour      String?             @db.Text
 
   // Relationships
   postTags    DiscussionPostTag[]
@@ -346,6 +408,9 @@ model DiscussionPostTag {
 
   @@map("discussion_post_tag")
 }
+
+
+
 
 // Equipment Management
 model Instrument {
@@ -461,4 +526,72 @@ model AuditDetail {
 
   @@index([auditLogId])
   @@map("audit_detail")
+}
+
+model LabAttendance {
+  id       Int       @id @default(autoincrement())
+  memberId Int
+  clockIn  DateTime
+  clockOut DateTime?
+  member   LabMember @relation(fields: [memberId], references: [id])
+
+  @@index([memberId])
+  @@map("lab_attendance")
+}
+
+// Inventory Logging System
+model InventoryLog {
+  id                Int                @id @default(autoincrement())
+  labInventoryItemId Int?              // Made optional to preserve logs when items are deleted
+  userId            Int                // Always present - who performed the action
+  memberId          Int?               // Optional - null for non-member admin operations
+  action            InventoryAction   
+  source            InventorySource   
+  previousValues    Json?             
+  newValues         Json?             
+  quantityChanged   Int?              
+  reason            String?           
+  createdAt         DateTime          @default(now())
+  
+  // Relationships
+  labInventoryItem  LabInventoryItem?  @relation(fields: [labInventoryItemId], references: [id], onDelete: SetNull)
+  user              User              @relation(fields: [userId], references: [id])
+  member            LabMember?        @relation(fields: [memberId], references: [id])
+  
+  @@index([labInventoryItemId])
+  @@index([userId])
+  @@index([memberId])
+  @@index([createdAt])
+  @@map("inventory_log")
+}
+
+// Inventory action enum
+enum InventoryAction {
+  STOCK_ADD        // Adding stock
+  STOCK_REMOVE     // Removing/using stock  
+  STOCK_UPDATE     // Manual stock correction
+  LOCATION_CHANGE  // Moving item location
+  MIN_STOCK_UPDATE // Changing minimum stock threshold
+  ITEM_ADDED       // New item added to lab
+  ITEM_REMOVED     // Item removed from lab
+  ITEM_UPDATE      // Updating item properties
+}
+
+// Inventory source enum
+enum InventorySource {
+  ADMIN_PANEL      // Changes made via admin/manage-lab inventory tab
+  LAB_INTERFACE    // Changes made from within lab context
+  API_DIRECT       // Direct API calls
+  BULK_IMPORT      // Bulk operations
+}
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  message   String
+  timestamp DateTime @default(now())
+  read      Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

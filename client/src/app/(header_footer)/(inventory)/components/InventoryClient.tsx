@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { getInventoryItems, replenishInventoryItem, takeInventoryItem } from '@/lib/inventoryService';
+import React, { useState } from 'react';
+import { useInventoryData } from '../hooks/use-inventory-data';
 import InventoryItem from '../components/InventoryItem';
 import SearchFilterBar from '@/components/labchat/SearchFilter'
 
@@ -20,80 +20,42 @@ type Tag = {
   description: string;
 };
 
-// This component is used to display the inventory items and provide options to search and filter them.
-// It fetches the inventory items from the server and manages the state of the inventory items, search query, and filter category.
-
-type InventoryItemData = {
+// Define the type for the user prop
+interface UserSessionData {
   id: number;
-  currentStock: number;
-  minStock: number;
-  itemUnit: string;
-  location: string;
-  item: {
-    name: string;
-    description: string;
-  };
-  itemTags: Tag[];
-};
+  lastViewedLabId?: number; 
+  // Add other relevant user fields if needed by this component
+}
 
-const InventoryClient: React.FC = () => {
-  const [inventoryItems, setInventoryItems] = useState<InventoryItemData[]>([]);
+interface InventoryClientProps {
+  user: UserSessionData;
+}
+
+const InventoryClient: React.FC<InventoryClientProps> = ({ user }) => {
+  const {
+    inventoryItems,
+    availableTags,
+    loading,
+    error,
+    takeItem,
+    replenishItem,
+    fetchInventoryItems
+  } = useInventoryData();
+
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [sortOption, setSortOption] = useState<string>('name-asc');
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-
-  // Fetch all available tags from the API
-  const fetchTags = async (): Promise<void> => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory/item-tags`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch tags');
-      }
-      const tags = await response.json();
-      setAvailableTags(tags);
-    } catch (error) {
-      console.error('Error fetching tags:', error);
-    }
-  };
-
-  const fetchItems = async (): Promise<void> => {
-    try {
-      const itemsRaw = await getInventoryItems();
-      const items: InventoryItemData[] = itemsRaw.map((item) => ({
-        id: item.id,
-        currentStock: item.currentStock,
-        minStock: item.minStock,
-        itemUnit: item.itemUnit,
-        location: item.location || '', // Ensure location is included
-        item: {
-          name: item.item.name,
-          description: item.item.description,
-        },
-        itemTags: item.itemTags,
-      }));
-
-      const sortedItems = [...items].sort((a, b) =>
-        a.item.name.localeCompare(b.item.name)
-      );
-      setInventoryItems(sortedItems);
-    } catch (error) {
-      console.error('Error fetching inventory items:', error);
-    }
-  };
 
   const refreshStockData = async (): Promise<void> => {
-    await fetchItems();
+    await fetchInventoryItems();
   };
 
   const handleTake = async (id: number, amount: number): Promise<void> => {
-    await takeInventoryItem(id, amount);
-    refreshStockData();
+    await takeItem(id, amount);
   };
 
   const handleRestock = async (id: number, amount: number): Promise<void> => {
-    await replenishInventoryItem(id, amount);
-    refreshStockData();
+    await replenishItem(id, amount);
   };
 
   const filteredItems = [...inventoryItems]
@@ -136,10 +98,21 @@ const InventoryClient: React.FC = () => {
       }
     });
 
-  useEffect(() => {
-    fetchItems();
-    fetchTags();
-  }, []);
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-lg">Loading inventory...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-lg text-red-600">Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -1,5 +1,9 @@
 export type CategoryType = {
-    id: number,
-    tag: string,
-    description: string
+    id: number
+    labId: number               
+    name: string          
+    description: string          
+  
+    visiblePermission?: number   
+    postPermission?: number    
 }

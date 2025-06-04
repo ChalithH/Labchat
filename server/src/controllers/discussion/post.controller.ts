@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../..';
-import { DiscussionPost, LabMember } from '@prisma/client';
+import { DiscussionPost, DiscussionPostReplyState, LabMember } from '@prisma/client';
 
 
 /*
@@ -25,7 +25,18 @@ import { DiscussionPost, LabMember } from '@prisma/client';
  */ 
 export const createPost = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { discussionId, memberId, title, content, createdAt, updatedAt, isPinned, isAnnounce } = req.body
+    const {
+      discussionId,
+      memberId,
+      title,
+      content,
+      createdAt,
+      updatedAt,
+      isPinned,
+      isAnnounce,
+      selectedTagIds = []
+    } = req.body
+
     const now = new Date()
 
     delete req.body.id
@@ -34,16 +45,16 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
       res.status(400).send({ error: 'Missing fields in request body' })
       return
     }
-    
+
     const member = await prisma.labMember.findFirst({
       where: {
-        userId: memberId
+        userId: memberId,
       }
     })
 
     if (!member) {
-      res.status(400).json({ error: 'No lab member found' });
-      return;
+      res.status(400).json({ error: 'No lab member found' })
+      return
     }
 
     const post = await prisma.discussionPost.create({
@@ -59,6 +70,18 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
       }
     })
 
+    if (Array.isArray(selectedTagIds) && selectedTagIds.length > 0) {
+      const tagAssignments = selectedTagIds.map((tagId: number) =>
+        prisma.discussionPostTag.create({
+          data: {
+            postId: post.id,
+            postTagId: tagId
+          }
+        })
+      )
+      await Promise.all(tagAssignments)
+    }
+
     res.status(200).json(post)
     return
 
@@ -68,6 +91,7 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
     return
   }
 }
+
 
 /*
  *      Edit Post
@@ -91,24 +115,33 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
  */ 
 export const editPost = async (req: Request, res: Response): Promise<void> => {
   try {
-    const id: number = parseInt(req.params.id)
+    const id: number = parseInt(req.params.id);
     if (!id) {
-      res.status(400).json({ error: 'Failed to parse an ID from request' })
-      return
+      res.status(400).json({ error: 'Failed to parse an ID from request' });
+      return;
     }
 
-    const found_post: DiscussionPost | null = await prisma.discussionPost.findUnique({ where: { id } })
+    const found_post = await prisma.discussionPost.findUnique({ where: { id } });
     if (!found_post) {
-      res.status(400).json({ error: `No post found with ID ${id}` })
-      return
+      res.status(400).json({ error: `No post found with ID ${id}` });
+      return;
     }
 
     if (!req.body) {
-      res.status(400).json({ error: 'Missing request body parameters' })
-      return
+      res.status(400).json({ error: 'Missing request body parameters' });
+      return;
     }
 
-    const { title, content, updatedAt, isPinned, isAnnounce } = req.body
+    const {
+      title,
+      content,
+      updatedAt,
+      isPinned,
+      isAnnounce,
+      replyState,
+      state,
+      selectedTagIds = []
+    } = req.body
 
     const updatedPost = await prisma.discussionPost.update({
       where: { id },
@@ -117,19 +150,34 @@ export const editPost = async (req: Request, res: Response): Promise<void> => {
         content: content ?? found_post.content,
         updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
         isPinned: isPinned ?? found_post.isPinned,
-        isAnnounce: isAnnounce ?? found_post.isAnnounce
+        isAnnounce: isAnnounce ?? found_post.isAnnounce,
+        state: state ?? 'DEFAULT',
+        replyState: replyState ?? 'REPLIES_OPEN'
       }
     })
 
-    res.status(200).json(updatedPost)
-    return
+    if (Array.isArray(selectedTagIds)) {
+      await prisma.discussionPostTag.deleteMany({ where: { postId: id } })
+      if (selectedTagIds.length > 0) {
+        const tagAssignments = selectedTagIds.map((tagId: number) =>
+          prisma.discussionPostTag.create({
+            data: {
+              postId: id,
+              postTagId: tagId
+            }
+          })
+        )
+        await Promise.all(tagAssignments)
+      }
+    }
 
+    res.status(200).json(updatedPost)
   } catch (err: unknown) {
     console.error(err)
     res.status(500).json({ error: 'Failed to update post' })
-    return
   }
 }
+
 
 /*
  *      Delete Post
@@ -195,15 +243,26 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
       return
     }
 
-    const post: DiscussionPost | null = await prisma.discussionPost.findUnique({ 
-      where: { id } 
+    const post = await prisma.discussionPost.findUnique({ 
+      where: { id },
+      include: {
+        member: { include: { user: true } },
+        tags: { include: { postTag: true } },
+        reactions: { include: { reaction: true }}
+      }
     })
+    
     if (!post) {
-      res.status(400).json({ error: `No post found with an ID of ${ id }` })
+      res.status(400).json({ error: `No post found with an ID of ${id}` })
       return
     }
-    
-    res.status(200).send(post)
+
+    const postWithTags = {
+      ...post,
+      tags: post.tags.map(tag => tag.postTag)
+    }
+
+    res.status(200).send(postWithTags)
     return
 
   } catch(err: unknown) {
@@ -211,6 +270,7 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
     return
   } 
 }
+
 
 /*
  *      Get Posts By Member
@@ -314,10 +374,31 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
       return
     }
 
-    const posts: DiscussionPost[] | null = await prisma.discussionPost.findMany({ 
-      where: { discussionId: category_id }
+    const posts = await prisma.discussionPost.findMany({
+      where: { discussionId: category_id },
+      include: {
+        member: { include: { user: true } },
+        tags: { include: { postTag: true } },
+        reactions: { include: { reaction: true } }
+      }
     })
-    res.status(200).send(posts)
+
+    const sortedPosts = posts.sort((a, b) => {
+      const isASticky = a.state === 'STICKY'
+      const isBSticky = b.state === 'STICKY'
+
+      if (isASticky && !isBSticky) return -1
+      if (!isASticky && isBSticky) return 1
+
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    })
+
+    const postsWithTags = sortedPosts.map(post => ({
+      ...post,
+      tags: post.tags.map(tag => tag.postTag)
+    }))
+
+    res.status(200).send(postsWithTags)
     return
 
   } catch(err: unknown) {
@@ -325,3 +406,53 @@ export const getPostsByCategory = async (req: Request, res: Response): Promise<v
     return
   }  
 }
+
+/*
+ *      Get Announcements By Lab
+ *
+ *    Parameters:
+ *      labId: number
+ * 
+ *    200:
+ *      - Successfully found announcements for the lab
+ *    400:
+ *      - Failed to parse a lab ID from request parameters
+ *      - No lab found with the ID supplied
+ *    500:
+ *      - Internal server error, unable to retrieve announcements     
+ */ 
+export const getAnnouncementsByLab = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const labId: number = parseInt(req.params.labId);
+    if (!labId) {
+      res.status(400).json({ error: 'Failed to parse a lab ID from request parameters' });
+      return;
+    }
+
+    const lab = await prisma.lab.findUnique({ where: { id: labId } });
+    if (!lab) {
+      res.status(400).json({ error: `No lab found with an ID of ${labId}` });
+      return;
+    }
+
+    const announcements: DiscussionPost[] = await prisma.discussionPost.findMany({
+      where: {
+        isAnnounce: true,
+        discussion: {
+          labId: labId,
+        },
+      },
+      include: {
+        discussion: true, // Include discussion to confirm labId relation
+      },
+    });
+
+    res.status(200).json(announcements);
+    return;
+
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to retrieve announcements for the lab' });
+    return;
+  }
+};
