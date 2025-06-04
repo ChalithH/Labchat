@@ -110,6 +110,9 @@ export default function Header() {
               <div>
                 {/* Header */}
                 <SheetHeader className="items-center justify-center text-center mb-6">
+                  <SheetTitle className="sr-only">
+                    {isLoggedIn ? `Navigation Menu - ${userData?.username}` : 'Labchat Navigation Menu'}
+                  </SheetTitle>
                   <SheetClose asChild>
                     {isLoggedIn ? (
                       <div className="flex items-center space-x-3">
