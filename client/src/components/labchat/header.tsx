@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import api from '@/lib/api';
@@ -36,6 +36,9 @@ export default function Header() {
   const [userData, setUserData] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeLink, setActiveLink] = useState('#');
+  const [isLabManager, setIsLabManager] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
@@ -48,6 +51,36 @@ export default function Header() {
     };
     getUser();
   }, []);
+
+  // Check lab manager permissions when userData/lastViewedLabId changes
+  useEffect(() => {
+    const checkLabPermissions = async () => {
+      if (!isLoggedIn || !userData?.lastViewedLabId) {
+        setIsLabManager(false);
+        return;
+      }
+
+      try {
+        const response = await api.get(`/auth/check-lab-access/${userData.lastViewedLabId}`);
+        if (response.data && response.data.isLabManager) {
+          setIsLabManager(true);
+        } else {
+          setIsLabManager(false);
+        }
+      } catch (error: any) {
+        // 403 == user doesn't have permission
+        if (error.response && error.response.status === 403) {
+          setIsLabManager(false);
+        } else {
+          // Gracefully handle
+          console.error('Failed to check lab permissions:', error);
+          setIsLabManager(false);
+        }
+      }
+    };
+
+    checkLabPermissions();
+  }, [userData?.lastViewedLabId, isLoggedIn, userData]);
 
   const handleLinkClick = (href: string) => setActiveLink(href);
 
@@ -68,9 +101,33 @@ export default function Header() {
 
   const handleLabChange = (labId: number) => {
     console.log('Switched to lab:', labId);
+    
+    // Check if we're currently on a manage lab page
+    const manageLabMatch = pathname.match(/^\/admin\/manage-lab\/(\d+)$/);
+    
+    // Refresh user data to get the new lastViewedLabId
+    const getUser = async () => {
+      const user = await getUserFromSession();
+      if (user) {
+        user.role = await ResolveRoleName(user.roleId);
+        setUserData(user);
+        
+        // If on a manage lab page navigate to the new lab's manage page
+        if (manageLabMatch) {
+          router.push(`/admin/manage-lab/${labId}`);
+        }
+      }
+    };
+    getUser();
   };
 
   const navItems = isLoggedIn ? loggedInsiteConfig.navItems : loggedOutsiteConfig.navItems;
+
+  // Check if user has admin role
+  const isAdmin = userData?.role === 'Admin';
+
+  // Show manage lab link if user is admin OR lab manager
+  const showManageLab = isAdmin || isLabManager;
 
   return (
     <header className="sticky top-0 z-50 w-full bg-zinc-200/70 dark:bg-zinc-900/70 shadow-sm border-b">
@@ -161,6 +218,42 @@ export default function Header() {
                       </Link>
                     </SheetClose>
                   ))}
+
+                  {/* Admin Panel Link - Only visible for admin users */}
+                  {isAdmin && (
+                    <SheetClose asChild>
+                      <Link
+                        href="/admin/dashboard"
+                        prefetch={false}
+                        onClick={() => handleLinkClick('/admin/dashboard')}
+                      >
+                        <Button
+                          variant="outline"
+                          className={`w-full ${activeLink === '/admin/dashboard' ? 'text-labchat-magenta-500' : ''}`}
+                        >
+                          Admin Panel
+                        </Button>
+                      </Link>
+                    </SheetClose>
+                  )}
+
+                  {/* Manage Lab Link - Visible for admin users OR lab managers */}
+                  {showManageLab && userData?.lastViewedLabId && (
+                    <SheetClose asChild>
+                      <Link
+                        href={`/admin/manage-lab/${userData.lastViewedLabId}`}
+                        prefetch={false}
+                        onClick={() => handleLinkClick(`/admin/manage-lab/${userData.lastViewedLabId}`)}
+                      >
+                        <Button
+                          variant="outline"
+                          className={`w-full ${activeLink === `/admin/manage-lab/${userData.lastViewedLabId}` ? 'text-labchat-magenta-500' : ''}`}
+                        >
+                          Manage Lab
+                        </Button>
+                      </Link>
+                    </SheetClose>
+                  )}
                 </div>
               </div>
 
