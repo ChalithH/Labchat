@@ -1,0 +1,112 @@
+[
+  {
+    "name": "HPLC System 1",
+    "description": "Agilent 1260 Infinity II HPLC System",
+    "labId": 2
+  },
+  {
+    "name": "GC-MS System",
+    "description": "Shimadzu GCMS-QP2020 NX",
+    "labId": 2
+  },
+  {
+    "name": "FTIR Spectrometer",
+    "description": "Thermo Scientific Nicolet iS50 FTIR",
+    "labId": 1
+  },
+  {
+    "name": "UV-Vis Spectrophotometer",
+    "description": "Thermo Scientific Evolution 220",
+    "labId": 1
+  },
+  {
+    "name": "XRD Diffractometer",
+    "description": "Bruker D2 PHASER",
+    "labId": 1
+  },
+  {
+    "name": "Confocal Microscope",
+    "description": "Zeiss LSM 880 with Airyscan",
+    "labId": 3
+  },
+  {
+    "name": "Flow Cytometer",
+    "description": "BD FACSAria III",
+    "labId": 3
+  },
+  {
+    "name": "PCR Machine",
+    "description": "Applied Biosystems Veriti Thermal Cycler",
+    "labId": 3
+  },
+  {
+    "name": "Centrifuge (High-Speed)",
+    "description": "Eppendorf 5424 R",
+    "labId": 3
+  },
+  {
+    "name": "Optical Microscope",
+    "description": "Olympus CX23",
+    "labId": 1
+  },
+  {
+    "name": "Electrochemical Analyzer",
+    "description": "Metrohm Autolab PGSTAT302N",
+    "labId": 1
+  },
+  {
+    "name": "Glovebox",
+    "description": "MBRAUN UNIlab Plus",
+    "labId": 1
+  },
+  {
+    "name": "Rotary Evaporator",
+    "description": "Buchi Rotavapor R-210",
+    "labId": 2
+  },
+  {
+    "name": "Schlenk Line",
+    "description": "Standard glass Schlenk line setup",
+    "labId": 2
+  },
+  {
+    "name": "Biosafety Cabinet (Class II)",
+    "description": "Thermo Scientific 1300 Series A2",
+    "labId": 3
+  },
+  {
+    "name": "CO2 Incubator",
+    "description": "Eppendorf Galaxy 170 R",
+    "labId": 3
+  },
+  {
+    "name": "Gel Electrophoresis System",
+    "description": "Bio-Rad PowerPac Basic",
+    "labId": 3
+  },
+  {
+    "name": "Particle Size Analyzer",
+    "description": "Malvern Panalytical Zetasizer Nano ZS",
+    "labId": 1
+  },
+  {
+    "name": "Rheometer",
+    "description": "Anton Paar MCR 302",
+    "labId": 1
+  },
+  {
+    "name": "NMR Spectrometer (400 MHz)",
+    "description": "Bruker Avance NEO 400 MHz",
+    "labId": 2
+  },
+  {
+    "name": "Freeze Dryer",
+    "description": "Labconco FreeZone 2.5 Liter",
+    "labId": 3
+  },
+  {
+    "name": "Atomic Absorption Spectrometer",
+    "description": "Agilent 5110 SVD AAS",
+    "labId": 2
+  }
+]

@@ -1,0 +1,112 @@
+[
+  {
+    "name": "Advanced Materials Lab",
+    "location": "Building A, Floor 1, Room 101",
+    "status": "Operational"
+  },
+  {
+    "name": "Chemical Synthesis Lab",
+    "location": "Building B, Floor 2, Room 205",
+    "status": "Operational"
+  },
+  {
+    "name": "Biotechnology Research Lab",
+    "location": "Building C, Floor 3, Room 310",
+    "status": "Operational"
+  },
+  {
+    "name": "Physics Simulation Lab",
+    "location": "Building D, Floor 1, Room 115",
+    "status": "Operational"
+  },
+  {
+    "name": "Environmental Science Lab",
+    "location": "Building E, Floor 2, Room 220",
+    "status": "Operational"
+  },
+  {
+    "name": "Nanotechnology Lab",
+    "location": "Building F, Floor 4, Room 401",
+    "status": "Operational"
+  },
+  {
+    "name": "Neuroscience Lab",
+    "location": "Building G, Floor 1, Room 105",
+    "status": "Operational"
+  },
+  {
+    "name": "Computational Biology Lab",
+    "location": "Building H, Floor 3, Room 301",
+    "status": "Operational"
+  },
+  {
+    "name": "Robotics Lab",
+    "location": "Building I, Floor 2, Room 210",
+    "status": "Operational"
+  },
+  {
+    "name": "Renewable Energy Lab",
+    "location": "Building J, Floor 1, Room 125",
+    "status": "Operational"
+  },
+  {
+    "name": "Geology Lab",
+    "location": "Building K, Floor 3, Room 330",
+    "status": "Operational"
+  },
+  {
+    "name": "Marine Biology Lab",
+    "location": "Building L, Floor 1, Room 140",
+    "status": "Operational"
+  },
+  {
+    "name": "Genetics Lab",
+    "location": "Building M, Floor 2, Room 250",
+    "status": "Operational"
+  },
+  {
+    "name": "Quantum Computing Lab",
+    "location": "Building N, Floor 5, Room 501",
+    "status": "Operational"
+  },
+  {
+    "name": "Data Science Lab",
+    "location": "Building O, Floor 3, Room 360",
+    "status": "Operational"
+  },
+  {
+    "name": "Material Characterization Lab",
+    "location": "Building A, Floor 1, Room 102",
+    "status": "Operational"
+  },
+  {
+    "name": "Organic Chemistry Lab",
+    "location": "Building B, Floor 2, Room 206",
+    "status": "Operational"
+  },
+  {
+    "name": "Cell Culture Lab",
+    "location": "Building C, Floor 3, Room 311",
+    "status": "Operational"
+  },
+  {
+    "name": "Fluid Dynamics Lab",
+    "location": "Building D, Floor 1, Room 116",
+    "status": "Operational"
+  },
+  {
+    "name": "Atmospheric Science Lab",
+    "location": "Building E, Floor 2, Room 221",
+    "status": "Operational"
+  },
+  {
+    "name": "Microscopy Lab",
+    "location": "Building F, Floor 4, Room 402",
+    "status": "Operational"
+  },
+  {
+    "name": "Cognitive Science Lab",
+    "location": "Building G, Floor 1, Room 106",
+    "status": "Operational"
+  }
+]

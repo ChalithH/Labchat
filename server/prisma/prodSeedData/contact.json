@@ -1,0 +1,177 @@
+[
+  {
+    "userId": 1,
+    "type": "Email",
+    "info": "sysadmin@example.com",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 2,
+    "type": "Email",
+    "info": "uniadmin.a@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 2,
+    "type": "Phone",
+    "info": "+1-555-101-2020",
+    "useCase": "Work phone",
+    "name": "Office Phone"
+  },
+  {
+    "userId": 3,
+    "type": "Email",
+    "info": "pi.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 3,
+    "type": "Phone",
+    "info": "+1-555-101-2021",
+    "useCase": "Work phone",
+    "name": "Lab Phone"
+  },
+  {
+    "userId": 4,
+    "type": "Email",
+    "info": "labman.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 5,
+    "type": "Email",
+    "info": "senres.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 6,
+    "type": "Email",
+    "info": "postdoc.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 7,
+    "type": "Email",
+    "info": "grad.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 8,
+    "type": "Email",
+    "info": "ugrad.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 9,
+    "type": "Email",
+    "info": "resassist.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 10,
+    "type": "Email",
+    "info": "techstaff.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 11,
+    "type": "Email",
+    "info": "pi.beta@universityb.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 11,
+    "type": "Phone",
+    "info": "+1-555-202-3030",
+    "useCase": "Work phone",
+    "name": "Lab Phone"
+  },
+  {
+    "userId": 12,
+    "type": "Email",
+    "info": "labman.beta@universityb.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 13,
+    "type": "Email",
+    "info": "postdoc.beta@universityb.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 14,
+    "type": "Email",
+    "info": "grad.beta@universityb.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 15,
+    "type": "Email",
+    "info": "ugrad.beta@universityb.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 16,
+    "type": "Email",
+    "info": "resassist.beta@universityb.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 17,
+    "type": "Email",
+    "info": "visitor.c@universityc.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 18,
+    "type": "Email",
+    "info": "guest1@example.com",
+    "useCase": "Primary contact",
+    "name": "Guest Email"
+  },
+  {
+    "userId": 19,
+    "type": "Email",
+    "info": "grad2.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 20,
+    "type": "Email",
+    "info": "postdoc2.beta@universityb.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 21,
+    "type": "Email",
+    "info": "senres2.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  },
+  {
+    "userId": 22,
+    "type": "Email",
+    "info": "grad3.alpha@universitya.edu",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  }
+]

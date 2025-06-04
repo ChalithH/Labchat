@@ -1,15 +1,27 @@
-export type SiteConfig = {
-    name: string;
-    description: string;
+export type navItems = {
     navItems: {
         title: string;
         href: string;
     }[];
 };
 
-export const loggedOutsiteConfig: SiteConfig = {
+export type SiteConfig = {
+    name: string;
+    description: string;
+    siteName: string; // Optional, can be used for Open Graph or other metadata
+    siteUrl: string; // Optional, can be used for absolute URLs in links
+    locale: string; // Optional, can be used for Open Graph locale
+};
+
+export const siteConfig: SiteConfig = {
     name: "Labchat",
     description: "Labchat is a web application that allows users to chat with each other in real-time.",
+    locale: "en-NZ",
+    siteName: "Labchat",
+    siteUrl: "https://www.labchatuoa.com", 
+};
+
+export const loggedOutsiteConfig: navItems = {
     navItems: [
         {
             title: "Home",
@@ -26,9 +38,7 @@ export const loggedOutsiteConfig: SiteConfig = {
     ],
 };
 
-export const loggedInsiteConfig: SiteConfig = {
-    name: "Labchat",
-    description: "Labchat is a web application that allows users to chat with each other in real-time.",
+export const loggedInsiteConfig: navItems = {
     navItems: [
         {
             title: "Home",
