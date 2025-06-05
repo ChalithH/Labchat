@@ -25,15 +25,15 @@ export const loggedOutsiteConfig: navItems = {
     navItems: [
         {
             title: "Home",
-            href: "#home",
+            href: "/home",
         },
         {
-            title: "About",
-            href: "#about",
+            title: "Login",
+            href: "/login",
         },
         {
-            title: "Contact",
-            href: "#contact",
+            title: "Register",
+            href: "/register",
         },
     ],
 };
@@ -66,3 +66,51 @@ export const loggedInsiteConfig: navItems = {
         },
     ],
 };
+
+export const managerInsiteConfig: navItems = {
+    navItems: [
+        {
+            title: "Home",
+            href: "/home",
+        },
+        {
+            title: "Dashboard",
+            href: "/dashboard",
+        },
+        {
+            title: "Inventory",
+            href: "/inventory",
+        },
+        {
+            title: "Calendar",
+            href: "/calendar",
+        },
+        {
+            title: "Discussion Board",
+            href: "/discussion/home",
+        },
+        {
+            title: "Members",
+            href: "/members",
+        },
+        {
+            title: "Manage Lab",
+            href: "/admin/manage-lab/",
+        },
+    ],
+};
+
+
+export const adminInsiteConfig: navItems = {
+    navItems: [
+        {
+            title: "Admin Dashboard",
+            href: "/admin/dashboard",
+        },
+        {
+            title: "Admission",
+            href: "/admission",
+        }
+    ],
+};
+

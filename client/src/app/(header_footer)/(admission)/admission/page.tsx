@@ -21,7 +21,7 @@ const AdmissionPage = async (props: {
   }
 
   const searchParams = await props.searchParams
-  let view = searchParams.view || 'submit'
+  const view = searchParams.view || 'submit'
 
   // Check admin permission
   const cookieStore = cookies()

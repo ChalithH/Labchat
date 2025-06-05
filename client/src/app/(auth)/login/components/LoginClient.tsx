@@ -16,7 +16,7 @@ import getUserFromSession from "@/lib/get_user"
 import headerImage from "@/../public/headerImage.svg";
 import frank from '/public/FrankIcon.svg';
 
-const DEFAULT_REDIRECT_ROUTE = "admission?view=submit" // Default route to redirect after login
+const DEFAULT_REDIRECT_ROUTE = "/admission"
 
 const LoginClient = () => {
   const router = useRouter()
@@ -156,9 +156,6 @@ const LoginClient = () => {
               </div>
 
               <div className="text-center space-y-2">
-                <Link href="/forgot-password" className="text-sm text-labchat-blue-600 hover:text-labchat-blue-800 hover:underline">
-                  Forgot password?
-                </Link>
                 <p className="text-sm text-gray-600">
                   {"Don't have an account? "}
                   <Link href="/register" className="text-labchat-blue-600 hover:text-labchat-blue-800 hover:underline font-medium">

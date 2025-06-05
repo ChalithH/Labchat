@@ -106,7 +106,6 @@ model Lab {
   inventoryItems LabInventoryItem[]
   discussions    Discussion[]
   events         Event[]
-  instruments    Instrument[]
   auditLogs      AuditLog[]
   @@map("lab")
   
@@ -417,11 +416,9 @@ model Instrument {
   id          Int     @id @default(autoincrement())
   name        String
   description String?
-  labId       Int
 
   // Relationships
   events      Event[]
-  lab         Lab     @relation(fields: [labId], references: [id])
 
   @@map("instrument")
 }
