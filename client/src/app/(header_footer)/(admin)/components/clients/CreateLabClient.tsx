@@ -67,7 +67,7 @@ const CreateLabClient: React.FC = () => {
       }
 
       const newLab = await response.json()
-      router.push(`/labs/${newLab.id}`)
+      router.push(`/admin/manage-lab/${newLab.id}`)
     } catch (err) {
       console.error("Error creating lab:", err)
       setError(err instanceof Error ? err.message : "An unknown error occurred")

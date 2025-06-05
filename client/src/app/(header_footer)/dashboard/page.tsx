@@ -5,6 +5,8 @@ import getUserFromSessionServer from '@/lib/get_user_server';
 import DashboardClient from './components/DashboardClient';
 import ResolveRoleName from '@/lib/resolve_role_name.util';
 import { LabProvider } from '@/contexts/lab-context';
+import axios, { AxiosResponse } from 'axios';
+import api from '@/lib/api';
 
 export default async function DashboardPage() {
   setUsersLastViewed('/dashboard');
@@ -12,6 +14,9 @@ export default async function DashboardPage() {
   const sessionUser = await getUserFromSessionServer();
   if (!sessionUser) {
     redirect('/home');
+  }
+  if (sessionUser.roleId === 1) {
+    redirect('/admin/dashboard')
   }
 
   const userRoleName = sessionUser.roleId
@@ -27,6 +32,15 @@ export default async function DashboardPage() {
   const lastViewedLabId = sessionUser.lastViewedLabId && !isNaN(parseInt(sessionUser.lastViewedLabId))
     ? parseInt(sessionUser.lastViewedLabId)
     : 1;
+    
+  if (!sessionUser.lastViewedLabId) {
+    redirect('/admission');
+  }
+
+  const lab: AxiosResponse = await api.get(`/lab/${ sessionUser.lastViewedLabId }`)
+  if (!lab) {
+    redirect('/admission');
+  }
 
   const dashboardUser = {
     firstName: sessionUser.firstName,
@@ -37,6 +51,9 @@ export default async function DashboardPage() {
     lastViewedLabId: lastViewedLabId,
     userId: sessionUser.id, // Pass userId to fetch memberId client-side if needed
   };
+
+
+
 
   // All data fetching will now happen in DashboardClient
   return (

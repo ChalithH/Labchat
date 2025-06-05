@@ -8,7 +8,7 @@ import { Link } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
-const DEFAULT_REDIRECT_ROUTE = 'admission'
+const DEFAULT_REDIRECT_ROUTE = 'dashboard'
 
 const LoginClient = () => {
     const router = useRouter()
@@ -28,8 +28,8 @@ const LoginClient = () => {
         setMessage('Login successful')
         
         const user = await getUserFromSession()
-  
-        router.push(`${ process.env.NEXT_PUBLIC_CORS_ORIGIN }/${ user.lastViewed || DEFAULT_REDIRECT_ROUTE }`)
+        
+        router.push(`${ process.env.NEXT_PUBLIC_CORS_ORIGIN }/${ DEFAULT_REDIRECT_ROUTE }`)
       } catch (err: any) {
         setMessage(undefined)
         setError(err.response.data.error)
