@@ -1,117 +1,27 @@
 [
   {
-    "name": "Principal Investigator",
-    "description": "Head of the research lab.",
-    "permissionLevel": 90
-  },
-  {
-    "name": "Co-Principal Investigator",
-    "description": "Shares leadership with the PI.",
-    "permissionLevel": 85
-  },
-  {
     "name": "Lab Manager",
     "description": "Oversees daily lab operations.",
     "permissionLevel": 70
   },
   {
-    "name": "Senior Postdoc",
-    "description": "Experienced postdoctoral researcher, may mentor others.",
-    "permissionLevel": 65
-  },
-  {
-    "name": "Postdoctoral Researcher",
-    "description": "Researcher with a doctorate.",
-    "permissionLevel": 60
-  },
-  {
-    "name": "PhD Candidate",
-    "description": "Student actively working on their PhD thesis.",
-    "permissionLevel": 50
-  },
-  {
-    "name": "Master's Student",
-    "description": "Student pursuing a Master's degree.",
-    "permissionLevel": 45
-  },
-  {
-    "name": "Undergraduate Researcher",
-    "description": "Undergraduate student involved in research.",
-    "permissionLevel": 30
-  },
-  {
-    "name": "Research Technician",
-    "description": "Provides technical support for experiments.",
-    "permissionLevel": 40
-  },
-  {
-    "name": "Visiting Student",
-    "description": "Student visiting from another institution.",
-    "permissionLevel": 25
-  },
-  {
-    "name": "Visiting Researcher",
-    "description": "Researcher visiting from another institution.",
-    "permissionLevel": 55
-  },
-  {
-    "name": "Lab Assistant",
-    "description": "Provides general assistance in the lab.",
-    "permissionLevel": 20
-  },
-  {
-    "name": "Safety Coordinator",
-    "description": "Assists with lab safety procedures.",
-    "permissionLevel": 35
-  },
-  {
-    "name": "Equipment Specialist",
-    "description": "Manages and maintains specific lab equipment.",
-    "permissionLevel": 48
-  },
-  {
-    "name": "Bioinformatician",
-    "description": "Specializes in biological data analysis.",
-    "permissionLevel": 52
-  },
-  {
-    "name": "Chemist",
-    "description": "Specializes in chemical experiments.",
-    "permissionLevel": 58
-  },
-  {
-    "name": "Physicist",
-    "description": "Specializes in physics experiments.",
-    "permissionLevel": 58
-  },
-  {
-    "name": "Biologist",
-    "description": "Specializes in biological experiments.",
-    "permissionLevel": 58
-  },
-  {
-    "name": "Engineer",
-    "description": "Applies engineering principles to research.",
-    "permissionLevel": 58
-  },
-  {
-    "name": "Statistician",
-    "description": "Provides statistical analysis support.",
-    "permissionLevel": 52
-  },
-  {
-    "name": "Project Intern",
-    "description": "Intern working on a specific project.",
-    "permissionLevel": 22
-  },
-  {
-    "name": "Volunteer",
-    "description": "Volunteer assisting with lab tasks.",
-    "permissionLevel": 15
-  },
-  {
     "name": "Former Member",
     "description": "User removed from lab (soft deletion).",
     "permissionLevel": -1
+  },
+    {
+    "name": "Visitor",
+    "description": "User with temporary or limited access to the lab environment.",
+    "permissionLevel": 1
+  },
+    {
+    "name": "Staff",
+    "description": "Lab personnel responsible for managing or supporting lab activities.",
+    "permissionLevel": 1
+  },
+    {
+    "name": "Student",
+    "description": "User participating in lab sessions or activities as part of their coursework or research.",
+    "permissionLevel": 1
   }
 ]
