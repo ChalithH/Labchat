@@ -375,7 +375,6 @@ export const deleteLab = async (req: Request, res: Response): Promise<void> => {
                 inventoryItems: true,
                 discussions: true,
                 events: true,
-                instruments: true,
                 LabAdmission: true,
                 auditLogs: true,
             }
@@ -482,10 +481,6 @@ export const deleteLab = async (req: Request, res: Response): Promise<void> => {
                 where: { labId: labId }
             });
 
-            // Delete instruments
-            await tx.instrument.deleteMany({
-                where: { labId: labId }
-            });
 
             // Inventory deletions
             // Get lab inventory items to handle their relationships

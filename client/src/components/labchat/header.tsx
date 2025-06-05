@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import api from '@/lib/api';
 
-import { loggedInsiteConfig, loggedOutsiteConfig } from "@/config/site";
+import { loggedInsiteConfig, loggedOutsiteConfig, managerInsiteConfig, adminInsiteConfig } from "@/config/site";
 
 import {
   Sheet,
@@ -88,7 +88,6 @@ export default function Header() {
     if (isLoggedIn) {
       await api.get("/auth/logout");
       setIsLoggedIn(false);
-      router.refresh();
       redirect('/home');
     }
   };
@@ -122,13 +121,35 @@ export default function Header() {
     getUser();
   };
 
-  const navItems = isLoggedIn && userData.lastViewedLabId ? loggedInsiteConfig.navItems : loggedOutsiteConfig.navItems;
+  interface NavItem {
+    title: string;
+    href: string;
+  }
 
+  let navItems: NavItem[]; 
   // Check if user has admin role
   const isAdmin = userData?.role === 'Admin';
 
-  // Show manage lab link if user is admin OR lab manager
-  const showManageLab = isAdmin || isLabManager;
+  if (isAdmin) {
+    navItems = adminInsiteConfig.navItems;
+  } else if (isLabManager) {
+    const baseNavItems = managerInsiteConfig.navItems;
+    navItems = [...baseNavItems];
+    
+    if (navItems.length > 0 && userData?.lastViewedLabId) {
+      const lastIndex = navItems.length - 1;
+      navItems[lastIndex] = {
+        ...navItems[lastIndex],
+        href: `${navItems[lastIndex].href}/${userData.lastViewedLabId}`
+      };
+    }
+  } else if (isLoggedIn) {
+    navItems = loggedInsiteConfig.navItems;
+  } else { 
+    navItems = loggedOutsiteConfig.navItems;
+  }
+
+
 
   return (
     <header className="sticky top-0 z-50 w-full bg-zinc-200/70 dark:bg-zinc-900/70 shadow-sm border-b">
@@ -219,42 +240,6 @@ export default function Header() {
                       </Link>
                     </SheetClose>
                   ))}
-
-                  {/* Admin Panel Link - Only visible for admin users */}
-                  {isAdmin && (
-                    <SheetClose asChild>
-                      <Link
-                        href="/admin/dashboard"
-                        prefetch={false}
-                        onClick={() => handleLinkClick('/admin/dashboard')}
-                      >
-                        <Button
-                          variant="outline"
-                          className={`w-full ${activeLink === '/admin/dashboard' ? 'text-labchat-magenta-500' : ''}`}
-                        >
-                          Admin Panel
-                        </Button>
-                      </Link>
-                    </SheetClose>
-                  )}
-
-                  {/* Manage Lab Link - Visible for admin users OR lab managers */}
-                  {showManageLab && userData?.lastViewedLabId && (
-                    <SheetClose asChild>
-                      <Link
-                        href={`/admin/manage-lab/${userData.lastViewedLabId}`}
-                        prefetch={false}
-                        onClick={() => handleLinkClick(`/admin/manage-lab/${userData.lastViewedLabId}`)}
-                      >
-                        <Button
-                          variant="outline"
-                          className={`w-full ${activeLink === `/admin/manage-lab/${userData.lastViewedLabId}` ? 'text-labchat-magenta-500' : ''}`}
-                        >
-                          Manage Lab
-                        </Button>
-                      </Link>
-                    </SheetClose>
-                  )}
                 </div>
               </div>
 
