@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowRight, Mail } from "lucide-react"
+import { ArrowRight, Home, Mail } from "lucide-react"
 import api from "@/lib/api"
 import getUserFromSession from "@/lib/get_user"
 import headerImage from "@/../public/headerImage.svg";
@@ -58,6 +58,17 @@ const LoginClient = () => {
 
   return (
     <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
+      {/* Home button - positioned at top */}
+        <div className="absolute top-4 left-4 z-10">
+            <Button
+            onClick={() => router.push('/')}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 bg-white/90 hover:bg-white border-gray-300"
+            >
+                <Home size={16} />
+            </Button>
+        </div>
       {/* Left side - Hero Section (hidden on mobile) */}
       <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-center bg-[url(/lightBackground.png)] bg-no-repeat bg-cover dark:bg-[url(/darkBackground.png)]p-8 text-white relative overflow-hidden">
         <Image 
