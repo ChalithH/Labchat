@@ -87,7 +87,7 @@ const AdmissionPage = async (props: {
       {/* Render the appropriate component */}
       {view === 'submit' ? (
         <RequestAdmissionClient userId={user.id} />
-      ) : (
+      ) : isAdmin && (
         <AdmissionClient labId={labId} />
       )}
     </div>
