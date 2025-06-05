@@ -23,10 +23,7 @@ const DiscussionHome = async () => {
       redirect('/home')
     }
 
-
     const currentLabId = user.lastViewedLabId || 1
-
-      
 
     const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
     const userPermission = roleResponse.data.permissionLevel
