@@ -43,7 +43,7 @@ const GeneralTab = ({ values, setters, onSubmit }: GeneralTabProps) => {
     }
 
     getUser()
-  }, [])
+  }, [setters])
   
 
   const handleSubmit = () => {

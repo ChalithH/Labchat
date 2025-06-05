@@ -34,13 +34,11 @@ async function main() {
     "role.json",          // First seed roles
     "user.json",          // Then users (depends on roles)
     "status.json",        // Independent table
-    "lab.json",           // Independent table
-    "labRole.json",       // Depends on role
-    "labMember.json",     // Depends on user, lab, and labRole
+    "instrument.json",    // Independent table
+    "labRole.json",       // independent table
     "contact.json",       // Depends on user
-    "memberStatus.json",  // Depends on contact, labMember, and status
     "itemTag.json",       // Independent table
-    "item.json",          // Independent table but fix field name
+    "item.json",          // Independent table 
     "postReaction.json",  // Independent table
     "replyReaction.json",  // Independent table
     "postTag.json",       // Independent table
