@@ -610,7 +610,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const { loginPassword, ...userDataToUpdate } = req.body; 
+    const userDataToUpdate = req.body; 
 
     if (isNaN(id)) {
       res.status(400).json({ error: "Invalid user ID format" });
@@ -622,7 +622,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
 
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: { ...userDataToUpdate }, 
+      data: userDataToUpdate,
       // Select to exclude password from being returned
       select: {
         id: true,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AxiosResponse } from "axios"
 import api from "@/lib/api"
@@ -42,6 +42,14 @@ const EditProfile = () => {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [pendingFields, setPendingFields] = useState<Record<string, string>>({})
+
+  
+  useEffect(() => {
+    if (isEditOpen) {
+      setPassword('')
+      setConfirmPassword('')
+    }
+  }, [isEditOpen])
 
   const handleUpdateUser = async (new_fields: Record<string, string>) => {
     setPendingFields(new_fields)

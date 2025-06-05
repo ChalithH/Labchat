@@ -1,0 +1,9 @@
+[
+  {
+    "userId": 1,
+    "type": "Email",
+    "info": "sysadmin@example.com",
+    "useCase": "Primary contact",
+    "name": "Work Email"
+  }
+]

@@ -28,10 +28,7 @@ async function clockIn(labId: number) {
   const res = await api.post('/attendance/clock-in', { labId });
   return res.data;
 }
-async function clockOut(labId: number) {
-  const res = await api.post('/attendance/clock-out', { labId });
-  return res.data;
-}
+
 async function getAttendanceStatus(labId: number) {
   const res = await api.get(`/attendance/status?labId=${labId}`);
   return res.data;
@@ -286,6 +283,16 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     }
   };
 
+  async function clockOut(labId: number) {
+    if (fullCurrentUserMember) {
+            await api.post("/member/set-status", {
+              memberId: fullCurrentUserMember.memberID,
+              statusId: 3
+            });
+          }
+      const res = await api.post('/attendance/clock-out', { labId });
+      return res.data;
+    }
   return (
     <main className="barlow-font px-6 py-8 space-y-10 max-w-6xl mx-auto bg-background text-foreground">
       {/* Breadcrumb */}
