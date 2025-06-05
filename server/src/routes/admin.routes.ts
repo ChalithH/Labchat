@@ -80,13 +80,6 @@ router.put('/lab/:labId/reset-member-password', requireLabPermission(70, 60), re
 router.post('/create-discussion-tag', requirePermission(60), createDiscussionTag);
 router.post('/create-discussion-category', requirePermission(60), createDiscussionCategory);
 
-
-router.get('/get-all-items', requirePermission(0), getAllItems);
-
-router.post('/items', requirePermission(100), createGlobalItem);
-router.put('/items/:id', requirePermission(100), updateItem);
-router.delete('/items/:id', requirePermission(100), deleteItem);
-
 // Lab Inventory Management stuff - Permission checking handled in controllers
 // Requires authentication (permission level = 0) but lab-specific logic handled in controllers
 router.post('/lab/:labId/inventory', requirePermission(0), addItemToLab);
@@ -109,4 +102,10 @@ router.get('/lab/:labId/available-users', requireLabPermission(70, 60), getAvail
 router.post('/lab/:labId/add-user', requireLabPermission(70, 60), addUserToLabEndpoint);
 
 // TODO: Change item threshold in lab
+
+// Global Inventory endpoints
+router.get('/get-all-items', requirePermission(100), getAllItems);
+router.post('/create-global-item', requirePermission(100), createGlobalItem); 
+router.put("/update-item/:id", updateItem);
+router.delete("/delete-item/:id", deleteItem);
 export default router;
