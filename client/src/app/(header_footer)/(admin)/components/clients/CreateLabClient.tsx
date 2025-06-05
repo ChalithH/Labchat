@@ -164,7 +164,7 @@ const CreateLabClient: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push('/labs')}
+                onClick={() => router.push('/admin/dashboard')}
                 disabled={isSubmitting}
               >
                 Cancel
