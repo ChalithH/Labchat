@@ -21,14 +21,14 @@ const AdmissionPage = async (props: {
   }
 
   const searchParams = await props.searchParams
-  let view = searchParams.view || 'submit'
+  const view = searchParams.view || 'submit'
 
   // Check admin permission
   const cookieStore = cookies()
   const cookieHeaderString = cookieStore.toString()
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL
 
-  let isAdmin = false
+  var isAdmin = false
   if (apiBaseUrl) {
     try {
       const response = await fetch(`${apiBaseUrl}/auth/check-admin-permission`, {
