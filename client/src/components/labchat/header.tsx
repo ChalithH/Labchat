@@ -84,13 +84,27 @@ export default function Header() {
 
   const handleLinkClick = (href: string) => setActiveLink(href);
 
-  const handleLogout = async () => {
-    if (isLoggedIn) {
+ const handleLogout = async () => {
+  if (isLoggedIn) {
+    try {
       await api.get("/auth/logout");
+      
+      // Reset ALL related state
       setIsLoggedIn(false);
-      redirect('/home');
+      setUserData(null);
+      setIsLabManager(false);
+      setActiveLink('#');
+      
+      // Use router.push instead of redirect for better state management
+      router.push('/home');
+      
+      // Optional: Force a page refresh to ensure clean state
+      // window.location.href = '/home';
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
-  };
+  }
+};
 
   const handleProfile = async () => {
     if (isLoggedIn) {
