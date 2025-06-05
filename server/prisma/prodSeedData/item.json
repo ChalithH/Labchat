@@ -1,0 +1,134 @@
+[
+  {
+    "name": "Hydrochloric Acid (1M)",
+    "description": "1 Molar solution of Hydrochloric Acid",
+    "safetyInfo": "Corrosive. Use in fume hood. Wear gloves and eye protection.",
+    "approval": true
+  },
+  {
+    "name": "Sodium Hydroxide Pellets",
+    "description": "Solid Sodium Hydroxide pellets",
+    "safetyInfo": "Highly corrosive. Causes severe burns. Wear full PPE.",
+    "approval": true
+  },
+  {
+    "name": "Acetone",
+    "description": "High purity Acetone",
+    "safetyInfo": "Highly flammable. Keep away from ignition sources. Use in well-ventilated area.",
+    "approval": true
+  },
+  {
+    "name": "Methanol",
+    "description": "Absolute Methanol",
+    "safetyInfo": "Flammable and toxic. Avoid inhalation and skin contact. Use in fume hood.",
+    "approval": true
+  },
+  {
+    "name": "Distilled Water",
+    "description": "Deionized and distilled water",
+    "safetyInfo": null,
+    "approval": false
+  },
+  {
+    "name": "Glass Beakers (250ml)",
+    "description": "Set of 250ml glass beakers",
+    "safetyInfo": "Handle with care to avoid breakage.",
+    "approval": false
+  },
+  {
+    "name": "Erlenmeyer Flasks (500ml)",
+    "description": "Set of 500ml Erlenmeyer flasks",
+    "safetyInfo": "Handle with care to avoid breakage.",
+    "approval": false
+  },
+  {
+    "name": "Pipette Tips (1000µl)",
+    "description": "Box of 1000µl pipette tips",
+    "safetyInfo": null,
+    "approval": false
+  },
+  {
+    "name": "Gloves (Nitrile, Medium)",
+    "description": "Box of medium size nitrile gloves",
+    "safetyInfo": "Provides chemical resistance.",
+    "approval": false
+  },
+  {
+    "name": "Safety Goggles",
+    "description": "Standard lab safety goggles",
+    "safetyInfo": "Wear to protect eyes from splashes and projectiles.",
+    "approval": false
+  },
+  {
+    "name": "Filter Paper (Whatman No. 1)",
+    "description": "Pack of Whatman No. 1 filter paper circles",
+    "safetyInfo": null,
+    "approval": false
+  },
+  {
+    "name": "Syringes (10ml)",
+    "description": "Pack of 10ml disposable syringes",
+    "safetyInfo": "Dispose of properly after use.",
+    "approval": false
+  },
+  {
+    "name": "Petri Dishes (Sterile)",
+    "description": "Pack of sterile plastic petri dishes",
+    "safetyInfo": "Handle aseptically.",
+    "approval": false
+  },
+  {
+    "name": "Agar Powder",
+    "description": "Microbiological grade agar powder",
+    "safetyInfo": "Avoid inhaling dust.",
+    "approval": false
+  },
+  {
+    "name": "Microscope Slides",
+    "description": "Box of glass microscope slides",
+    "safetyInfo": "Handle edges carefully.",
+    "approval": false
+  },
+  {
+    "name": "Cover Slips",
+    "description": "Box of glass cover slips",
+    "safetyInfo": "Handle carefully, very fragile.",
+    "approval": false
+  },
+  {
+    "name": "Parafilm",
+    "description": "Roll of laboratory sealing film",
+    "safetyInfo": null,
+    "approval": false
+  },
+  {
+    "name": "Aluminum Foil",
+    "description": "Standard laboratory grade aluminum foil",
+    "safetyInfo": null,
+    "approval": false
+  },
+  {
+    "name": "Weighing Boats (Small)",
+    "description": "Pack of small plastic weighing boats",
+    "safetyInfo": null,
+    "approval": false
+  },
+  {
+    "name": "Spatulas (Stainless Steel)",
+    "description": "Set of stainless steel lab spatulas",
+    "safetyInfo": "Clean thoroughly after use.",
+    "approval": false
+  },
+  {
+    "name": "pH Indicator Strips",
+    "description": "Roll of universal pH indicator strips",
+    "safetyInfo": null,
+    "approval": false
+  },
+  {
+    "name": "Forceps",
+    "description": "Set of various lab forceps",
+    "safetyInfo": "Handle sharp points carefully.",
+    "approval": false
+  }
+]

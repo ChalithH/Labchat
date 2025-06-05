@@ -24,10 +24,32 @@ async function deleteAllData(orderedFileNames: string[]) {
 }
 
 async function main() {
-  const dataDirectory = path.join(__dirname, "seedData");
-  
-  // Order matters due to foreign key relationships
-  const orderedFileNames = [
+  let dataDirectory: string;
+  let orderedFileNames: string[];
+
+  if (process.env.NODE_ENV === "production") {
+    console.log("Running in production mode");
+    dataDirectory = path.join(__dirname, "prodSeedData");
+    orderedFileNames = [
+    "role.json",          // First seed roles
+    "user.json",          // Then users (depends on roles)
+    "status.json",        // Independent table
+    "lab.json",           // Independent table
+    "labRole.json",       // Depends on role
+    "labMember.json",     // Depends on user, lab, and labRole
+    "contact.json",       // Depends on user
+    "memberStatus.json",  // Depends on contact, labMember, and status
+    "itemTag.json",       // Independent table
+    "item.json",          // Independent table but fix field name
+    "instrument.json",    // Depends on lab
+    "postReaction.json",  // Independent table
+    "replyReaction.json",  // Independent table
+    "postTag.json",       // Independent table
+    "eventType.json",       // Independent table
+    ]
+  } else {
+    dataDirectory = path.join(__dirname, "devSeedData");
+    orderedFileNames = [
     "role.json",          // First seed roles
     "user.json",          // Then users (depends on roles)
     "status.json",        // Independent table
@@ -53,6 +75,9 @@ async function main() {
     "event.json",          // Depends on lab, labMember, and instrument and eventType
     "eventAssignment.json", // Depends on event and labMember
   ];
+
+  }
+  console.log(`Using data directory: ${dataDirectory}`);
 
   // First delete all existing data
   await deleteAllData(orderedFileNames);

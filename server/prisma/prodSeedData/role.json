@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Admin",
+    "description": "Full administrative access to the platform.",
+    "permissionLevel": 100
+  },
+  {
+    "name": "Staff",
+    "description": "Staff role with more permissions. Staff members can only be assigned this role by the system administrator.",
+    "permissionLevel": 80
+  },
+  {
+    "name": "Student",
+    "description": "Student role with limited permissions. Users will be assigned to this role by default once they are assigned to a lab.",
+    "permissionLevel": 50
+  },
+  {
+    "name": "Guest",
+    "description": "Assigned role for users who are not assiged to a lab.",
+    "permissionLevel": 30
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Lab Manager",
+    "description": "Oversees daily lab operations.",
+    "permissionLevel": 70
+  },
+  {
+    "name": "Former Member",
+    "description": "User removed from lab (soft deletion).",
+    "permissionLevel": -1
+  }
+]
