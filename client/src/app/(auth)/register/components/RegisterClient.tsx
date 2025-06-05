@@ -43,7 +43,7 @@ const RegisterClient = () => {
       }
       
       const new_user: UserType = {
-        roleId: 12, /* Visitor */
+        roleId: 4, /* Visitor */
         universityId: upi,
         username: `${firstName}_${lastName}`,
         loginEmail: email,
