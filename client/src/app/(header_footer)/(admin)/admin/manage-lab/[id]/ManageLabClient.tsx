@@ -7,6 +7,14 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, AlertCircle, UserCog, Users, Trash2, Edit3, Clock, Calendar, ChevronLeft, ChevronRight, UserPlus, Key } from 'lucide-react';
 import api from '@/lib/api'; 
@@ -979,9 +987,25 @@ export default function ManageLabClient({ params, isRootAdmin }: ManageLabClient
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6 text-center sm:text-left">
-        Manage Lab: {loading ? <Loader2 className="h-8 w-8 animate-spin inline-block" /> : labDetails?.name || `ID ${params.id}`}
-      </h1>
+           <div className="relative flex flex-col items-center mb-8 lg:flex-row lg:justify-center">
+        <h1 className="font-play font-extrabold text-black text-[clamp(1.5rem,4vw,2rem)] text-center order-1 lg:order-none">
+          Manage Lab: {loading ? <Loader2 className="h-8 w-8 animate-spin inline-block" /> : labDetails?.name || `ID ${params.id}`}
+        </h1>
+        <div className="lg:absolute lg:left-0 order-2 lg:order-none mb-2 lg:mb-0">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/admin/dashboard">Admin Dashboard</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Manage Inventory</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </div>
+
       
       <Tabs defaultValue="details" className="w-full" value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto pb-2 mb-4">

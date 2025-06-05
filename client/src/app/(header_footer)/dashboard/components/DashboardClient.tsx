@@ -249,6 +249,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     setLoading(true);
     if (currentLabId) {
       try {
+        setStatusModalOpen(true);
         await clockOut(currentLabId);
         await refreshAttendanceAndMembers();
       } catch (err) {
