@@ -28,7 +28,7 @@ const AdmissionPage = async (props: {
   const cookieHeaderString = cookieStore.toString()
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL
 
-  var isAdmin = false
+  let isAdmin = false
   if (apiBaseUrl) {
     try {
       const response = await fetch(`${apiBaseUrl}/auth/check-admin-permission`, {
