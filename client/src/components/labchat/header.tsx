@@ -121,7 +121,7 @@ export default function Header() {
     getUser();
   };
 
-  const navItems = isLoggedIn ? loggedInsiteConfig.navItems : loggedOutsiteConfig.navItems;
+  const navItems = isLoggedIn && userData.lastViewedLabId ? loggedInsiteConfig.navItems : loggedOutsiteConfig.navItems;
 
   // Check if user has admin role
   const isAdmin = userData?.role === 'Admin';

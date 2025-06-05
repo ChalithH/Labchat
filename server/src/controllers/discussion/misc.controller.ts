@@ -16,11 +16,11 @@ import { DiscussionPost } from '@prisma/client';
  */
 export const getRecentPosts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const amount = parseInt(req.params.amount, 10) || 9
+    const id = parseInt(req.params.lab) || 1
 
     const posts = await prisma.discussionPost.findMany({
+      where: { discussion: { labId: id } },
       orderBy: { createdAt: 'desc' },
-      take: amount,
       include: {
         member: { include: { user: true } },
         tags: { include: { postTag: true } },
