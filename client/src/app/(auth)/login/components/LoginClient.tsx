@@ -16,7 +16,7 @@ import getUserFromSession from "@/lib/get_user"
 import headerImage from "@/../public/headerImage.svg";
 import frank from '/public/FrankIcon.svg';
 
-const DEFAULT_REDIRECT_ROUTE = "admission"
+const DEFAULT_REDIRECT_ROUTE = "admission?view=submit" // Default route to redirect after login
 
 const LoginClient = () => {
   const router = useRouter()
