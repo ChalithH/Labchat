@@ -31,7 +31,7 @@ const DiscussionHome = async () => {
     const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
     const userPermission = roleResponse.data.permissionLevel
 
-    const recentActivityRequest: AxiosResponse = await api.get('/discussion/recent/9')
+    const recentActivityRequest: AxiosResponse = await api.get(`/discussion/recent/${ currentLabId }`)
     const recentActivity: PostType[] = recentActivityRequest.data
 
     const filteredActivity = recentActivity.filter(post => {
@@ -39,13 +39,13 @@ const DiscussionHome = async () => {
       return userPermission >= PermissionConfig.HIDDEN_PERMISSION
     })
 
-    const categoriesRequest: AxiosResponse = await api.get(`/discussion/categories/lab/1`)
+    const categoriesRequest: AxiosResponse = await api.get(`/discussion/categories/lab/${ currentLabId }`)
     const categories: CategoryType[] = categoriesRequest.data
 
     const posts: PostType[][] = await Promise.all(
       categories.map(async (category) => {
         try {
-          const response: AxiosResponse = await api.get(`/discussion/category-posts/${ category.id }`)
+          const response: AxiosResponse = await api.get(`/discussion/category-posts/${ currentLabId }/${ category.id }`)
           const rawPosts: PostType[] = response.data
 
           const filteredPosts = rawPosts.filter(post => {
