@@ -1,5 +1,6 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers'
 import setUsersLastViewed from '@/lib/set_last_viewed';
 import getUserFromSessionServer from '@/lib/get_user_server';
 import DashboardClient from './components/DashboardClient';
@@ -14,12 +15,48 @@ export default async function DashboardPage() {
     redirect('/home');
   }
 
+  // Check admin permission using the new endpoint
+  const cookieStore = await cookies()
+  const cookieHeaderString = cookieStore.toString()
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL
+  if (!apiBaseUrl) {
+    console.error("CRITICAL: NEXT_PUBLIC_API_URL is not set. Cannot perform authorization check.")
+    redirect('/home')
+    return
+  }
+
+  let hasAdminPermission = false
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/auth/check-admin-permission`, {
+      headers: {
+        ...(cookieHeaderString ? { 'cookie': cookieHeaderString } : {}),
+      },
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      hasAdminPermission = data.hasAdminPermission
+    } else {
+      console.warn('Admin permission check failed:', response.status)
+    }
+  } catch (error) {
+    console.error('Error checking admin permission:', error)
+  }
+
+  if (hasAdminPermission) {
+    redirect('/admin/dashboard')
+    return
+  }
+
+
   const userRoleName = sessionUser.roleId
     ? await ResolveRoleName(sessionUser.roleId)
     : sessionUser.jobTitle || "Lab Member";
-  
-  const userActiveStatus = sessionUser.status && Array.isArray(sessionUser.status) 
-    ? sessionUser.status.find((s: any) => s.isActive) 
+
+  const userActiveStatus = sessionUser.status && Array.isArray(sessionUser.status)
+    ? sessionUser.status.find((s: any) => s.isActive)
     : null;
   const userPrimaryStatusName = userActiveStatus ? userActiveStatus.status.statusName : "No Status";
 
