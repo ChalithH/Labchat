@@ -88,6 +88,7 @@ export default function Header() {
     if (isLoggedIn) {
       await api.get("/auth/logout");
       setIsLoggedIn(false);
+      router.refresh();
       redirect('/home');
     }
   };
