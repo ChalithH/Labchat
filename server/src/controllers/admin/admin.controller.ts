@@ -219,58 +219,14 @@ export const getLabById = async (req: Request, res: Response): Promise<void> => 
 export const updateLab = async (req: Request, res: Response): Promise<void> => {
     const labId = parseInt(req.params.id);
     const { name, location, status } = req.body;
-    const sessionUserId = (req.session as any)?.passport?.user;
 
     if (isNaN(labId)) {
         res.status(400).json({ error: 'Invalid lab ID' });
         return;
     }
 
-    if (!sessionUserId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-    }
-
     try {
-        // 1. Get current user and their global role
-        const currentUser = await prisma.user.findUnique({
-            where: { id: sessionUserId },
-            include: { role: true },
-        });
-
-        if (!currentUser || !currentUser.role) {
-            res.status(403).json({ error: 'User role not found or user not found.' });
-            return;
-        }
-
-        let authorized = false;
-        
-        if (currentUser.role.permissionLevel >= 100) {
-            authorized = true;
-        }
-
-        
-        if (!authorized) {
-            const labManagerRecord = await prisma.labMember.findFirst({
-                where: {
-                    userId: sessionUserId,
-                    labId: labId,
-                    labRole: {
-                        permissionLevel: { gte: 70 }, // assume: 70 is manager level
-                    },
-                },
-            });
-            if (labManagerRecord) {
-                authorized = true;
-            }
-        }
-
-        if (!authorized) {
-            res.status(403).json({ error: 'User not authorized to update this lab' });
-            return;
-        }
-
-        // update if authorized
+        // Check if lab exists
         const currentLab = await prisma.lab.findUnique({
             where: { id: labId },
         });
@@ -280,26 +236,26 @@ export const updateLab = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
+        // Build update data
+        const updateData: any = {};
+        if (name !== undefined) updateData.name = name;
+        if (location !== undefined) updateData.location = location;
+        if (status !== undefined) updateData.status = status;
+
+        if (Object.keys(updateData).length === 0) {
+            res.status(400).json({ error: 'No valid fields to update' });
+            return;
+        }
+
         const updatedLab = await prisma.lab.update({
             where: { id: labId },
-            data: {
-                name: name !== undefined ? name : currentLab.name,
-                location: location !== undefined ? location : currentLab.location,
-                status: status !== undefined ? status : currentLab.status,
-                updatedAt: new Date(), // Explicitly set updatedAt
-            },
+            data: updateData,
         });
+
         res.status(200).json(updatedLab);
     } catch (error) {
         console.error('Error updating lab:', error);
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            // Handle Prisma errors
-            if (error.code === 'P2025') {
-                res.status(404).json({ error: 'Lab not found during update' });
-                return;
-            }
-        }
-        res.status(500).json({ error: 'Internal server error while updating lab' });
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 
@@ -995,6 +951,15 @@ export const resetLabMemberPassword = async (req: Request, res: Response): Promi
 
 export const removeUserFromLab = async (req: Request, res: Response): Promise<void> => {
     const { labId, userId } = req.body;
+    
+    if (!labId || !userId) {
+        res.status(400).json({ error: 'labId and userId are required' });
+        return;
+    }
+    
+    // Add labId to params for permission middleware
+    req.params.labId = labId.toString();
+    
     try {
         const lab = await prisma.lab.findUnique({
             where: { id: labId }
@@ -1053,6 +1018,7 @@ export const removeUserFromLab = async (req: Request, res: Response): Promise<vo
         });
 
         res.status(200).json({ message: 'User removed from lab' });
+
     } catch (error) {
         console.error('Error removing user from lab:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -1505,6 +1471,7 @@ export const getAllLabRoles = async (req: Request, res: Response): Promise<void>
  */
 export const createLabRole = async (req: Request, res: Response): Promise<void> => {
     const { name, description, permissionLevel } = req.body;
+    const sessionUserId = (req.session as any)?.passport?.user;
 
     // Validate required fields
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -1524,6 +1491,40 @@ export const createLabRole = async (req: Request, res: Response): Promise<void> 
     }
 
     try {
+        // Check if user has permission to create lab roles
+        // Either global permission level 60+ OR be a lab manager in any lab
+        const user = await prisma.user.findUnique({
+            where: { id: sessionUserId },
+            include: { 
+                role: true,
+                labMembers: {
+                    include: {
+                        labRole: true
+                    }
+                }
+            }
+        });
+
+        if (!user || !user.role) {
+            res.status(401).json({ error: 'User not authenticated' });
+            return;
+        }
+
+        
+        const hasGlobalPermission = user.role.permissionLevel >= 60;
+        
+        // Check if user is lab manager in any lab
+        const isLabManager = user.labMembers.some(member => 
+            member.labRole.permissionLevel >= 70
+        );
+
+        if (!hasGlobalPermission && !isLabManager) {
+            res.status(403).json({ 
+                error: 'Insufficient permissions. You must be a lab manager or have administrative privileges to create lab roles.' 
+            });
+            return;
+        }
+
         // Check if a role with the same name already exists
         const existingRole = await prisma.labRole.findFirst({
             where: { name: name.trim() }
@@ -1558,7 +1559,6 @@ export const createLabRole = async (req: Request, res: Response): Promise<void> 
 
 export const activateMemberStatus = async (req: Request, res: Response): Promise<void> => {
     const memberStatusId = parseInt(req.params.memberStatusId);
-    // TODO: Add robust authorization checks (e.g. is the requester an admin of the lab this member belongs to?)
 
     if (isNaN(memberStatusId)) {
         res.status(400).json({ error: 'Invalid MemberStatus ID' });
@@ -1568,13 +1568,20 @@ export const activateMemberStatus = async (req: Request, res: Response): Promise
     try {
         const targetMemberStatus = await prisma.memberStatus.findUnique({
             where: { id: memberStatusId },
-            select: { memberId: true } // We need the labMemberId to deactivate others
+            select: { 
+                memberId: true,
+                labMember: {
+                    select: { labId: true }
+                }
+            }
         });
 
         if (!targetMemberStatus) {
             res.status(404).json({ error: 'MemberStatus entry not found' });
             return;
         }
+
+        // Lab ID extraction done in middleware
 
         const labMemberId = targetMemberStatus.memberId;
 
@@ -1606,7 +1613,6 @@ export const activateMemberStatus = async (req: Request, res: Response): Promise
 export const updateMemberStatus = async (req: Request, res: Response): Promise<void> => {
     const memberStatusId = parseInt(req.params.memberStatusId);
     const { description } = req.body;
-    // TODO: Add robust authorization checks
 
     if (isNaN(memberStatusId)) {
         res.status(400).json({ error: 'Invalid MemberStatus ID' });
@@ -1638,7 +1644,6 @@ export const updateMemberStatus = async (req: Request, res: Response): Promise<v
 
 export const deleteMemberStatus = async (req: Request, res: Response): Promise<void> => {
     const memberStatusId = parseInt(req.params.memberStatusId);
-    // TODO: Add robust authorization checks
 
     if (isNaN(memberStatusId)) {
         res.status(400).json({ error: 'Invalid MemberStatus ID' });
@@ -1646,20 +1651,6 @@ export const deleteMemberStatus = async (req: Request, res: Response): Promise<v
     }
 
     try {
-        // First, check if the MemberStatus is currently active
-        
-        // For now allow deletion regardless of active state
-        const memberStatusToDelete = await prisma.memberStatus.findUnique({
-            where: { id: memberStatusId },
-        });
-
-        if (!memberStatusToDelete) {
-            res.status(404).json({ error: 'MemberStatus entry not found' });
-            return;
-        }
-
-        
-
         await prisma.memberStatus.delete({
             where: { id: memberStatusId },
         });
@@ -1679,7 +1670,6 @@ export const deleteMemberStatus = async (req: Request, res: Response): Promise<v
 export const createMemberStatusForLabMember = async (req: Request, res: Response): Promise<void> => {
     const labMemberId = parseInt(req.params.labMemberId);
     const { statusId, contactId, description } = req.body;
-    // TODO: Add robust authorization checks (is admin of the lab this member belongs to?)
 
     if (isNaN(labMemberId)) {
         res.status(400).json({ error: 'Invalid LabMember ID' });
@@ -1697,11 +1687,17 @@ export const createMemberStatusForLabMember = async (req: Request, res: Response
 
     try {
         // Verify labMember, status, and contact exist before creating
-        const labMember = await prisma.labMember.findUnique({ where: { id: labMemberId } });
+        const labMember = await prisma.labMember.findUnique({ 
+            where: { id: labMemberId },
+            select: { id: true, userId: true, labId: true }
+        });
         if (!labMember) {
             res.status(404).json({ error: 'LabMember not found' });
             return;
         }
+
+        
+
         const globalStatus = await prisma.status.findUnique({ where: { id: parseInt(statusId) } });
         if (!globalStatus) {
             res.status(404).json({ error: 'Global Status type not found' });
@@ -1748,7 +1744,6 @@ export const createMemberStatusForLabMember = async (req: Request, res: Response
 export const updateLabMemberRole = async (req: Request, res: Response): Promise<void> => {
     const labMemberId = parseInt(req.params.labMemberId);
     const { newLabRoleId } = req.body;
-    // TODO: Add robust authorization checks
 
     if (isNaN(labMemberId)) {
         res.status(400).json({ error: 'Invalid LabMember ID' });
@@ -1760,6 +1755,17 @@ export const updateLabMemberRole = async (req: Request, res: Response): Promise<
     }
 
     try {
+        // Get lab member
+        const labMember = await prisma.labMember.findUnique({
+            where: { id: labMemberId }
+        });
+
+        if (!labMember) {
+            res.status(404).json({ error: 'LabMember not found' });
+            return;
+        }
+
+
         const labRoleExists = await prisma.labRole.findUnique({ where: { id: parseInt(newLabRoleId) } });
         if (!labRoleExists) {
             res.status(404).json({ error: 'Specified LabRole ID not found' });
@@ -1794,7 +1800,6 @@ export const updateLabMemberRole = async (req: Request, res: Response): Promise<
 
 export const toggleLabMemberInduction = async (req: Request, res: Response): Promise<void> => {
     const labMemberId = parseInt(req.params.labMemberId);
-    // TODO: Add robust authorization checks
 
     if (isNaN(labMemberId)) {
         res.status(400).json({ error: 'Invalid LabMember ID' });
@@ -1802,11 +1807,15 @@ export const toggleLabMemberInduction = async (req: Request, res: Response): Pro
     }
 
     try {
-        const labMember = await prisma.labMember.findUnique({ where: { id: labMemberId } });
+        const labMember = await prisma.labMember.findUnique({ 
+            where: { id: labMemberId },
+            select: { id: true, inductionDone: true }
+        });
         if (!labMember) {
             res.status(404).json({ error: 'LabMember not found' });
             return;
         }
+
 
         const updatedLabMember = await prisma.labMember.update({
             where: { id: labMemberId },
@@ -1848,13 +1857,14 @@ export const toggleLabMemberPCI = async (req: Request, res: Response): Promise<v
     }
 
     const existingMember = await prisma.labMember.findUnique({
-      where: { id: memberIdInt },
+      where: { id: memberIdInt }
     });
 
     if (!existingMember) {
       res.status(404).json({ message: 'Lab member not found.' });
       return;
     }
+
 
     const updatedLabMember = await prisma.labMember.update({
       where: { id: memberIdInt },
@@ -2528,6 +2538,7 @@ export const removeTagFromLabItem = async (req: Request, res: Response): Promise
  */
 export const createTag = async (req: Request, res: Response): Promise<void> => {
     const { name, tagDescription } = req.body;
+    const sessionUserId = (req.session as any)?.passport?.user;
 
     if (!name || typeof name !== 'string') {
         res.status(400).json({ error: 'Tag name is required and must be a string' });
@@ -2535,6 +2546,40 @@ export const createTag = async (req: Request, res: Response): Promise<void> => {
     }
 
     try {
+        // Check if user has permission to create tags
+        // Either they need global permission level 60+ OR be a lab manager in any lab
+        const user = await prisma.user.findUnique({
+            where: { id: sessionUserId },
+            include: { 
+                role: true,
+                labMembers: {
+                    include: {
+                        labRole: true
+                    }
+                }
+            }
+        });
+
+        if (!user || !user.role) {
+            res.status(401).json({ error: 'User not authenticated' });
+            return;
+        }
+
+        // Check if user has permission >= 60
+        const hasGlobalPermission = user.role.permissionLevel >= 60;
+        
+        // Check if user is a lab manager in any lab
+        const isLabManager = user.labMembers.some(member => 
+            member.labRole.permissionLevel >= 70
+        );
+
+        if (!hasGlobalPermission && !isLabManager) {
+            res.status(403).json({ 
+                error: 'Insufficient permissions. You must be a lab manager or have administrative privileges to create tags.' 
+            });
+            return;
+        }
+
         // Check if tag with this name already exists
         const existingTag = await prisma.itemTag.findFirst({
             where: { name: { equals: name, mode: 'insensitive' } }
