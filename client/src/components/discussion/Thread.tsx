@@ -20,6 +20,7 @@ import { Badge } from '../ui/badge';
 import ReactionBar from '@/app/(header_footer)/(discussion)/components/ReactionBar';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks'
 
 
 const BLURB_CHAR_LIMIT = 128
@@ -117,7 +118,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
 			{ b_show_blurb && 
         <div className='max-h-20 overflow-hidden'>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{ thread.content.slice(0, BLURB_CHAR_LIMIT) }</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} skipHtml={false}>{ thread.content.slice(0, BLURB_CHAR_LIMIT) }</ReactMarkdown>
         </div>
       }
 
