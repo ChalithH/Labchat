@@ -8,5 +8,20 @@
     "name": "Former Member",
     "description": "User removed from lab (soft deletion).",
     "permissionLevel": -1
+  },
+    {
+    "name": "Visitor",
+    "description": "User with temporary or limited access to the lab environment.",
+    "permissionLevel": 1
+  },
+    {
+    "name": "Staff",
+    "description": "Lab personnel responsible for managing or supporting lab activities.",
+    "permissionLevel": 1
+  },
+    {
+    "name": "Student",
+    "description": "User participating in lab sessions or activities as part of their coursework or research.",
+    "permissionLevel": 1
   }
 ]
