@@ -207,7 +207,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Pro
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                PCI User
+                PIC User
               </th>
               <th
                 scope="col"

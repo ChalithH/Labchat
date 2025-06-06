@@ -6,12 +6,14 @@ import { Toaster } from 'sonner'
 
 const HeaderFooterLayout = ({ children } : Readonly<{ children: React.ReactNode }>) => {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Header />
-        { children }
+        <main className="flex-grow">
+          {children}
+        </main>
       <Toaster />
       <Footer />
-    </>
+    </div>
   )
 }
 

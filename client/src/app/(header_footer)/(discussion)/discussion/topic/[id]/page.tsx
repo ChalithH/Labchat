@@ -20,6 +20,7 @@ const DiscussionTopic = async (props:{ params: Params}) => {
     await setUsersLastViewed(`/discussion/topic/${ id }`)
     
     const user = await getUserFromSessionServer()
+    const currentLabId = user.lastViewedLabId || 1
 
     const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
     const userPermission = roleResponse.data.permissionLevel
@@ -27,12 +28,11 @@ const DiscussionTopic = async (props:{ params: Params}) => {
     const categoryRequest: AxiosResponse = await api.get(`/discussion/categories/${ id }`)
     const category: CategoryType = categoryRequest.data
 
-    if (!user || (category.visiblePermission ?? 0 ) > userPermission) {
-        redirect('/home')
+    if (!user || ((category.labId != currentLabId) && PermissionConfig.SEE_EVERYTHING_PERMISSION > userPermission)) {
+      redirect('/home')
     }
 
-    const currentLabId = user.lastViewedLabId || 1
-    const postsRequest: AxiosResponse = await api.get(`/discussion/category-posts/${ id }`)
+    const postsRequest: AxiosResponse = await api.get(`/discussion/category-posts/${ currentLabId }/${ id }`)
     const allPosts: PostType[] = postsRequest.data
 
     const posts = allPosts.filter(post => {

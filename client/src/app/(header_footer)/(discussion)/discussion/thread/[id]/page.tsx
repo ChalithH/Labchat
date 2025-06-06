@@ -10,6 +10,7 @@ import { DiscussionPostState, PostType } from '@/types/post.type'
 import { ReplyType } from '@/types/reply.type'
 import ResolveRoleName from '@/lib/resolve_role_name.util'
 import { PermissionConfig } from '@/config/permissions'
+import { LabProvider } from '@/contexts/lab-context'
 
 
 type Params = Promise<{ id: number }>
@@ -21,6 +22,7 @@ const DiscussionThread = async (props:{ params: Params}) => {
     await setUsersLastViewed(`/discussion/thread/${ id }`)
     
     const user = await getUserFromSessionServer()
+    const currentLabId = user.lastViewedLabId || 1
 
     const postResponse: AxiosResponse = await api.get(`/discussion/post/${ id }`)
     const post: PostType = postResponse.data
@@ -34,8 +36,16 @@ const DiscussionThread = async (props:{ params: Params}) => {
     const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`) 
     const userRole: string = roleResponse.data.name
 
-    if (!user || (category.visiblePermission ?? 0) > roleResponse.data.permissionLevel || 
-      post.state === DiscussionPostState.HIDDEN && ((PermissionConfig.SEE_HIDDEN_PERMISSION > roleResponse.data.permissionLevel && post.member.userId !== user.id))) {
+    const userPermission = roleResponse.data.permissionLevel
+    const visiblePermission = category.visiblePermission ?? 0
+
+    const isNotVisible = userPermission < visiblePermission
+    const isHidden = post.state === DiscussionPostState.HIDDEN
+    const isWrongLab = category.labId !== currentLabId
+    const canSeeHidden = userPermission >= PermissionConfig.SEE_HIDDEN_PERMISSION || post.member.userId === user.id
+    const canSeeEverything = userPermission >= PermissionConfig.SEE_EVERYTHING_PERMISSION
+
+    if (!user || (!canSeeEverything && (isNotVisible || isWrongLab || (isHidden && !canSeeHidden)))) {
       redirect('/home')
     }
 
@@ -43,7 +53,8 @@ const DiscussionThread = async (props:{ params: Params}) => {
     const member = await api.get(`/member/get/user/${ user.id }`)
 
     return (
-      <ThreadClient 
+      <LabProvider initialLabId={currentLabId}>
+        <ThreadClient 
         user={ user } 
         userRole={ userRole }
         userPermission={ roleResponse.data.permissionLevel }
@@ -57,6 +68,7 @@ const DiscussionThread = async (props:{ params: Params}) => {
         authorRole={ authorRole } 
         member={ member.data }
       />
+      </LabProvider>
     )
   }
 

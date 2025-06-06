@@ -30,7 +30,7 @@ import  {getAllLabs, getLabById, createLab, assignUserToLab,
            addUserToLabEndpoint
            } from '../controllers/admin/admin.controller';
 
-import { requirePermission, requireLabPermission } from '../middleware/permission.middleware';
+import { requirePermission, requireLabPermission, extractLabIdFromLabMember, extractLabIdFromMemberStatus } from '../middleware/permission.middleware';
 
 /**
  * @swagger
@@ -47,30 +47,23 @@ const router = Router();
 
 // --- Lab Management (Permission Level: 60+) ---
 router.get('/get-labs', requirePermission(60), getAllLabs); 
-router.get('/get-lab/:id', requirePermission(60), getLabById); 
-router.put('/lab/:id', requirePermission(60), updateLab); 
-router.delete('/lab/:id', requirePermission(100), deleteLab);
-router.get('/get-lab-roles', requirePermission(60), getAllLabRoles); 
-router.post('/create-lab-role', requirePermission(60), createLabRole);
+router.get('/get-lab/:id', requirePermission(0), getLabById); 
+router.put('/lab/:id', requireLabPermission(70, 60), updateLab); // Lab managers (70+) or global admin
+router.delete('/lab/:id', requirePermission(100), deleteLab); // Only global admins can delete labs
+router.get('/get-lab-roles', requirePermission(0), getAllLabRoles); // Anyone authenticated can view roles
+router.post('/create-lab-role', requirePermission(0), createLabRole); 
 
-// Activate a specific MemberStatus entry (making others for the same user inactive)
-router.put('/member-status/:memberStatusId/activate', requirePermission(60), activateMemberStatus);
-// Update details of a specific MemberStatus entry (e.g., description)
-router.put('/member-status/:memberStatusId', requirePermission(60), updateMemberStatus);
-// Delete a specific MemberStatus entry
-router.delete('/member-status/:memberStatusId', requirePermission(60), deleteMemberStatus);
+// Member status management - should be lab-specific with extraction middleware
+router.put('/member-status/:memberStatusId/activate', extractLabIdFromMemberStatus(), requireLabPermission(70, 60), activateMemberStatus);
+router.put('/member-status/:memberStatusId', extractLabIdFromMemberStatus(), requireLabPermission(70, 60), updateMemberStatus);
+router.delete('/member-status/:memberStatusId', extractLabIdFromMemberStatus(), requireLabPermission(70, 60), deleteMemberStatus);
+router.post('/lab-member/:labMemberId/status', extractLabIdFromLabMember(), requireLabPermission(70, 60), createMemberStatusForLabMember);
 
-router.post('/lab-member/:labMemberId/status', requirePermission(60), createMemberStatusForLabMember);
-
-
-router.put('/lab-member/:labMemberId/role', requirePermission(60), updateLabMemberRole);
-// Toggle a lab member's induction status (true/false)
-router.put('/lab-member/:labMemberId/induction', requirePermission(60), toggleLabMemberInduction);
-
-// Toggle a lab member's PCI status
-router.put('/lab-member/:labMemberId/pci', requirePermission(60), toggleLabMemberPCI);
-
-router.delete('/remove-user', requirePermission(60), removeUserFromLab); 
+// Lab member management - should be lab-specific with extraction middleware
+router.put('/lab-member/:labMemberId/role', extractLabIdFromLabMember(), requireLabPermission(70, 60), updateLabMemberRole);
+router.put('/lab-member/:labMemberId/induction', extractLabIdFromLabMember(), requireLabPermission(70, 60), toggleLabMemberInduction);
+router.put('/lab-member/:labMemberId/pci', extractLabIdFromLabMember(), requireLabPermission(70, 60), toggleLabMemberPCI);
+router.delete('/remove-user', requireLabPermission(70, 60), removeUserFromLab);
 
 // Admin stuff
 router.post('/create-lab', requirePermission(100), createLab);
@@ -87,13 +80,6 @@ router.put('/lab/:labId/reset-member-password', requireLabPermission(70, 60), re
 router.post('/create-discussion-tag', requirePermission(60), createDiscussionTag);
 router.post('/create-discussion-category', requirePermission(60), createDiscussionCategory);
 
-
-router.get('/get-all-items', requirePermission(60), getAllItems);
-
-router.post('/items', requirePermission(100), createGlobalItem);
-router.put('/items/:id', requirePermission(100), updateItem);
-router.delete('/items/:id', requirePermission(100), deleteItem);
-
 // Lab Inventory Management stuff - Permission checking handled in controllers
 // Requires authentication (permission level = 0) but lab-specific logic handled in controllers
 router.post('/lab/:labId/inventory', requirePermission(0), addItemToLab);
@@ -105,16 +91,21 @@ router.delete('/lab/:labId/inventory/:itemId/tags/:tagId', requirePermission(0),
 // Get inventory logs for a lab - Changed to use requireLabPermission for proper lab-specific access control
 router.get('/lab/:labId/inventory-logs', requireLabPermission(60, 60), getLabInventoryLogs);
 
-// Global Tag Management stuff
-router.post('/tags', requirePermission(60), createTag);
+router.post('/tags', requirePermission(0), createTag);  // Lab managers can create tags - permission check in controller
 // Update an existing global tag (admin only)
-router.put('/tags/:tagId', requirePermission(100), updateTag);
+router.put('/tags/:tagId', requirePermission(60), updateTag);
 // Delete a global tag (admin only)
-router.delete('/tags/:tagId', requirePermission(100), deleteTag);
+router.delete('/tags/:tagId', requirePermission(60), deleteTag);
 
 // Lab member management
-router.get('/lab/:labId/available-users', requirePermission(60), getAvailableUsersForLab);
-router.post('/lab/:labId/add-user', requirePermission(60), addUserToLabEndpoint);
+router.get('/lab/:labId/available-users', requireLabPermission(70, 60), getAvailableUsersForLab);
+router.post('/lab/:labId/add-user', requireLabPermission(70, 60), addUserToLabEndpoint);
 
 // TODO: Change item threshold in lab
+
+// Global Inventory endpoints
+router.get('/get-all-items', requirePermission(100), getAllItems);
+router.post('/create-global-item', requirePermission(100), createGlobalItem); 
+router.put("/update-item/:id", updateItem);
+router.delete("/delete-item/:id", deleteItem);
 export default router;

@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import MarkdownTips from "./MarkdownTips";
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks'
 
 export default function ContentTabs({ setContents, contents }:{ setContents: Dispatch<SetStateAction<string>>, contents: string}) {
   const [tabValue, setTabValue] = useState("text");
@@ -29,7 +30,11 @@ export default function ContentTabs({ setContents, contents }:{ setContents: Dis
 
         <TabsContent value="preview">
           <div className="border rounded-sm mt-2 p-2 max-h-48 overflow-auto">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{contents}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkBreaks]}
+              skipHtml={false}>
+                {contents}
+            </ReactMarkdown>
           </div>
         </TabsContent>
 

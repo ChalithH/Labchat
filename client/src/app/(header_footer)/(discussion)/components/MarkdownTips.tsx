@@ -18,9 +18,6 @@ const MarkdownTips = () => {
             <li><strong>Bold:</strong> <code>**bold**</code></li>
             <li><em>Italic:</em> <code>*italic*</code></li>
             <li>Links: <code>[example](https://example.com)</code></li>
-            <li>Headers: <code># H1, ## H2, ### H3</code></li>
-            <li>Lists: <code>- item</code> or <code>1. item</code></li>
-            <li>Code: <code>`inline code`</code> or blocks with triple backticks</li>
           </ul>
         </div>
       }

@@ -1,0 +1,89 @@
+[
+  {
+    "name": "HPLC System 1",
+    "description": "Agilent 1260 Infinity II HPLC System"  },
+  {
+    "name": "GC-MS System",
+    "description": "Shimadzu GCMS-QP2020 NX"
+  },
+  {
+    "name": "FTIR Spectrometer",
+    "description": "Thermo Scientific Nicolet iS50 FTIR"
+  },
+  {
+    "name": "UV-Vis Spectrophotometer",
+    "description": "Thermo Scientific Evolution 220"
+  },
+  {
+    "name": "XRD Diffractometer",
+    "description": "Bruker D2 PHASER"
+  },
+  {
+    "name": "Confocal Microscope",
+    "description": "Zeiss LSM 880 with Airyscan"
+  },
+  {
+    "name": "Flow Cytometer",
+    "description": "BD FACSAria III"
+  },
+  {
+    "name": "PCR Machine",
+    "description": "Applied Biosystems Veriti Thermal Cycler"
+  },
+  {
+    "name": "Centrifuge (High-Speed)",
+    "description": "Eppendorf 5424 R"
+  },
+  {
+    "name": "Optical Microscope",
+    "description": "Olympus CX23"
+  },
+  {
+    "name": "Electrochemical Analyzer",
+    "description": "Metrohm Autolab PGSTAT302N"
+  },
+  {
+    "name": "Glovebox",
+    "description": "MBRAUN UNIlab Plus"
+  },
+  {
+    "name": "Rotary Evaporator",
+    "description": "Buchi Rotavapor R-210"
+  },
+  {
+    "name": "Schlenk Line",
+    "description": "Standard glass Schlenk line setup"
+  },
+  {
+    "name": "Biosafety Cabinet (Class II)",
+    "description": "Thermo Scientific 1300 Series A2"
+  },
+  {
+    "name": "CO2 Incubator",
+    "description": "Eppendorf Galaxy 170 R"
+  },
+  {
+    "name": "Gel Electrophoresis System",
+    "description": "Bio-Rad PowerPac Basic"
+  },
+  {
+    "name": "Particle Size Analyzer",
+    "description": "Malvern Panalytical Zetasizer Nano ZS"
+  },
+  {
+    "name": "Rheometer",
+    "description": "Anton Paar MCR 302"
+  },
+  {
+    "name": "NMR Spectrometer (400 MHz)",
+    "description": "Bruker Avance NEO 400 MHz"
+  },
+  {
+    "name": "Freeze Dryer",
+    "description": "Labconco FreeZone 2.5 Liter"
+  },
+  {
+    "name": "Atomic Absorption Spectrometer",
+    "description": "Agilent 5110 SVD AAS"
+  }
+]

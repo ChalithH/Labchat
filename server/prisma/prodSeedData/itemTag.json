@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Acid",
+    "tagDescription": "Chemicals that are acidic."
+  },
+  {
+    "name": "Base",
+    "tagDescription": "Chemicals that are basic."
+  },
+  {
+    "name": "Solvent",
+    "tagDescription": "Chemicals used to dissolve other substances."
+  },
+  {
+    "name": "Flammable",
+    "tagDescription": "Substances that ignite easily."
+  },
+  {
+    "name": "Corrosive",
+    "tagDescription": "Substances that cause damage to materials or living tissue."
+  },
+  {
+    "name": "Toxic",
+    "tagDescription": "Substances that are poisonous."
+  },
+  {
+    "name": "Glassware",
+    "tagDescription": "Laboratory equipment made of glass."
+  },
+  {
+    "name": "Plasticware",
+    "tagDescription": "Laboratory equipment made of plastic."
+  },
+  {
+    "name": "Consumable",
+    "tagDescription": "Items that are used up during experiments."
+  },
+  {
+    "name": "Safety Equipment",
+    "tagDescription": "Items used for personal protection."
+  },
+  {
+    "name": "Filtration",
+    "tagDescription": "Items used for separating solids from liquids/gases."
+  },
+  {
+    "name": "Injection",
+    "tagDescription": "Items used for injecting liquids."
+  },
+  {
+    "name": "Cell Culture",
+    "tagDescription": "Items used for growing cells."
+  },
+  {
+    "name": "Microbiology",
+    "tagDescription": "Items used for studying microorganisms."
+  },
+  {
+    "name": "Microscopy",
+    "tagDescription": "Items used for viewing samples under a microscope."
+  },
+  {
+    "name": "Sealing",
+    "tagDescription": "Items used for sealing containers."
+  },
+  {
+    "name": "General Supplies",
+    "tagDescription": "Common laboratory items."
+  },
+  {
+    "name": "Weighing",
+    "tagDescription": "Items used for weighing substances."
+  },
+  {
+    "name": "Handling",
+    "tagDescription": "Items used for manipulating substances or objects."
+  },
+  {
+    "name": "Chemical Analysis",
+    "tagDescription": "Items used in chemical analysis procedures."
+  },
+  {
+    "name": "Biological Sample Prep",
+    "tagDescription": "Items used for preparing biological samples."
+  },
+  {
+    "name": "Reusable",
+    "tagDescription": "Items that can be cleaned and used multiple times."
+  }
+]

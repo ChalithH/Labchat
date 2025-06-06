@@ -53,7 +53,13 @@ export const requireLabPermission = (minimum_level: number, adminMinLevel: numbe
       }
 
       // Extract labId from request (can be in params/body/query)
-      const labId = parseInt(req.params.labId || req.body.labId || req.query.labId as string);
+      // Also check for id parameter for routes
+      const labId = parseInt(
+        req.params.labId || 
+        req.params.id || 
+        req.body.labId || 
+        req.query.labId as string
+      );
       
       if (!labId) {
         res.status(400).json({ error: 'Lab ID is required' });
@@ -65,6 +71,8 @@ export const requireLabPermission = (minimum_level: number, adminMinLevel: numbe
       // Check if user is a global admin
       if (user.role.permissionLevel >= adminMinLevel) {
         console.log('Access granted: Global admin user');
+        // Add labId to request for controllers to use
+        req.params.labId = labId.toString();
         next();
         return;
       }
@@ -94,10 +102,70 @@ export const requireLabPermission = (minimum_level: number, adminMinLevel: numbe
       }
 
       console.log(`Access granted: Lab member with role level ${labMember.labRole.permissionLevel}`);
+      req.params.labId = labId.toString();
       next();
     } catch (error) {
       console.error('Error in requireLabPermission middleware:', error);
       res.status(500).json({ error: 'Permission check failed' });
+    }
+  }
+}
+
+// Middleware will extract lab ID from lab member
+export const extractLabIdFromLabMember = () => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const labMemberId = parseInt(req.params.labMemberId);
+      
+      if (!labMemberId || isNaN(labMemberId)) {
+        next();
+        return;
+      }
+
+      const labMember = await prisma.labMember.findUnique({
+        where: { id: labMemberId },
+        select: { labId: true }
+      });
+
+      if (labMember) {
+        req.params.labId = labMember.labId.toString();
+      }
+      
+      next();
+    } catch (error) {
+      console.error('Error extracting lab ID from lab member:', error);
+      next();
+    }
+  }
+}
+
+export const extractLabIdFromMemberStatus = () => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const memberStatusId = parseInt(req.params.memberStatusId);
+      
+      if (!memberStatusId || isNaN(memberStatusId)) {
+        next();
+        return;
+      }
+
+      const memberStatus = await prisma.memberStatus.findUnique({
+        where: { id: memberStatusId },
+        select: {
+          labMember: {
+            select: { labId: true }
+          }
+        }
+      });
+
+      if (memberStatus?.labMember) {
+        req.params.labId = memberStatus.labMember.labId.toString();
+      }
+      
+      next();
+    } catch (error) {
+      console.error('Error extracting lab ID from member status:', error);
+      next();
     }
   }
 }

@@ -1,12 +1,12 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import api from '@/lib/api';
 
-import { loggedInsiteConfig, loggedOutsiteConfig } from "@/config/site";
+import { loggedInsiteConfig, loggedOutsiteConfig, managerInsiteConfig, adminInsiteConfig } from "@/config/site";
 
 import {
   Sheet,
@@ -36,6 +36,9 @@ export default function Header() {
   const [userData, setUserData] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeLink, setActiveLink] = useState('#');
+  const [isLabManager, setIsLabManager] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
@@ -49,28 +52,120 @@ export default function Header() {
     getUser();
   }, []);
 
+  // Check lab manager permissions when userData/lastViewedLabId changes
+  useEffect(() => {
+    const checkLabPermissions = async () => {
+      if (!isLoggedIn || !userData?.lastViewedLabId) {
+        setIsLabManager(false);
+        return;
+      }
+
+      try {
+        const response = await api.get(`/auth/check-lab-access/${userData.lastViewedLabId}`);
+        if (response.data && response.data.isLabManager) {
+          setIsLabManager(true);
+        } else {
+          setIsLabManager(false);
+        }
+      } catch (error: any) {
+        // 403 == user doesn't have permission
+        if (error.response && error.response.status === 403) {
+          setIsLabManager(false);
+        } else {
+          // Gracefully handle
+          console.error('Failed to check lab permissions:', error);
+          setIsLabManager(false);
+        }
+      }
+    };
+
+    checkLabPermissions();
+  }, [userData?.lastViewedLabId, isLoggedIn, userData]);
+
   const handleLinkClick = (href: string) => setActiveLink(href);
 
-  const handleLogout = async () => {
-    if (isLoggedIn) {
+ const handleLogout = async () => {
+  if (isLoggedIn) {
+    try {
       await api.get("/auth/logout");
+      
+      // Reset ALL related state
       setIsLoggedIn(false);
-      redirect('/home');
+      setUserData(null);
+      setIsLabManager(false);
+      setActiveLink('#');
+      
+      // Use router.push instead of redirect for better state management
+      router.push('/home');
+      
+      // Optional: Force a page refresh to ensure clean state
+      // window.location.href = '/home';
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
-  };
+  }
+};
 
   const handleProfile = async () => {
     if (isLoggedIn) {
       const user = await getUserFromSession();
-      redirect(`/profile/${user.id}`);
+      console.log('USERSERSER',user)
+      const member = await api.get(`/member/get/user-lab/${ user.id }/${ user.lastViewedLabId }`)
+      redirect(`/profile/${member.data.id}`);
     }
   };
 
   const handleLabChange = (labId: number) => {
     console.log('Switched to lab:', labId);
+    
+    // Check if we're currently on a manage lab page
+    const manageLabMatch = pathname.match(/^\/admin\/manage-lab\/(\d+)$/);
+    
+    // Refresh user data to get the new lastViewedLabId
+    const getUser = async () => {
+      const user = await getUserFromSession();
+      if (user) {
+        user.role = await ResolveRoleName(user.roleId);
+        setUserData(user);
+        
+        // If on a manage lab page navigate to the new lab's manage page
+        if (manageLabMatch) {
+          router.push(`/admin/manage-lab/${labId}`);
+        }
+      }
+    };
+    getUser();
   };
 
-  const navItems = isLoggedIn ? loggedInsiteConfig.navItems : loggedOutsiteConfig.navItems;
+  interface NavItem {
+    title: string;
+    href: string;
+  }
+
+  let navItems: NavItem[]; 
+  // Check if user has admin role
+  const isAdmin = userData?.role === 'Admin';
+
+  if (isAdmin) {
+    navItems = adminInsiteConfig.navItems;
+  } else if (isLabManager) {
+    const baseNavItems = managerInsiteConfig.navItems;
+    navItems = [...baseNavItems];
+    
+    if (navItems.length > 0 && userData?.lastViewedLabId) {
+      const lastIndex = navItems.length - 1;
+      navItems[lastIndex] = {
+        ...navItems[lastIndex],
+        href: `${navItems[lastIndex].href}/${userData.lastViewedLabId}`
+      };
+    }
+  } else if (isLoggedIn) {
+    navItems = loggedInsiteConfig.navItems;
+  } else { 
+    navItems = loggedOutsiteConfig.navItems;
+  }
+
+
 
   return (
     <header className="sticky top-0 z-50 w-full bg-zinc-200/70 dark:bg-zinc-900/70 shadow-sm border-b">

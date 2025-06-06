@@ -369,13 +369,14 @@ export const getPostsByTitle = async (req: Request, res: Response): Promise<void
 export const getPostsByCategory = async (req: Request, res: Response): Promise<void> => {
   try {
     const category_id: number = parseInt(req.params.id)
-    if (!category_id) {
-      res.status(400).json({ error: 'Failed to parse a category ID from supplied paramter'})
+    const lab_id: number = parseInt(req.params.lab)
+    if (!category_id || !lab_id) {
+      res.status(400).json({ error: 'Failed to parse a category ID or lab ID from supplied paramter'})
       return
     }
 
     const posts = await prisma.discussionPost.findMany({
-      where: { discussionId: category_id },
+      where: { discussionId: category_id, discussion: { labId: lab_id } },
       include: {
         member: { include: { user: true } },
         tags: { include: { postTag: true } },

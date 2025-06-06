@@ -28,7 +28,7 @@ router.get('/post/:id', getPostById)
 router.post('/post', createPost)
 router.put('/post/:id', editPost)
 
-router.get('/category-posts/:id', getPostsByCategory)
+router.get('/category-posts/:lab/:id', getPostsByCategory)
 router.get('/member-posts/:id', getPostsByMember)
 router.post('/title-posts', getPostsByTitle)
 router.get('/announcements/lab/:labId', getAnnouncementsByLab)
@@ -74,7 +74,7 @@ router.get('/reactions/reply/:id', getReactionsForReply);
 router.post('/reactions/toggle', toggleReaction);
 
 // misc controller routes
-router.get('/recent/:id', getRecentPosts)
+router.get('/recent/:lab', getRecentPosts)
 router.get('/popular/:id', getPopularPosts)
 router.get('/mixed/:id', getMixedPosts)
 

@@ -31,6 +31,8 @@ import ReactionBar from '../ReactionBar'
 import ReactMarkdown from 'react-markdown'
 import rehypeSanitize from 'rehype-sanitize'
 import { defaultSchema } from 'hast-util-sanitize'
+import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
 
 
 const schema = {
@@ -178,7 +180,7 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
 
       <div className="p-4 rounded-sm border border-gray-200">
         <div className="prose prose-sm max-w-none">
-          <ReactMarkdown rehypePlugins={[[rehypeSanitize, schema]]}>
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} skipHtml={false} rehypePlugins={[[rehypeSanitize, schema]]}>
             {post.content}
           </ReactMarkdown>
         </div>
