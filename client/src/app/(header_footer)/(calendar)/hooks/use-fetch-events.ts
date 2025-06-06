@@ -26,7 +26,7 @@ type FetchCache = {
 export const useFetchEvents = () => {
   const { 
     selectedDate, 
-    setLocalEvents 
+    setLocalEvents
   } = useCalendar();
   const [loading, setLoading] = useState(false);
   const currentLabId = useCurrentLabId(); // Get current lab ID from context

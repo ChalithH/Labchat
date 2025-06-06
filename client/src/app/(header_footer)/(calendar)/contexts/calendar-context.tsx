@@ -3,7 +3,7 @@
 import { createContext, useContext, useState } from "react";
 
 import type { Dispatch, SetStateAction } from "react";
-import type { IEvent, IUser, IEventType, IInstrument, IEventStatus } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType, IInstrument, IEventStatus, IUserSession } from "@/calendar/interfaces";
 import type { TBadgeVariant, TVisibleHours, TWorkingHours } from "@/calendar/types";
 
 interface ICalendarContext {
@@ -23,6 +23,7 @@ interface ICalendarContext {
   eventTypes: IEventType[];
   instruments: IInstrument[];
   statuses: IEventStatus[];
+  currentUser: IUserSession;
   workingHours: TWorkingHours;
   setWorkingHours: Dispatch<SetStateAction<TWorkingHours>>;
   visibleHours: TVisibleHours;
@@ -51,7 +52,8 @@ export function CalendarProvider({
   eventTypes = [],
   instruments = [],
   statuses = [],
-  initialEvents = [] 
+  initialEvents = [], 
+  currentUser
 }: { 
   children: React.ReactNode; 
   users: IUser[]; 
@@ -59,6 +61,7 @@ export function CalendarProvider({
   instruments: IInstrument[];
   statuses: IEventStatus[];
   initialEvents?: IEvent[] 
+  currentUser: IUserSession;
 }) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
   const [visibleHours, setVisibleHours] = useState<TVisibleHours>(VISIBLE_HOURS);
@@ -97,6 +100,7 @@ export function CalendarProvider({
         eventTypes,
         instruments,
         statuses,
+        currentUser,
         visibleHours,
         setVisibleHours,
         workingHours,

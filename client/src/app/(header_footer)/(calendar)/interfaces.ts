@@ -4,6 +4,12 @@ export interface IUser {
   picturePath: string | null;
 }
 
+export interface IUserSession {
+  id: string;
+  name: string;
+  labId: string;
+}
+
 export interface IInstrument {
   id: number;
   name: string | null;

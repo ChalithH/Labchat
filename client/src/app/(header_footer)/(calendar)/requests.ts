@@ -1,12 +1,14 @@
 import axios from "axios";
 import { CALENDAR_ITENS_MOCK, USERS_MOCK } from "@/calendar/mocks";
-import { IEvent, IEventType, IInstrument, IEventStatus } from "@/calendar/interfaces";
+import { IEvent, IEventType, IInstrument, IEventStatus, IUserSession } from "@/calendar/interfaces";
 import { 
   ApiEventType, 
   getColorForEventType, 
   transformApiEvent, 
   transformAPIUser 
 } from "./transform-api-event";
+import getLabMember from "@/lib/get_lab_member";
+import { get } from "http";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -173,15 +175,18 @@ export const getEvents = async (startDate: Date, endDate: Date, labId?: number):
   }
 };
 
-export const createEvent = async (event: Partial<IEvent>): Promise<IEvent | null> => {
+export const createEvent = async (event: Partial<IEvent>, currentUser: IUserSession): Promise<IEvent | null> => {
   try {
     // Get the type ID from the event, or default to 1
     const typeId = event.type?.id || 1;
-    
+
+    const labMember = await getLabMember(Number(currentUser.id), Number(currentUser.labId));
+    console.log("Lab Member:", labMember);
+
     // Transform the event data to match the API's expected format
     const apiEventData = {
       labId: event.lab?.id || 1, // Use lab ID from event or default to 1
-      memberId: parseInt(event.user?.id || "1"), // Convert string ID to number
+      memberId: labMember?.id || parseInt(currentUser.id || "1"), 
       title: event.title,
       description: event.description,
       instrumentId: event.instrument?.id || null, // Include instrument ID if present

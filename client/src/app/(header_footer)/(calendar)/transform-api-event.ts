@@ -1,4 +1,5 @@
-import { IEvent } from "@/calendar/interfaces";
+import { IEvent, IUserSession } from "@/calendar/interfaces";
+import { UserType } from "@/types/account_user.type";
 
 // Define an interface for event types from the API
 export interface ApiEventType {
@@ -180,6 +181,14 @@ export const transformAPIUser = (apiUser: ApiUser): IEvent["user"] => {
     id: String(apiUser.memberID),
     name: apiUser.displayName,
     picturePath: null,
+  };
+};
+
+export const transformSessionUser = (apiUser: UserType): IUserSession => {
+  return {
+    id: String(apiUser.id),
+    name: apiUser.displayName,
+    labId: String(apiUser.lastViewedLabId),
   };
 };
 
