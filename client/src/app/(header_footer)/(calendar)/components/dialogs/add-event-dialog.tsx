@@ -35,7 +35,7 @@ interface IProps {
 }
 
 export function AddEventDialog({ children, startDate, startTime }: IProps) {
-  const { users, eventTypes: contextEventTypes, instruments } = useCalendar();
+  const { users, eventTypes: contextEventTypes, instruments, currentUser } = useCalendar();
   const { addEvent, isAdding, error: addError } = useAddEvent();
   const { isOpen, onClose, onToggle } = useDisclosure();
   
@@ -87,8 +87,26 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
         : undefined,
       type: "1", // Default type ID as string
       instrumentId: null, // Default to no instrument
+      user: "", // Will be set in useEffect
     },
   });
+
+  // Set the current user when users data is available
+  useEffect(() => {
+    const getCurrentUserId = () => {
+      if (currentUser && users && users.length > 0) {
+        // Find the user that matches the current lab member's userId
+        const matchingUser = users.find(user => user.id === currentUser.id);
+        return matchingUser?.id || users[0]?.id;
+      }
+      return users && users.length > 0 ? users[0]?.id : "";
+    };
+    
+    const currentUserId = getCurrentUserId();
+    if (currentUserId && currentUserId !== form.getValues("user")) {
+      form.setValue("user", currentUserId);
+    }
+  }, [users, currentUser, form]);
 
   const onSubmit = async (values: TEventFormData) => {
     const startDateTime = new Date(values.startDate);
@@ -128,7 +146,24 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
 
     if (result) {
       onClose();
-      form.reset();
+      form.reset({
+        title: "",
+        description: "",
+        startDate: typeof startDate !== "undefined" ? startDate : undefined,
+        startTime: typeof startTime !== "undefined" ? startTime : undefined,
+        endDate: typeof startDate !== "undefined" 
+          ? new Date(startDate.getTime() + (startTime?.hour === 23 ? 24 * 60 * 60 * 1000 : 0)) 
+          : undefined,
+        endTime: typeof startTime !== "undefined" 
+          ? { 
+              hour: (startTime.hour + 1) % 24, 
+              minute: startTime.minute 
+            } 
+          : undefined,
+        type: "1",
+        instrumentId: null,
+        user: currentUser && users?.find(user => user.id === currentUser.id)?.id || (users && users.length > 0 ? users[0]?.id : ""), // Reset to current user
+      });
       setSelectedAssignees([]);
     }
   };
@@ -212,22 +247,26 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   name="user"
                   render={({ field, fieldState }) => (
                     <FormItem className="w-full">
-                      <FormLabel className="text-gray-900">Assigner (Required)</FormLabel>
+                      <FormLabel className="text-gray-900">Assigner</FormLabel>
                       <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger data-invalid={fieldState.invalid}>
-                            <SelectValue placeholder="Select who is creating this event" />
+                        <Select value={field.value} disabled>
+                          <SelectTrigger data-invalid={fieldState.invalid} className="opacity-75">
+                            <SelectValue placeholder="Select assigner" />
                           </SelectTrigger>
-
                           <SelectContent>
                             {users.map(user => (
-                              <SelectItem key={user.id} value={user.id} className="flex-1">
+                              <SelectItem key={user.id} value={user.id}>
                                 <div className="flex items-center gap-2">
-                                  <Avatar key={user.id} className="size-6">
-                                    <AvatarImage src={user.picturePath ?? undefined} alt={user.name} />
-                                    <AvatarFallback className="text-xxs bg-gray-100 text-gray-700">{user.name[0]}</AvatarFallback>
+                                  <Avatar className="h-5 w-5">
+                                    <AvatarImage src={user.picturePath || undefined} />
+                                    <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">
+                                      {user.name[0]}
+                                    </AvatarFallback>
                                   </Avatar>
-                                  <p className="truncate text-gray-900">{user.name}</p>
+                                  <span className="text-gray-900">{user.name}</span>
+                                  {currentUser && user.id === currentUser.id && (
+                                    <span className="text-xs text-blue-600 font-medium">(You)</span>
+                                  )}
                                 </div>
                               </SelectItem>
                             ))}

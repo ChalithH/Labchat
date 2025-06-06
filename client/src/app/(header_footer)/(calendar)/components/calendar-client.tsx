@@ -1,7 +1,7 @@
 "use client";
 import { CalendarProvider } from "@/calendar/contexts/calendar-context";
 import { ClientContainer } from "@/calendar/components/client-container";
-import type { IEvent, IUser, IEventType, IInstrument, IEventStatus, IUserSession } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType, IInstrument, IEventStatus, ILabMember } from "@/calendar/interfaces";
 import type { TCalendarView } from "@/calendar/types";
 
 interface CalendarClientProps {
@@ -11,7 +11,7 @@ interface CalendarClientProps {
   eventTypes: IEventType[];
   instruments: IInstrument[];
   statuses: IEventStatus[];
-  currentUser: IUserSession;
+  currentUser: ILabMember;
 }
 
 export function CalendarClient({ view, 

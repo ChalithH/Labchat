@@ -4,10 +4,13 @@ export interface IUser {
   picturePath: string | null;
 }
 
-export interface IUserSession {
+export interface ILabMember {
   id: string;
-  name: string;
+  userId: string;
+  labRoleId: string;
   labId: string;
+  picturePath: string | null;
+  name: string;
 }
 
 export interface IInstrument {

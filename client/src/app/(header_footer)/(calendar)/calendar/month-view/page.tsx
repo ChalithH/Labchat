@@ -5,7 +5,8 @@ import setUsersLastViewed from '@/lib/set_last_viewed';
 import getUserFromSessionServer from "@/lib/get_user_server";
 import { redirect } from "next/navigation";
 import { LabProvider } from "@/contexts/lab-context";
-import { transformSessionUser } from "../../transform-api-event";
+import { transformLabMember } from "../../transform-api-event";
+import getLabMember from "@/lib/get_lab_member";
 
 export default async function MonthViewPage() {
   setUsersLastViewed('/calendar/month-view');
@@ -21,8 +22,8 @@ export default async function MonthViewPage() {
   const startDate = startOfMonth(currentDate);
   const endDate = endOfMonth(currentDate);
 
-  
-  console.log("Current user:", user);
+  const labMember = await getLabMember(Number(user.id), Number(currentLabId));
+  console.log('Lab Member:', labMember);
 
   // Fetch initial data on the server
   const [initialEvents, users, eventTypes, instruments, statuses, currentUser] = await Promise.all([
@@ -31,7 +32,7 @@ export default async function MonthViewPage() {
     getEventTypes(),
     getInstruments(),
     getEventStatuses(),
-    transformSessionUser(user)
+    transformLabMember(labMember, currentLabId)
   ]);
   
   return (

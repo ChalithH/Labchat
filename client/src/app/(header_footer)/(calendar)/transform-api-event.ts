@@ -1,5 +1,6 @@
-import { IEvent, IUserSession } from "@/calendar/interfaces";
+import { IEvent, ILabMember } from "@/calendar/interfaces";
 import { UserType } from "@/types/account_user.type";
+import { MemberType } from "@/types/member.type";
 
 // Define an interface for event types from the API
 export interface ApiEventType {
@@ -184,11 +185,17 @@ export const transformAPIUser = (apiUser: ApiUser): IEvent["user"] => {
   };
 };
 
-export const transformSessionUser = (apiUser: UserType): IUserSession => {
+export const transformLabMember = (apiUser: MemberType | null, currentLabId: Number): ILabMember => {
+  if (!apiUser || !currentLabId) {
+    throw new Error("Invalid API user or current lab ID");
+  }
   return {
     id: String(apiUser.id),
-    name: apiUser.displayName,
-    labId: String(apiUser.lastViewedLabId),
+    userId: String(apiUser.userId),
+    labRoleId: String(apiUser.labRoleId),
+    labId: String(currentLabId),
+    picturePath: null,
+    name: apiUser.username
   };
 };
 

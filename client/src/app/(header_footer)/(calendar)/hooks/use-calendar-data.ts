@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCurrentLabId } from "@/contexts/lab-context";
 import { getEvents, getUsers, getEventTypes, createEvent, updateEvent, deleteEvent } from "../requests";
-import type { IEvent, IUser, IEventType, IUserSession } from "../interfaces";
+import type { IEvent, IUser, IEventType, ILabMember } from "../interfaces";
 
 export function useCalendarData() {
   const currentLabId = useCurrentLabId();
@@ -75,7 +75,7 @@ export function useCalendarData() {
   }, [currentLabId, fetchUsers, fetchEventTypes]);
 
   // Wrapper functions that automatically use current lab context
-  const createEventForCurrentLab = useCallback(async (event: Partial<IEvent>, currentUser: IUserSession) => {
+  const createEventForCurrentLab = useCallback(async (event: Partial<IEvent>, currentUser: ILabMember) => {
     const result = await createEvent(event, currentUser);
     if (result) {
       setEvents(prev => [...prev, result]);
