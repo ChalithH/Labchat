@@ -19,15 +19,15 @@ type FetchCache = {
   startDate: string;
   endDate: string;
   view: TCalendarView;
-  userId: string;
-  typeId: string;
-  instrumentId: string;
-  labId: number;
+  labId: number; 
   events: IEvent[];
 };
 
 export const useFetchEvents = () => {
-  const { selectedDate, selectedUserId, selectedTypeId, selectedInstrumentId, setLocalEvents } = useCalendar();
+  const { 
+    selectedDate, 
+    setLocalEvents 
+  } = useCalendar();
   const [loading, setLoading] = useState(false);
   const currentLabId = useCurrentLabId(); // Get current lab ID from context
   const [error, setError] = useState<string | null>(null);
@@ -68,10 +68,7 @@ export const useFetchEvents = () => {
   const fetchEventsForDateRange = useCallback(async (
     date: Date, 
     viewType: TCalendarView, 
-    userId: string, 
-    typeId: string, 
-    instrumentId: string,
-    labId: number, 
+    labId: number,
     force = false
   ) => {
     const { startDate, endDate } = getDateRange(date, viewType);
@@ -86,12 +83,11 @@ export const useFetchEvents = () => {
       fetchCacheRef.current && 
       fetchCacheRef.current.startDate === startKey &&
       fetchCacheRef.current.endDate === endKey &&
-      fetchCacheRef.current.view === viewType && 
-      fetchCacheRef.current.userId === userId &&
-      fetchCacheRef.current.typeId === typeId &&
-      fetchCacheRef.current.labId === labId &&
-      fetchCacheRef.current.instrumentId === instrumentId
+      fetchCacheRef.current.view === viewType &&
+      fetchCacheRef.current.labId === labId 
     ) {
+      // Use cached events but still set them in state
+      setLocalEvents(fetchCacheRef.current.events);
       return;
     }
     
@@ -103,53 +99,16 @@ export const useFetchEvents = () => {
       
       const fetchedEvents = await getEvents(startDate, endDate, labId);
       
-      // Filter events by user if needed - now checks assignments
-      let filteredEvents = fetchedEvents;
-      
-      if (userId !== "all") {
-        filteredEvents = filteredEvents.filter(event => {
-          // If no assignments, check if the user is the assigner
-          if (!event.assignments || event.assignments.length === 0) {
-            return event.user.id === userId;
-          }
-          
-          // Check if the user is in the assignments
-          return event.assignments.some((assignment: any) => 
-            assignment.memberId?.toString() === userId
-          );
-        });
-      }
-      
-      // Filter events by type if needed
-      if (typeId !== "all") {
-        filteredEvents = filteredEvents.filter(event => 
-          event.type && event.type.id.toString() === typeId
-        );
-      }
-      
-      // Filter events by instrument if needed
-      if (instrumentId !== "all") {
-        filteredEvents = filteredEvents.filter(event => {
-          if (instrumentId === "none") {
-            return !event.instrument || event.instrument === null;
-          }
-          return event.instrument && event.instrument.id.toString() === instrumentId;
-        });
-      }
-      
       // Store in cache
       fetchCacheRef.current = {
         startDate: startKey,
         endDate: endKey,
         view: viewType,
-        userId,
-        typeId,
-        instrumentId,
-        labId,
-        events: filteredEvents
+        events: fetchedEvents,
+        labId: labId
       };
       
-      setLocalEvents(filteredEvents);
+      setLocalEvents(fetchedEvents);
     } catch (err) {
       console.error("Error fetching events:", err);
       setError("Failed to fetch events. Please try again later.");
@@ -158,17 +117,13 @@ export const useFetchEvents = () => {
     }
   }, [getDateRange, setLocalEvents]);
   
-  // Fetch events when selected parameters change
   useEffect(() => {
     fetchEventsForDateRange(
       selectedDate, 
       view, 
-      String(selectedUserId), 
-      String(selectedTypeId),
-      String(selectedInstrumentId),
       currentLabId
     );
-  }, [selectedDate, view, selectedUserId, selectedTypeId, selectedInstrumentId, currentLabId, fetchEventsForDateRange]);
+  }, [selectedDate, view, currentLabId, fetchEventsForDateRange]);
   
   return {
     loading,
@@ -178,9 +133,6 @@ export const useFetchEvents = () => {
     refreshEvents: () => fetchEventsForDateRange(
       selectedDate, 
       view, 
-      String(selectedUserId), 
-      String(selectedTypeId),
-      String(selectedInstrumentId),
       currentLabId,
       true
     )

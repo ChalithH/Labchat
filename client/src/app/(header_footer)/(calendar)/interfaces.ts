@@ -1,4 +1,3 @@
-
 export interface IUser {
   id: string;
   name: string;
@@ -27,6 +26,13 @@ export interface IEventType {
   color?: string;
 }
 
+export interface IEventStatus {
+  id: number;
+  name: string;
+  color?: string;
+  description?: string;
+}
+
 export interface IEvent {
   id: number;
   startDate: string;
@@ -34,7 +40,7 @@ export interface IEvent {
   title: string;
   color: string;
   description: string;
-  status?: string | null;
+  status?: IEventStatus | null;
   user: IUser;  // This is the assigner
   type?: IEventType;
   instrument?: IInstrument | null;

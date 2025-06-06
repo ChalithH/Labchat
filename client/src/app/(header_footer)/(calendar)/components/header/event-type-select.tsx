@@ -12,13 +12,8 @@ export function EventTypeSelect({ onRefresh, isLoading = false }: EventTypeSelec
   const { eventTypes, selectedTypeId, setSelectedTypeId } = useCalendar();
   
   const handleTypeChange = (typeId: string) => {
-    // Convert to number if not "all"
     setSelectedTypeId(typeId === "all" ? "all" : Number(typeId));
-    
-    // If there's a refresh function, call it to refetch events with the new type filter
-    if (onRefresh) {
-      onRefresh();
-    }
+    // Don't trigger refresh here - let the context handle the filtering
   };
 
   return (

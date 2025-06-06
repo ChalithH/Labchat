@@ -7,6 +7,14 @@ export interface ApiEventType {
   color?: string; // Now optional hex color from DB
 }
 
+// Define an interface for event status from the API
+export interface ApiEventStatus {
+  id: number;
+  name: string;
+  color?: string; // Optional hex color from DB
+  description?: string;
+}
+
 // Default colors as fallback if no color is set in the database
 export const defaultEventTypeColors: Record<string, string> = {
   equipment: "#3B82F6", // Blue
@@ -15,6 +23,15 @@ export const defaultEventTypeColors: Record<string, string> = {
   meeting: "#10B981",   // Green
   training: "#10B981",  // Green
   default: "#10B981"    // Green
+};
+
+// Default status colors
+export const defaultStatusColors: Record<string, string> = {
+  scheduled: "#3B82F6",  // Blue
+  booked: "#10B981",     // Green
+  completed: "#6B7280",  // Gray
+  cancelled: "#EF4444",  // Red
+  default: "#6B7280"     // Gray
 };
 
 // Function to get color based on event type
@@ -44,6 +61,33 @@ export const getColorForEventType = (typeId: number, typeName: string = "", dbCo
   return defaultEventTypeColors.default;
 };
 
+// Function to get color based on status
+export const getColorForStatus = (statusName: string = "", dbColor?: string): string => {
+  // If color is stored in database, use it
+  if (dbColor) {
+    return dbColor;
+  }
+  
+  const normalizedName = statusName.toLowerCase();
+  
+  // Check for specific status mappings
+  if (normalizedName === "scheduled") {
+    return defaultStatusColors.scheduled;
+  }
+  if (normalizedName === "booked") {
+    return defaultStatusColors.booked;
+  }
+  if (normalizedName === "completed") {
+    return defaultStatusColors.completed;
+  }
+  if (normalizedName === "cancelled") {
+    return defaultStatusColors.cancelled;
+  }
+  
+  // Return default color
+  return defaultStatusColors.default;
+};
+
 // API Event interface that matches the backend response
 export interface ApiEvent {
   id: number;
@@ -52,7 +96,6 @@ export interface ApiEvent {
   instrumentId: number | null;
   title: string;
   description: string | null;
-  status: string | null;
   startTime: string;
   endTime: string;
   updatedAt: string;
@@ -60,6 +103,12 @@ export interface ApiEvent {
     id: number;
     name: string;
     color?: string; 
+  };
+  status: {
+    id: number;
+    name: string;
+    color?: string;
+    description?: string;
   };
   lab: {
     id: number;
@@ -102,8 +151,7 @@ export const transformApiEvent = (apiEvent: ApiEvent): IEvent => {
     description: apiEvent.description || "",
     startDate: apiEvent.startTime,
     endDate: apiEvent.endTime,
-    status: apiEvent.status,
-    color, // Now a hex color code
+    color, 
     user: {
       id: String(apiEvent.assigner.id),
       name: apiEvent.assigner.name,
@@ -114,6 +162,12 @@ export const transformApiEvent = (apiEvent: ApiEvent): IEvent => {
       name: apiEvent.type.name,
       color: apiEvent.type.color // Store the hex color
     },
+    status: apiEvent.status ? {
+      id: apiEvent.status.id,
+      name: apiEvent.status.name,
+      color: apiEvent.status.color || getColorForStatus(apiEvent.status.name),
+      description: apiEvent.status.description
+    } : null,
     instrument: apiEvent.instrument,
     lab: apiEvent.lab,
     assignments: apiEvent.eventAssignments,

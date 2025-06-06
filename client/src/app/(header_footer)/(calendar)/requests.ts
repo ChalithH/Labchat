@@ -1,7 +1,6 @@
 import axios from "axios";
 import { CALENDAR_ITENS_MOCK, USERS_MOCK } from "@/calendar/mocks";
-import { IEvent, IEventType, IInstrument } from "@/calendar/interfaces";
-import { format } from 'date-fns-tz';
+import { IEvent, IEventType, IInstrument, IEventStatus } from "@/calendar/interfaces";
 import { 
   ApiEventType, 
   getColorForEventType, 
@@ -11,9 +10,45 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-// Global cache for event types and instruments
+// Global cache for event types, instruments, and statuses
 let eventTypesCache: IEventType[] | null = null;
 let instrumentsCache: IInstrument[] | null = null;
+let statusesCache: IEventStatus[] | null = null;
+
+// Function to fetch event statuses
+export const getEventStatuses = async (): Promise<IEventStatus[]> => {
+  // Return cached statuses if available
+  if (statusesCache) {
+    return statusesCache;
+  }
+
+  try {
+    const response = await axios.get(`${API_URL}/calendar/get-statuses`);
+    
+    if (response.status === 200) {
+      // Cache the result
+      statusesCache = response.data;
+      return response.data;
+    }
+    
+    // Fallback to default statuses if API call succeeds but returns non-200 status
+    return getDefaultStatuses();
+  } catch (error) {
+    console.error("Error fetching statuses:", error);
+    // Fallback to default statuses if API call fails
+    return getDefaultStatuses();
+  }
+};
+
+// Default statuses (fallback)
+const getDefaultStatuses = (): IEventStatus[] => {
+  return [
+    { id: 1, name: "scheduled", color: "#3B82F6", description: "Scheduled events" },
+    { id: 2, name: "booked", color: "#10B981", description: "Booked equipment/lab time" },
+    { id: 3, name: "completed", color: "#6B7280", description: "Completed tasks" },
+    { id: 4, name: "cancelled", color: "#EF4444", description: "Cancelled bookings" },
+  ];
+};
 
 // Function to fetch instruments
 export const getInstruments = async (): Promise<IInstrument[]> => {
@@ -117,6 +152,7 @@ export const getEvents = async (startDate: Date, endDate: Date, labId?: number):
     const start = startDate.toISOString();
     const end = endDate.toISOString();
     
+    console.log(`Fetching events from ${start} to ${end} for lab ${labId}`);
     // Use provided labId or default to 1 for backward compatibility
     const targetLabId = labId || 1;
         
@@ -181,7 +217,7 @@ export const updateEvent = async (event: IEvent): Promise<IEvent | null> => {
       memberId: parseInt(event.user?.id || "1"),
       title: event.title,
       description: event.description,
-      status: event.status || "scheduled",
+      statusId: event.status?.id,
       startTime: event.startDate,
       endTime: event.endDate,
       typeId: typeId,

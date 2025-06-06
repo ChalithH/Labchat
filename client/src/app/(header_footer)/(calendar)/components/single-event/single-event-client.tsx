@@ -1,5 +1,3 @@
-// client/src/app/(header_footer)/(calendar)/components/single-event/single-event-client.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -34,20 +32,22 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EditEventDialog } from "@/calendar/components/dialogs/edit-event-dialog";
 import { DeleteEventDialog } from "@/calendar/components/dialogs/delete-event-dialog";
 
-import type { IEvent, IUser, IEventType, IInstrument } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType, IInstrument, IEventStatus } from "@/calendar/interfaces";
 
 interface SingleEventClientProps {
   event: IEvent;
   users: IUser[];
   eventTypes: IEventType[];
   instruments: IInstrument[];
+  statuses: IEventStatus[];
 }
 
 export function SingleEventClient({ 
   event: initialEvent, 
   users, 
   eventTypes, 
-  instruments 
+  instruments, 
+  statuses
 }: SingleEventClientProps) {
   const router = useRouter();
   const [event, setEvent] = useState(initialEvent);
@@ -78,6 +78,7 @@ export function SingleEventClient({
       eventTypes={eventTypes} 
       instruments={instruments}
       initialEvents={[event]}
+      statuses={statuses}
     >
       <div className="mx-auto max-w-4xl space-y-6 p-6">
         {/* Breadcrumb */}
@@ -191,7 +192,7 @@ export function SingleEventClient({
                     <div>
                       <p className="text-sm font-medium">Status</p>
                       <Badge className="capitalize bg-black text-white border-black">
-                        {event.status}
+                        {event.status.name}
                       </Badge>
                     </div>
                   </div>

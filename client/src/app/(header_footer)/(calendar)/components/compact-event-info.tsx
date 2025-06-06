@@ -1,4 +1,4 @@
-import { Users, Microscope } from "lucide-react";
+import { Users, Microscope, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -8,17 +8,24 @@ interface CompactEventInfoProps {
   event: IEvent;
   className?: string;
   showBadges?: boolean;
+  showStatus?: boolean;
 }
 
-export function CompactEventInfo({ event, className, showBadges = true }: CompactEventInfoProps) {
+export function CompactEventInfo({ 
+  event, 
+  className, 
+  showBadges = true, 
+  showStatus = true 
+}: CompactEventInfoProps) {
   // Get the type name with proper formatting
   const typeName = event.type?.name || "Event";
   
   const hasAssignments = event.assignments && event.assignments.length > 0;
   const hasInstrument = !!event.instrument;
+  const hasStatus = !!event.status;
   
   // Don't render anything if there's nothing to show and badges are hidden
-  if (!showBadges && !hasAssignments && !hasInstrument) {
+  if (!showBadges && !hasAssignments && !hasInstrument && !hasStatus) {
     return null;
   }
   
@@ -41,6 +48,28 @@ export function CompactEventInfo({ event, className, showBadges = true }: Compac
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
               {typeName} Event
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+
+      {/* Status Badge (if showing status and status exists) */}
+      {showStatus && hasStatus && (
+        <TooltipProvider>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <Badge 
+                className="px-1 py-0 h-4 text-[10px] text-white border-0 font-medium"
+                style={{
+                  backgroundColor: event.status?.color || '#6B7280',
+                  color: 'white'
+                }}
+              >
+                {event.status?.name}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              Status: {event.status?.name}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

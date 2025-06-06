@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { UserSelect } from "@/calendar/components/header/user-select";
 import { EventTypeSelect } from "@/calendar/components/header/event-type-select"; 
 import { InstrumentSelect } from "@/calendar/components/header/instrument-select";
+import { StatusSelect } from "@/calendar/components/header/status-select";
 import { TodayButton } from "@/calendar/components/header/today-button";
 import { DateNavigator } from "@/calendar/components/header/date-navigator";
 import { AddEventDialog } from "@/calendar/components/dialogs/add-event-dialog";
@@ -36,6 +37,22 @@ export function CalendarHeader({ view, events, onRefresh, isLoading }: IProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Refresh button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={isLoading}
+            className="flex items-center gap-2"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {isLoading ? "Loading..." : "Refresh"}
+          </Button>
+
           {/* View selector */}
           <div className="inline-flex first:rounded-r-none last:rounded-l-none [&:not(:first-child):not(:last-child)]:rounded-none">
             <Button 
@@ -89,18 +106,20 @@ export function CalendarHeader({ view, events, onRefresh, isLoading }: IProps) {
         </div>
       </div>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  {/* Add Event button */}
+        {/* Add Event button */}
         <AddEventDialog>
-            <Button disabled={isLoading} className="w-full md:w-64" >
-              <Plus />
-              Add Event
-            </Button>
-          </AddEventDialog>
-      {/* Second row: Filters */}
+          <Button disabled={isLoading} className="w-full md:w-64" >
+            <Plus />
+            Add Event
+          </Button>
+        </AddEventDialog>
+        
+        {/* Second row: Filters */}
         <div className="flex flex-wrap items-center gap-2">
-          <UserSelect onRefresh={onRefresh} isLoading={isLoading} />
-          <EventTypeSelect onRefresh={onRefresh} isLoading={isLoading} />
-          <InstrumentSelect onRefresh={onRefresh} isLoading={isLoading} />
+          <UserSelect isLoading={isLoading} />
+          <EventTypeSelect isLoading={isLoading} />
+          <InstrumentSelect isLoading={isLoading} />
+          <StatusSelect isLoading={isLoading} />
         </div>
       </div>
     </div>

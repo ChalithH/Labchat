@@ -122,8 +122,14 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, search
             </Badge>
             
             {event.status && (
-              <Badge className="capitalize bg-black text-white border-black text-xs">
-                {event.status}
+              <Badge 
+                className="text-white border-0 font-medium text-xs"
+                style={{
+                  backgroundColor: event.status.color || '#6B7280',
+                  color: 'white'
+                }}
+              >
+                {highlightText(event.status.name, searchQuery)}
               </Badge>
             )}
           </div>

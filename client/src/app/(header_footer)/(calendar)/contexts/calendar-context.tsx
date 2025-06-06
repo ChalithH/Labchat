@@ -1,11 +1,9 @@
-// client/src/app/(header_footer)/(calendar)/contexts/calendar-context.tsx
-
 "use client";
 
 import { createContext, useContext, useState } from "react";
 
 import type { Dispatch, SetStateAction } from "react";
-import type { IEvent, IUser, IEventType, IInstrument } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType, IInstrument, IEventStatus } from "@/calendar/interfaces";
 import type { TBadgeVariant, TVisibleHours, TWorkingHours } from "@/calendar/types";
 
 interface ICalendarContext {
@@ -17,11 +15,14 @@ interface ICalendarContext {
   setSelectedTypeId: (typeId: IEventType["id"] | "all") => void;
   selectedInstrumentId: IInstrument["id"] | "all" | "none";
   setSelectedInstrumentId: (instrumentId: IInstrument["id"] | "all" | "none") => void;
+  selectedStatusId: IEventStatus["id"] | "all";
+  setSelectedStatusId: (statusId: IEventStatus["id"] | "all") => void;
   badgeVariant: TBadgeVariant;
   setBadgeVariant: (variant: TBadgeVariant) => void;
   users: IUser[];
   eventTypes: IEventType[];
   instruments: IInstrument[];
+  statuses: IEventStatus[];
   workingHours: TWorkingHours;
   setWorkingHours: Dispatch<SetStateAction<TWorkingHours>>;
   visibleHours: TVisibleHours;
@@ -49,12 +50,14 @@ export function CalendarProvider({
   users, 
   eventTypes = [],
   instruments = [],
+  statuses = [],
   initialEvents = [] 
 }: { 
   children: React.ReactNode; 
   users: IUser[]; 
   eventTypes: IEventType[];
   instruments: IInstrument[];
+  statuses: IEventStatus[];
   initialEvents?: IEvent[] 
 }) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
@@ -65,6 +68,7 @@ export function CalendarProvider({
   const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">("all");
   const [selectedTypeId, setSelectedTypeId] = useState<IEventType["id"] | "all">("all");
   const [selectedInstrumentId, setSelectedInstrumentId] = useState<IInstrument["id"] | "all" | "none">("all");
+  const [selectedStatusId, setSelectedStatusId] = useState<IEventStatus["id"] | "all">("all");
 
   // Initialize with server-provided data instead of empty array
   const [localEvents, setLocalEvents] = useState<IEvent[]>(initialEvents);
@@ -85,11 +89,14 @@ export function CalendarProvider({
         setSelectedTypeId,
         selectedInstrumentId,
         setSelectedInstrumentId,
+        selectedStatusId,
+        setSelectedStatusId,
         badgeVariant,
         setBadgeVariant,
         users,
         eventTypes,
         instruments,
+        statuses,
         visibleHours,
         setVisibleHours,
         workingHours,

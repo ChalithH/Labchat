@@ -1,14 +1,7 @@
 "use client";
-
-import { Settings } from "lucide-react";
 import { CalendarProvider } from "@/calendar/contexts/calendar-context";
 import { ClientContainer } from "@/calendar/components/client-container";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ChangeBadgeVariantInput } from "@/calendar/components/change-badge-variant-input";
-import { ChangeVisibleHoursInput } from "@/calendar/components/change-visible-hours-input";
-import { ChangeWorkingHoursInput } from "@/calendar/components/change-working-hours-input";
-
-import type { IEvent, IUser, IEventType, IInstrument } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType, IInstrument, IEventStatus } from "@/calendar/interfaces";
 import type { TCalendarView } from "@/calendar/types";
 
 interface CalendarClientProps {
@@ -17,15 +10,23 @@ interface CalendarClientProps {
   users: IUser[];
   eventTypes: IEventType[];
   instruments: IInstrument[];
+  statuses: IEventStatus[];
 }
 
-export function CalendarClient({ view, initialEvents, users, eventTypes, instruments }: CalendarClientProps) {
+export function CalendarClient({ view, 
+  initialEvents, 
+  users, 
+  eventTypes, 
+  instruments, 
+  statuses
+}: CalendarClientProps) {
   return (
     <>
       <CalendarProvider 
         users={users} 
         eventTypes={eventTypes} 
         instruments={instruments}
+        statuses={statuses}
         initialEvents={initialEvents}
       >
         <ClientContainer view={view} />

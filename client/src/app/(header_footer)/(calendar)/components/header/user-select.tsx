@@ -1,34 +1,22 @@
 import { useCallback } from "react";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
-import { TCalendarView } from "@/calendar/types"; // Add this import
-
-// Optional: If you have a helper for getting the current view
-// import { getCurrentViewFromURL } from "@/calendar/helpers";
 
 import { AvatarGroup } from "@/components/ui/avatar-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface UserSelectProps {
-  onRefresh?: (view?: TCalendarView, date?: Date) => void;
-  isLoading?: boolean; // Add this prop instead of trying to use IsLoading
+  onRefresh?: () => void;
+  isLoading?: boolean;
 }
 
 export function UserSelect({ onRefresh, isLoading }: UserSelectProps) {
-  const { users, selectedUserId, setSelectedUserId, selectedDate } = useCalendar();
+  const { users, selectedUserId, setSelectedUserId } = useCalendar();
   
   const handleUserChange = useCallback((userId: string) => {
     setSelectedUserId(userId);
-    
-    // Get current view - you need to implement or import this function
-    // or pass the current view as a prop
-    const currentView = "month" as TCalendarView; // Default to month if you don't have the function
-    
-    // Refresh events with the new user selection
-    if (onRefresh) {
-      onRefresh(currentView, selectedDate);
-    }
-  }, [setSelectedUserId, onRefresh, selectedDate]);
+    // Don't trigger refresh here - let the context handle the filtering
+  }, [setSelectedUserId]);
   
   return (
     <Select value={selectedUserId} onValueChange={handleUserChange} disabled={isLoading}>
@@ -40,7 +28,7 @@ export function UserSelect({ onRefresh, isLoading }: UserSelectProps) {
         <SelectItem value="all">
           <div className="flex items-center gap-1">
             <AvatarGroup max={2}>
-              {users.map(user => (
+              {users.slice(0, 3).map(user => (
                 <Avatar key={user.id} className="size-6 text-xxs">
                   <AvatarImage src={user.picturePath ?? undefined} alt={user.name} />
                   <AvatarFallback className="text-xxs">{user.name[0]}</AvatarFallback>

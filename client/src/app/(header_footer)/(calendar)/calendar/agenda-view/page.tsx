@@ -1,4 +1,4 @@
-import { getUsers, getEvents, getEventTypes, getInstruments } from "@/calendar/requests";
+import { getUsers, getEvents, getEventTypes, getInstruments, getEventStatuses } from "@/calendar/requests";
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { CalendarClient } from "@/calendar/components/calendar-client";
 import setUsersLastViewed from '@/lib/set_last_viewed';
@@ -21,11 +21,12 @@ export default async function AgendaViewPage() {
   const endDate = endOfMonth(currentDate);
   
   // Fetch initial data on the server
-  const [initialEvents, users, eventTypes, instruments] = await Promise.all([
+  const [initialEvents, users, eventTypes, instruments, statuses] = await Promise.all([
     getEvents(startDate, endDate, currentLabId),
     getUsers(currentLabId),
     getEventTypes(),
-    getInstruments()
+    getInstruments(),
+    getEventStatuses()
   ]);
   
   return (
@@ -36,6 +37,7 @@ export default async function AgendaViewPage() {
         users={users}
         eventTypes={eventTypes}
         instruments={instruments}
+        statuses={statuses}
       />
     </LabProvider>
   );

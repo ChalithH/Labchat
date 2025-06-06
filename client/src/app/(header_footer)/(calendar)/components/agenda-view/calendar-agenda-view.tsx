@@ -43,6 +43,8 @@ export function CalendarAgendaView({ singleDayEvents, multiDayEvents }: IProps) 
         
         // Search in instrument name
         if (event.instrument?.name?.toLowerCase().includes(query)) return true;
+
+        if(event.status?.name.toLowerCase().includes(query)) return true;
         
         // Search in assigned member names
         if (event.assignments?.some(assignment => 

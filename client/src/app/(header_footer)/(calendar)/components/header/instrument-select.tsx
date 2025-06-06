@@ -13,13 +13,8 @@ export function InstrumentSelect({ onRefresh, isLoading = false }: InstrumentSel
   const { instruments, selectedInstrumentId, setSelectedInstrumentId } = useCalendar();
   
   const handleInstrumentChange = (instrumentId: string) => {
-    // Convert to number if not "all"
-    setSelectedInstrumentId(instrumentId === "all" ? "all" : Number(instrumentId));
-    
-    // If there's a refresh function, call it to refetch events with the new instrument filter
-    if (onRefresh) {
-      onRefresh();
-    }
+    setSelectedInstrumentId(instrumentId === "all" ? "all" : instrumentId === "none" ? "none" : Number(instrumentId));
+    // Don't trigger refresh here - let the context handle the filtering
   };
 
   return (

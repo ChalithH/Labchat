@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { Calendar, Clock, Text, User, Tag, Microscope, Users, Edit, Trash2, ExternalLink } from "lucide-react";
 
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EventLink } from "@/calendar/components/event-link";
+import { StatusAction } from "@/calendar/components/status-action";
 
 import type { IEvent } from "@/calendar/interfaces";
 
@@ -19,12 +21,18 @@ interface IProps {
   children: React.ReactNode;
 }
 
-export function EventDetailsDialog({ event, children }: IProps) {
+export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
+  const [event, setEvent] = useState(initialEvent);
+  
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
 
   // Get the type name with proper formatting
   const typeName = event.type?.name || "Event";
+
+  const handleStatusChange = (updatedEvent: IEvent) => {
+    setEvent(updatedEvent);
+  };
 
   return (
     <>
@@ -38,6 +46,12 @@ export function EventDetailsDialog({ event, children }: IProps) {
 
           <ScrollArea className="max-h-[calc(80vh-160px)] pr-4">
             <div className="space-y-4 py-2">
+              {/* Status Action */}
+              <StatusAction 
+                event={event} 
+                onStatusChange={handleStatusChange}
+              />
+
               {/* Assigner */}
               <div className="flex items-start gap-2">
                 <User className="mt-1 size-4 shrink-0 text-primary" />
@@ -139,19 +153,6 @@ export function EventDetailsDialog({ event, children }: IProps) {
                   <p className="text-sm text-gray-600">{event.description || "No description provided"}</p>
                 </div>
               </div>
-
-              {/* Status (if available) */}
-              {event.status && (
-                <div className="flex items-start gap-2">
-                  <Tag className="mt-1 size-4 shrink-0 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Status</p>
-                    <Badge className="capitalize bg-black text-white border-black">
-                      {event.status}
-                    </Badge>
-                  </div>
-                </div>
-              )}
             </div>
           </ScrollArea>
 
