@@ -142,6 +142,30 @@ export const getMemberByUserId = async (req: Request, res: Response): Promise<vo
   }
 };
 
+export const getMemberByUserIdAndLabId = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const labId = parseInt(req.params.labId);
+
+    const member = await prisma.labMember.findFirst({
+      where: {
+        userId: userId,
+        labId: labId,
+      },
+    });
+
+    if (!member) {
+      res.status(404).json({ error: 'Lab member not found' });
+      return;
+    }
+
+    res.json(member);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve lab member' });
+  }
+};
+
+
 /**
  * Get all member statuses
  * 

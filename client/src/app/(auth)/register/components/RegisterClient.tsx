@@ -60,7 +60,7 @@ const RegisterClient = () => {
       const user: AxiosResponse = await api.post('/user/', new_user)
       const new_contact: ContactType = {
         userId: user.data.id,
-        type: 'Email',
+        type: 'email',
         name: 'Primary Email',
         useCase: '',
         info: user.data.loginEmail
