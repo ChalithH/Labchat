@@ -5,6 +5,8 @@ import setUsersLastViewed from '@/lib/set_last_viewed';
 import getUserFromSessionServer from "@/lib/get_user_server";
 import { redirect } from "next/navigation";
 import { LabProvider } from "@/contexts/lab-context";
+import getLabMember from "@/lib/get_lab_member";
+import { transformLabMember } from "../../transform-api-event";
 
 export default async function DayViewPage() {
   setUsersLastViewed('/calendar/day-view');
@@ -19,14 +21,17 @@ export default async function DayViewPage() {
   const currentDate = new Date();
   const startDate = startOfDay(currentDate);
   const endDate = endOfDay(currentDate);
-  
+
+   const labMember = await getLabMember(Number(user.id), Number(currentLabId));
+
   // Fetch initial data on the server
-  const [initialEvents, users, eventTypes, instruments, statuses] = await Promise.all([
+  const [initialEvents, users, eventTypes, instruments, statuses, currentUser] = await Promise.all([
     getEvents(startDate, endDate, currentLabId),
     getUsers(currentLabId),
     getEventTypes(),
     getInstruments(),
-    getEventStatuses()
+    getEventStatuses(),
+    transformLabMember(labMember, currentLabId)
   ]);
   
   return (
@@ -38,6 +43,7 @@ export default async function DayViewPage() {
         eventTypes={eventTypes}
         instruments={instruments}
         statuses={statuses}
+        currentUser={currentUser}
       />
     </ LabProvider>
   );

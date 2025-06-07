@@ -32,7 +32,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EditEventDialog } from "@/calendar/components/dialogs/edit-event-dialog";
 import { DeleteEventDialog } from "@/calendar/components/dialogs/delete-event-dialog";
 
-import type { IEvent, IUser, IEventType, IInstrument, IEventStatus } from "@/calendar/interfaces";
+import type { IEvent, IUser, IEventType, IInstrument, IEventStatus, ILabMember } from "@/calendar/interfaces";
 
 interface SingleEventClientProps {
   event: IEvent;
@@ -40,6 +40,7 @@ interface SingleEventClientProps {
   eventTypes: IEventType[];
   instruments: IInstrument[];
   statuses: IEventStatus[];
+  currentUser: ILabMember;
 }
 
 export function SingleEventClient({ 
@@ -47,7 +48,8 @@ export function SingleEventClient({
   users, 
   eventTypes, 
   instruments, 
-  statuses
+  statuses,
+  currentUser
 }: SingleEventClientProps) {
   const router = useRouter();
   const [event, setEvent] = useState(initialEvent);
@@ -79,6 +81,7 @@ export function SingleEventClient({
       instruments={instruments}
       initialEvents={[event]}
       statuses={statuses}
+      currentUser={currentUser}
     >
       <div className="mx-auto max-w-4xl space-y-6 p-6">
         {/* Breadcrumb */}

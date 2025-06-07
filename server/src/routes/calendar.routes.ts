@@ -5,7 +5,8 @@ import {
     updateEvent, 
     deleteEvent, 
     assignMember, 
-    removeMember 
+    removeMember, 
+    createRecurringEvents
 } from '../controllers/calendar/crud.controller';
 
 import { 
@@ -35,6 +36,7 @@ const router = Router();
 
 // CRUD Operations (Create, Update, Delete, Assign, Remove)
 router.post('/create-event', createEvent);
+router.post('/create-recurring-events', createRecurringEvents);
 router.put('/update-event', updateEvent);
 router.delete('/delete-event', deleteEvent);
 router.post('/assign-member', assignMember);

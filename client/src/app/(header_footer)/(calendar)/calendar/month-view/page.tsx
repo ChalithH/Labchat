@@ -23,7 +23,6 @@ export default async function MonthViewPage() {
   const endDate = endOfMonth(currentDate);
 
   const labMember = await getLabMember(Number(user.id), Number(currentLabId));
-  console.log('Lab Member:', labMember);
 
   // Fetch initial data on the server
   const [initialEvents, users, eventTypes, instruments, statuses, currentUser] = await Promise.all([

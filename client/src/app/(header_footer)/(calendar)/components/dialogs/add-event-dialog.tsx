@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Plus, X, Microscope } from "lucide-react";
+import { AlertCircle, Plus, X, Microscope, ChevronDown, ChevronUp, Repeat, Calendar as CalendarIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
@@ -21,12 +21,16 @@ import { Form, FormField, FormLabel, FormItem, FormControl, FormMessage } from "
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogHeader, DialogClose, DialogContent, DialogTrigger, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
 
 import { eventSchema } from "@/calendar/schemas";
+import { recurringEventSchema } from "@/calendar/schemas";
 
 import type { TimeValue } from "react-aria-components";
 import type { TEventFormData } from "@/calendar/schemas";
 import type { IAssignment, IEventType } from "@/calendar/interfaces";
+import type { TRecurringEventFormData } from "@/calendar/schemas";
 
 interface IProps {
   children: React.ReactNode;
@@ -36,7 +40,7 @@ interface IProps {
 
 export function AddEventDialog({ children, startDate, startTime }: IProps) {
   const { users, eventTypes: contextEventTypes, instruments, currentUser } = useCalendar();
-  const { addEvent, isAdding, error: addError } = useAddEvent();
+  const { addEvent, addRecurringEvents, isAdding, error: addError } = useAddEvent();
   const { isOpen, onClose, onToggle } = useDisclosure();
   
   // State for managing event types
@@ -46,6 +50,13 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
   // State for managing assigned members
   const [selectedAssignees, setSelectedAssignees] = useState<IAssignment[]>([]);
   const [assignmentError, setAssignmentError] = useState<string | null>(null);
+
+  const [isRecurringExpanded, setIsRecurringExpanded] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  
+  // State for preview of recurring events
+  const [recurringPreview, setRecurringPreview] = useState<Date[]>([]);
+
 
   // Fetch event types on component mount or use context event types if available
   useEffect(() => {
@@ -69,8 +80,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     fetchEventTypes();
   }, [contextEventTypes]);
 
-  const form = useForm<TEventFormData>({
-    resolver: zodResolver(eventSchema),
+ const form = useForm<TRecurringEventFormData>({
+    resolver: zodResolver(recurringEventSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -88,12 +99,16 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
       type: "1", // Default type ID as string
       instrumentId: null, // Default to no instrument
       user: "", // Will be set in useEffect
+      isRecurring: false,
+      frequency: "daily", // Default frequency
+      repetitions: 1, 
     },
   });
 
   // Set the current user when users data is available
   useEffect(() => {
     const getCurrentUserId = () => {
+      console.log("currentUser:", currentUser);
       if (currentUser && users && users.length > 0) {
         // Find the user that matches the current lab member's userId
         const matchingUser = users.find(user => user.id === currentUser.id);
@@ -108,7 +123,43 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     }
   }, [users, currentUser, form]);
 
-  const onSubmit = async (values: TEventFormData) => {
+  // Watch form values for recurring preview
+  const watchedStartDate = form.watch("startDate");
+  const watchedFrequency = form.watch("frequency");
+  const watchedRepetitions = form.watch("repetitions");
+
+  // Generate preview of recurring event dates
+  useEffect(() => {
+    if (!isRecurring || !watchedStartDate || !watchedFrequency || !watchedRepetitions) {
+      setRecurringPreview([]);
+      return;
+    }
+
+    const dates: Date[] = [];
+    const startDate = new Date(watchedStartDate);
+    
+    for (let i = 0; i < Math.min(watchedRepetitions, 10); i++) { // Limit preview to 10 events
+      const eventDate = new Date(startDate);
+      
+      switch (watchedFrequency) {
+        case 'daily':
+          eventDate.setDate(startDate.getDate() + i);
+          break;
+        case 'weekly':
+          eventDate.setDate(startDate.getDate() + (i * 7));
+          break;
+        case 'monthly':
+          eventDate.setMonth(startDate.getMonth() + i);
+          break;
+      }
+      
+      dates.push(eventDate);
+    }
+    
+    setRecurringPreview(dates);
+  }, [isRecurring, watchedStartDate, watchedFrequency, watchedRepetitions]);
+
+  const onSubmit = async (values: TRecurringEventFormData) => {
     const startDateTime = new Date(values.startDate);
     startDateTime.setHours(values.startTime.hour, values.startTime.minute);
 
@@ -132,7 +183,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
       memberId: typeof assignee.memberId === 'number' ? assignee.memberId : parseInt(assignee.memberId as unknown as string)
     }));
 
-    const result = await addEvent({
+    const eventData = {
       title: values.title,
       description: values.description,
       color: selectedType?.color || "#10B981", // Use hex color from type or default to green
@@ -142,7 +193,18 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
       startDate: startDateTime.toISOString(),
       endDate: endDateTime.toISOString(),
       assignments: assignmentsWithMemberIds,
-    });
+    };
+
+    let result: boolean;
+
+    if (values.isRecurring) {
+      // Create recurring events
+      result = await addRecurringEvents(eventData, values.frequency, values.repetitions);
+    } else {
+      // Create single event
+      result = await addEvent(eventData);
+    }
+    
 
     if (result) {
       onClose();
@@ -165,6 +227,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
         user: currentUser && users?.find(user => user.id === currentUser.id)?.id || (users && users.length > 0 ? users[0]?.id : ""), // Reset to current user
       });
       setSelectedAssignees([]);
+      setIsRecurring(false);
+      setIsRecurringExpanded(false);
     }
   };
   
@@ -210,6 +274,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
   // Reset assignments when dialog closes
   const handleOpenChange = (open: boolean) => {
     if (!open) {
+      setIsRecurringExpanded(false);
+      setIsRecurring(false);
       setSelectedAssignees([]);
     }
     onToggle();
@@ -523,6 +589,132 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     </FormItem>
                   )}
                 />
+
+                
+                {/* Recurring Events Section */}
+                <Collapsible open={isRecurringExpanded} onOpenChange={setIsRecurringExpanded}>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Repeat className="h-4 w-4" />
+                        <span>Recurring Events</span>
+                        {isRecurring && (
+                          <Badge variant="secondary" className="ml-2">
+                            {form.watch("frequency")} × {form.watch("repetitions")}
+                          </Badge>
+                        )}
+                      </div>
+                      {isRecurringExpanded ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent className="space-y-4 mt-4 p-4 border rounded-md bg-gray-50">
+                    <FormField
+                      control={form.control}
+                      name="isRecurring"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              checked={isRecurring}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setIsRecurring(checked);
+                                field.onChange(checked);
+                              }}
+                              className="h-4 w-4"
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            Create recurring events
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+
+                    {isRecurring && (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="frequency"
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-900">Frequency</FormLabel>
+                                <FormControl>
+                                  <Select value={field.value} onValueChange={field.onChange}>
+                                    <SelectTrigger data-invalid={fieldState.invalid}>
+                                      <SelectValue placeholder="Select frequency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="daily">Daily</SelectItem>
+                                      <SelectItem value="weekly">Weekly</SelectItem>
+                                      <SelectItem value="monthly">Monthly</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="repetitions"
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-900">Repetitions</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    max="365"
+                                    placeholder="Number of events"
+                                    data-invalid={fieldState.invalid}
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Preview of recurring events */}
+                        {recurringPreview.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <CalendarIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">Preview ({recurringPreview.length}{watchedRepetitions > 10 ? ` of ${watchedRepetitions}` : ''} events):</span>
+                            </div>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {recurringPreview.map((date, index) => (
+                                <div key={index} className="text-xs bg-white p-2 rounded border">
+                                  Event {index + 1}: {date.toLocaleDateString()}
+                                </div>
+                              ))}
+                              {watchedRepetitions > 10 && (
+                                <div className="text-xs text-gray-500 italic p-2">
+                                  ... and {watchedRepetitions - 10} more events
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
               </form>
             </Form>
           </div>

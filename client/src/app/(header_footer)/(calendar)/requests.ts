@@ -175,6 +175,46 @@ export const getEvents = async (startDate: Date, endDate: Date, labId?: number):
   }
 };
 
+// New function for creating recurring events
+export const createRecurringEvents = async (
+  event: Partial<IEvent>,
+  currentUser: ILabMember, 
+  frequency: 'daily' | 'weekly' | 'monthly', 
+  repetitions: number
+): Promise<IEvent[] | null> => {
+  try {
+    // Get the type ID from the event, or default to 1
+    const typeId = event.type?.id || 1;
+    
+    // Transform the event data to match the API's expected format
+    const apiEventData = {
+      labId: 1, // Fixed lab ID as specified
+      memberId: currentUser.id ? parseInt(currentUser.id) : 1, // Convert string ID to number
+      title: event.title,
+      description: event.description,
+      instrumentId: event.instrument?.id || null, // Include instrument ID if present
+      status: "scheduled", // Default status
+      startTime: event.startDate,
+      endTime: event.endDate,
+      typeId: typeId,
+      frequency: frequency,
+      repetitions: repetitions,
+      assignedMembers: event.assignments?.map(a => a.memberId) || []
+    };
+    
+    const response = await axios.post(`${API_URL}/calendar/create-recurring-events`, apiEventData);
+    
+    if (response.status === 201) {
+      return response.data.events.map(transformApiEvent);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error creating recurring events:", error);
+    return null;
+  }
+};
+
 export const createEvent = async (event: Partial<IEvent>, currentUser: ILabMember): Promise<IEvent | null> => {
   try {
     // Get the type ID from the event, or default to 1

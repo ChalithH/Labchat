@@ -74,7 +74,7 @@ export const useFetchEvents = () => {
     const { startDate, endDate } = getDateRange(date, viewType);
     
     // Create a cache key
-    const startKey = startDate.toISOString();
+    const startKey = startDate.toISOString(); 
     const endKey = endDate.toISOString();
     
     // Check cache for existing data

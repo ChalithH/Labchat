@@ -367,6 +367,251 @@ export const updateEvent = async (req: Request<{ id: string }, {}, UpdateEventRe
 
 /**
  * @swagger
+ * /calendar/create-recurring-events:
+ *   post:
+ *     summary: Create multiple recurring events
+ *     description: Creates multiple events in a recurring pattern (daily, weekly, or monthly)
+ *     
+ *     tags: [Calendar]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - labId
+ *               - memberId
+ *               - title
+ *               - startTime
+ *               - endTime
+ *               - frequency
+ *               - repetitions
+ *             properties:
+ *               labId:
+ *                 type: integer
+ *                 description: ID of the lab where the events take place
+ *               memberId:
+ *                 type: integer
+ *                 description: ID of the lab member creating the events
+ *               instrumentId:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: Optional ID of the instrument being booked
+ *               title:
+ *                 type: string
+ *                 description: Base title for the events
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional detailed description for the events
+ *               statusId:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: Status ID of the events (will use default if not provided)
+ *               startTime:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Start time of the first event (ISO format)
+ *               endTime:
+ *                 type: string
+ *                 format: date-time
+ *                 description: End time of the first event (ISO format)
+ *               typeId:
+ *                 type: integer
+ *                 description: ID of the event type
+ *               frequency:
+ *                 type: string
+ *                 enum: [daily, weekly, monthly]
+ *                 description: How often to repeat the event
+ *               repetitions:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 365
+ *                 description: Number of events to create
+ *               assignedMembers:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of lab member IDs who are assigned to these events
+ *     responses:
+ *       201:
+ *         description: Recurring events created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 eventsCreated:
+ *                   type: integer
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Bad request - missing required fields or invalid data
+ *       500:
+ *         description: Server error
+ */
+export const createRecurringEvents = async (req: Request, res: Response): Promise<void> => {
+    try {        
+        const {
+            labId,
+            memberId,
+            instrumentId,
+            title,
+            description,
+            statusId,
+            startTime,
+            endTime,
+            typeId,
+            frequency,
+            repetitions,
+            assignedMembers = []
+        } = req.body;
+        
+        // Basic validation
+        if (!labId || !memberId || !title || !startTime || !endTime || !frequency || !repetitions) {
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
+        }
+
+        // Validate frequency
+        if (!['daily', 'weekly', 'monthly'].includes(frequency)) {
+            res.status(400).json({ error: 'Invalid frequency. Must be daily, weekly, or monthly' });
+            return;
+        }
+
+        // Validate repetitions
+        if (repetitions < 1 || repetitions > 365) {
+            res.status(400).json({ error: 'Repetitions must be between 1 and 365' });
+            return;
+        }
+
+        // Parse dates if they're strings
+        const parsedStartTime = typeof startTime === 'string' ? new Date(startTime) : startTime;
+        const parsedEndTime = typeof endTime === 'string' ? new Date(endTime) : endTime;
+
+        // Calculate duration for each event
+        const duration = parsedEndTime.getTime() - parsedStartTime.getTime();
+
+        // Validate date range
+        if (duration <= 0) {
+            res.status(400).json({ error: 'End time must be after start time' });
+            return;
+        }
+
+        // Get event type to determine default status
+        const eventType = await prisma.eventType.findUnique({
+            where: { id: typeId }
+        });
+
+        if (!eventType) {
+            res.status(400).json({ error: 'Invalid event type' });
+            return;
+        }
+
+        // Determine the status ID to use
+        let finalStatusId = statusId;
+        if (!finalStatusId) {
+            // Get default status based on event type
+            const { getDefaultStatusForEventType } = await import('../../services/eventStatusService');
+            finalStatusId = await getDefaultStatusForEventType(eventType.name);
+        }
+
+        // Generate all event dates and times
+        const eventsToCreate: { labId: any; memberId: any; instrumentId: any; title: any; description: any; statusId: any; startTime: Date; endTime: Date; typeId: any; }[] = [];
+        for (let i = 0; i < repetitions; i++) {
+            const eventStartTime = new Date(parsedStartTime);
+            const eventEndTime = new Date(parsedStartTime.getTime() + duration);
+
+            // Calculate the date offset based on frequency
+            switch (frequency) {
+                case 'daily':
+                    eventStartTime.setDate(parsedStartTime.getDate() + i);
+                    eventEndTime.setDate(parsedStartTime.getDate() + i);
+                    break;
+                case 'weekly':
+                    eventStartTime.setDate(parsedStartTime.getDate() + (i * 7));
+                    eventEndTime.setDate(parsedStartTime.getDate() + (i * 7));
+                    break;
+                case 'monthly':
+                    eventStartTime.setMonth(parsedStartTime.getMonth() + i);
+                    eventEndTime.setMonth(parsedStartTime.getMonth() + i);
+                    // Handle month overflow (e.g., Jan 31 + 1 month = Feb 28/29)
+                    if (eventStartTime.getDate() !== parsedStartTime.getDate()) {
+                        eventStartTime.setDate(0); // Set to last day of previous month
+                        eventEndTime.setDate(0);
+                    }
+                    break;
+            }
+
+            eventsToCreate.push({
+                labId,
+                memberId,
+                instrumentId: instrumentId || null,
+                title: repetitions > 1 ? `${title} (${i + 1}/${repetitions})` : title,
+                description,
+                statusId: finalStatusId,
+                startTime: eventStartTime,
+                endTime: eventEndTime,
+                typeId: typeId,
+            });
+        }
+
+        // Create all events and their assignments in a transaction
+        const result = await prisma.$transaction(async (tx) => {
+            const createdEvents = [];
+
+            for (const eventData of eventsToCreate) {
+                // Create the event
+                const newEvent = await tx.event.create({
+                    data: eventData
+                });
+
+                // Create event assignments if any members are assigned
+                if (assignedMembers.length > 0) {
+                    await tx.eventAssignment.createMany({
+                        data: assignedMembers.map((memberId: any) => ({
+                            eventId: newEvent.id,
+                            memberId
+                        }))
+                    });
+                }
+
+                createdEvents.push(newEvent.id);
+            }
+
+            // Return all created events with their full data
+            return tx.event.findMany({
+                where: { id: { in: createdEvents } },
+                include: EVENT_INCLUDE,
+                orderBy: { startTime: 'asc' }
+            });
+        });
+
+        if (!result || result.length === 0) {
+            res.status(500).json({ error: 'Failed to create recurring events' });
+            return;
+        }
+
+        const transformedEvents = transformEvents(result);
+        
+        res.status(201).json({
+            message: `Successfully created ${result.length} recurring events`,
+            eventsCreated: result.length,
+            events: transformedEvents
+        });
+    } catch (error) {
+        console.error('Recurring events creation error:', error);
+        res.status(500).json({ error: 'Failed to create recurring events' });
+    }
+};
+
+/**
+ * @swagger
  * /calendar/delete-event:
  *   delete:
  *     summary: Deletes an event by ID
