@@ -216,7 +216,7 @@ export function EditEventDialog({ children, event }: IProps) {
                     <FormItem>
                       <FormLabel className="text-gray-900">Assigner</FormLabel>
                       <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
+                        <Select value={field.value} disabled>
                           <SelectTrigger data-invalid={fieldState.invalid}>
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
