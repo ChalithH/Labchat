@@ -1,3 +1,5 @@
+// client/src/app/(header_footer)/(calendar)/components/client-container.tsx
+
 "use client";
 
 import { useMemo, useEffect } from "react";
@@ -21,7 +23,14 @@ interface IProps {
 }
 
 export function ClientContainer({ view }: IProps) {
-  const { selectedDate, selectedUserId, selectedTypeId, events } = useCalendar();
+  const { 
+    selectedDate, 
+    selectedUserId, 
+    selectedTypeId, 
+    selectedInstrumentId, 
+    selectedStatusId,
+    events 
+  } = useCalendar();
   const { loading, error, setView, refreshEvents } = useFetchEvents();
 
   // Set the current view in our hook
@@ -42,47 +51,51 @@ export function ClientContainer({ view }: IProps) {
     );
   };
 
+  // Helper function to check if an event has a specific instrument
+  const eventHasInstrument = (event: any, instrumentId: string | number) => {
+    if (instrumentId === "none") {
+      return !event.instrument || event.instrument === null;
+    }
+    return event.instrument && event.instrument.id.toString() === instrumentId.toString();
+  };
+
+  // Helper function to check if an event has a specific status
+  const eventHasStatus = (event: any, statusId: string | number) => {
+    if (!event.status) return false;
+    return event.status.id.toString() === statusId.toString();
+  };
+
   // Memoize event filtering for better performance
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const eventStartDate = parseISO(event.startDate);
       const eventEndDate = parseISO(event.endDate);
 
-      // Date filtering logic remains the same
-      let isInDateRange = false;
+      // Date filtering logic - simplified since useFetchEvents already handles date ranges
+      let isInDateRange = true;
 
-      if (view === "year") {
-        const yearStart = new Date(selectedDate.getFullYear(), 0, 1);
-        const yearEnd = new Date(selectedDate.getFullYear(), 11, 31, 23, 59, 59, 999);
-        isInDateRange = eventStartDate <= yearEnd && eventEndDate >= yearStart;
-      } else if (view === "month" || view === "agenda") {
-        const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-        const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
-        isInDateRange = eventStartDate <= monthEnd && eventEndDate >= monthStart;
-      } else if (view === "week") {
-        const dayOfWeek = selectedDate.getDay();
-        const weekStart = new Date(selectedDate);
-        weekStart.setDate(selectedDate.getDate() - dayOfWeek);
-        weekStart.setHours(0, 0, 0, 0);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        weekEnd.setHours(23, 59, 59, 999);
-        isInDateRange = eventStartDate <= weekEnd && eventEndDate >= weekStart;
-      } else if (view === "day") {
+      // For day view, we need additional filtering since we fetch a broader range
+      if (view === "day") {
         const dayStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0);
         const dayEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59);
         isInDateRange = eventStartDate <= dayEnd && eventEndDate >= dayStart;
       }
 
-      // Updated user filtering logic - now checks assignments
+      // User filtering logic - now checks assignments
       const isUserMatch = selectedUserId === "all" || eventHasUserAssigned(event, selectedUserId);
       
-      // Type filtering remains the same
+      // Type filtering
       const isTypeMatch = selectedTypeId === "all" || (event.type && event.type.id.toString() === selectedTypeId.toString());
 
-      return isInDateRange && isUserMatch && isTypeMatch;
+      // Instrument filtering logic
+      const isInstrumentMatch = selectedInstrumentId === "all" || eventHasInstrument(event, selectedInstrumentId);
+
+      // Status filtering logic
+      const isStatusMatch = selectedStatusId === "all" || eventHasStatus(event, selectedStatusId);
+
+      return isInDateRange && isUserMatch && isTypeMatch && isInstrumentMatch && isStatusMatch;
     });
-  }, [selectedDate, selectedUserId, selectedTypeId, events, view]);
+  }, [selectedDate, selectedUserId, selectedTypeId, selectedInstrumentId, selectedStatusId, events, view]);
 
   // Memoize the separation of single and multi-day events
   const { singleDayEvents, multiDayEvents } = useMemo(() => {
@@ -101,12 +114,17 @@ export function ClientContainer({ view }: IProps) {
     return { singleDayEvents: single, multiDayEvents: multi };
   }, [filteredEvents]);
 
+  // Create a refresh function that clears filters temporarily during refresh
+  const handleRefresh = () => {
+    refreshEvents();
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border">
       <CalendarHeader 
         view={view} 
         events={filteredEvents} 
-        onRefresh={refreshEvents}
+        onRefresh={handleRefresh}
         isLoading={loading}
       />
 

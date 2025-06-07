@@ -1,19 +1,56 @@
 import axios from "axios";
 import { CALENDAR_ITENS_MOCK, USERS_MOCK } from "@/calendar/mocks";
-import { IEvent, IEventType, IInstrument } from "@/calendar/interfaces";
-import { format } from 'date-fns-tz';
+import { IEvent, IEventType, IInstrument, IEventStatus, ILabMember } from "@/calendar/interfaces";
 import { 
   ApiEventType, 
   getColorForEventType, 
   transformApiEvent, 
   transformAPIUser 
 } from "./transform-api-event";
+import getLabMember from "@/lib/get_lab_member";
+import { get } from "http";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-// Global cache for event types and instruments
+// Global cache for event types, instruments, and statuses
 let eventTypesCache: IEventType[] | null = null;
 let instrumentsCache: IInstrument[] | null = null;
+let statusesCache: IEventStatus[] | null = null;
+
+// Function to fetch event statuses
+export const getEventStatuses = async (): Promise<IEventStatus[]> => {
+  // Return cached statuses if available
+  if (statusesCache) {
+    return statusesCache;
+  }
+
+  try {
+    const response = await axios.get(`${API_URL}/calendar/get-statuses`);
+    
+    if (response.status === 200) {
+      // Cache the result
+      statusesCache = response.data;
+      return response.data;
+    }
+    
+    // Fallback to default statuses if API call succeeds but returns non-200 status
+    return getDefaultStatuses();
+  } catch (error) {
+    console.error("Error fetching statuses:", error);
+    // Fallback to default statuses if API call fails
+    return getDefaultStatuses();
+  }
+};
+
+// Default statuses (fallback)
+const getDefaultStatuses = (): IEventStatus[] => {
+  return [
+    { id: 1, name: "scheduled", color: "#3B82F6", description: "Scheduled events" },
+    { id: 2, name: "booked", color: "#10B981", description: "Booked equipment/lab time" },
+    { id: 3, name: "completed", color: "#6B7280", description: "Completed tasks" },
+    { id: 4, name: "cancelled", color: "#EF4444", description: "Cancelled bookings" },
+  ];
+};
 
 // Function to fetch instruments
 export const getInstruments = async (): Promise<IInstrument[]> => {
@@ -83,7 +120,7 @@ export const getEventTypes = async (): Promise<IEventType[]> => {
       const transformedTypes = response.data.map((type: ApiEventType) => ({
         id: type.id,
         name: type.name,
-        color: getColorForEventType(type.id, type.name)
+        color: type.color || getColorForEventType(type.id, type.name) // Use DB color or fallback
       }));
       
       // Cache the result
@@ -100,24 +137,24 @@ export const getEventTypes = async (): Promise<IEventType[]> => {
   }
 };
 
-// Default event types (fallback)
+// Default event types (fallback) - now with hex colors
 const getDefaultEventTypes = (): IEventType[] => {
   return [
-    { id: 1, name: "Booking", color: "blue" },
-    { id: 2, name: "Meeting", color: "green" },
-    { id: 3, name: "Training", color: "green" },
-    { id: 4, name: "Equipment", color: "blue" },
-    { id: 5, name: "Task", color: "purple" },
+    { id: 1, name: "Booking", color: "#3B82F6" },     // Blue
+    { id: 2, name: "Meeting", color: "#10B981" },     // Green
+    { id: 3, name: "Training", color: "#10B981" },    // Green
+    { id: 4, name: "Equipment", color: "#3B82F6" },   // Blue
+    { id: 5, name: "Task", color: "#8B5CF6" },        // Purple
   ];
 };
 
-// Updated getEvents function with optional labId parameter
 export const getEvents = async (startDate: Date, endDate: Date, labId?: number): Promise<IEvent[]> => {
   try {
     // Use toISOString() instead of date-fns-tz format to avoid timezone issues
     const start = startDate.toISOString();
     const end = endDate.toISOString();
     
+    console.log(`Fetching events from ${start} to ${end} for lab ${labId}`);
     // Use provided labId or default to 1 for backward compatibility
     const targetLabId = labId || 1;
         
@@ -138,15 +175,55 @@ export const getEvents = async (startDate: Date, endDate: Date, labId?: number):
   }
 };
 
-export const createEvent = async (event: Partial<IEvent>): Promise<IEvent | null> => {
+// New function for creating recurring events
+export const createRecurringEvents = async (
+  event: Partial<IEvent>,
+  currentUser: ILabMember, 
+  frequency: 'daily' | 'weekly' | 'monthly', 
+  repetitions: number
+): Promise<IEvent[] | null> => {
   try {
     // Get the type ID from the event, or default to 1
     const typeId = event.type?.id || 1;
     
     // Transform the event data to match the API's expected format
     const apiEventData = {
+      labId: 1, // Fixed lab ID as specified
+      memberId: currentUser.id ? parseInt(currentUser.id) : 1, // Convert string ID to number
+      title: event.title,
+      description: event.description,
+      instrumentId: event.instrument?.id || null, // Include instrument ID if present
+      status: "scheduled", // Default status
+      startTime: event.startDate,
+      endTime: event.endDate,
+      typeId: typeId,
+      frequency: frequency,
+      repetitions: repetitions,
+      assignedMembers: event.assignments?.map(a => a.memberId) || []
+    };
+    
+    const response = await axios.post(`${API_URL}/calendar/create-recurring-events`, apiEventData);
+    
+    if (response.status === 201) {
+      return response.data.events.map(transformApiEvent);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error creating recurring events:", error);
+    return null;
+  }
+};
+
+export const createEvent = async (event: Partial<IEvent>, currentUser: ILabMember): Promise<IEvent | null> => {
+  try {
+    // Get the type ID from the event, or default to 1
+    const typeId = event.type?.id || 1;
+
+    // Transform the event data to match the API's expected format
+    const apiEventData = {
       labId: event.lab?.id || 1, // Use lab ID from event or default to 1
-      memberId: parseInt(event.user?.id || "1"), // Convert string ID to number
+      memberId: currentUser.id ? parseInt(currentUser.id) : 1,
       title: event.title,
       description: event.description,
       instrumentId: event.instrument?.id || null, // Include instrument ID if present
@@ -182,7 +259,7 @@ export const updateEvent = async (event: IEvent): Promise<IEvent | null> => {
       memberId: parseInt(event.user?.id || "1"),
       title: event.title,
       description: event.description,
-      status: event.status || "scheduled",
+      statusId: event.status?.id,
       startTime: event.startDate,
       endTime: event.endDate,
       typeId: typeId,
@@ -250,4 +327,4 @@ export const getSingleEvent = async (eventId: number): Promise<IEvent | null> =>
 };
 
 // Export color utilities
-export { getColorForEventType } from "./transform-api-event";
+export { getColorForEventType, hexToRgb, isLightColor } from "./transform-api-event";

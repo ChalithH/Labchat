@@ -38,11 +38,12 @@ async function main() {
     "labRole.json",       // independent table
     "contact.json",       // Depends on user
     "itemTag.json",       // Independent table
-    "item.json",          // Independent table 
     "postReaction.json",  // Independent table
     "replyReaction.json",  // Independent table
     "postTag.json",       // Independent table
     "eventType.json",       // Independent table
+    "eventStatus.json",    // Independent table
+
     ]
   } else {
     dataDirectory = path.join(__dirname, "devSeedData");
@@ -69,6 +70,7 @@ async function main() {
     "discussionPostReaction.json", // Depends on discussionPost, labMember, and postReaction
     "discussionPostTag.json", // Depends on discussionPost and postTag
     "eventType.json",       // Independent table
+    "eventStatus.json",    // Independent table
     "event.json",          // Depends on lab, labMember, and instrument and eventType
     "eventAssignment.json", // Depends on event and labMember
   ];

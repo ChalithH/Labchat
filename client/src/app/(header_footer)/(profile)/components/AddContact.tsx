@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import ErrorBox from "./ErrorBox"
+import { useLabContext } from "@/contexts/lab-context"
 
 
 const CONTACT_TYPES: {type: string, display: string}[]= [
@@ -47,6 +48,8 @@ const AddContact = () => {
 
   const router = useRouter()
 
+  const lastViewedLabId = useLabContext()
+
   const handleCreateContact = async () => {
     if (type === '' || name === '' || info === ''){
       setError('Fill in the form before submitting')
@@ -54,8 +57,9 @@ const AddContact = () => {
     }
 
     const user = await getUserFromSession()
-    const new_contact: ContactType = {
+    const new_contact = {
       userId: user.id,
+      labId: lastViewedLabId.currentLabId,
       type: type,
       name: name,
       useCase: useCase ?? '',

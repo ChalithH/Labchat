@@ -37,6 +37,7 @@ const getStatusColor = (status: string) => {
   }
 }
 
+
 export function MobileRow({ member, isExpanded, toggleExpand }: MemberRowProps) {
   const activeStatus = member.status.find((s) => s.isActive)
   const statusName = activeStatus ? activeStatus.status.statusName : "No Status"

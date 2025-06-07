@@ -50,8 +50,9 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
   const groupedEvents = groupEvents(dayEvents);
 
   return (
-    <div className="flex">
-      <div className="flex flex-1 flex-col">
+    <div className="flex flex-col lg:flex-row">
+      {/* Main calendar area */}
+      <div className="flex flex-1 flex-col min-w-0">
         <div>
           <DayViewMultiDayEventsRow
             selectedDate={selectedDate}
@@ -60,8 +61,8 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
 
           {/* Day header */}
           <div className="relative z-20 flex border-b">
-            <div className="w-18"></div>
-            <span className="flex-1 border-l py-2 text-center text-xs font-medium text-muted-foreground">
+            <div className="w-16 sm:w-18"></div>
+            <span className="flex-1 border-l py-2 text-center text-xs font-medium text-muted-foreground px-2">
               {format(selectedDate, "EE")}{" "}
               <span className="font-semibold text-foreground">
                 {format(selectedDate, "d")}
@@ -73,10 +74,10 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
         <ScrollArea className="h-[800px]" type="always">
           <div className="flex">
             {/* Hours column */}
-            <div className="relative w-18">
+            <div className="relative w-16 sm:w-18 shrink-0">
               {hours.map((hour, index) => (
                 <div key={hour} className="relative" style={{ height: "96px" }}>
-                  <div className="absolute -top-3 right-2 flex h-6 items-center">
+                  <div className="absolute -top-3 right-1 sm:right-2 flex h-6 items-center">
                     {index !== 0 && (
                       <span className="text-xs text-muted-foreground">
                         {format(new Date().setHours(hour), "hh a")}
@@ -88,7 +89,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
             </div>
 
             {/* Day grid */}
-            <div className="relative flex-1 border-l">
+            <div className="relative flex-1 border-l min-w-0 px-1 sm:px-2">
               <div className="relative">
                 {hours.map((hour, index) => {
                   const isDisabled = !isWorkingHour(
@@ -175,7 +176,17 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                     return (
                       <div
                         key={event.id}
-                        className="absolute p-1"
+                        className="absolute px-1"
+                        style={style}
+                      >
+                        <EventBlock event={event} />
+                      </div>
+                    );
+
+                    return (
+                      <div
+                        key={event.id}
+                        className="absolute"
                         style={style}
                       >
                         <EventBlock event={event} />
@@ -191,7 +202,8 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
         </ScrollArea>
       </div>
 
-      <div className="hidden w-64 divide-y border-l md:block">
+      {/* Sidebar - hidden on mobile, visible on larger screens */}
+      <div className="hidden lg:block w-64 divide-y border-l">
         <SingleCalendar
           className="mx-auto w-fit"
           selected={selectedDate}

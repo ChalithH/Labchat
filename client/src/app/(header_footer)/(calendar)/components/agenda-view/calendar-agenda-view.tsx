@@ -43,6 +43,8 @@ export function CalendarAgendaView({ singleDayEvents, multiDayEvents }: IProps) 
         
         // Search in instrument name
         if (event.instrument?.name?.toLowerCase().includes(query)) return true;
+
+        if(event.status?.name.toLowerCase().includes(query)) return true;
         
         // Search in assigned member names
         if (event.assignments?.some(assignment => 
@@ -104,7 +106,7 @@ export function CalendarAgendaView({ singleDayEvents, multiDayEvents }: IProps) 
 
   return (
     <div className="flex flex-col h-[800px]">
-      {/* Search Bar - Full Width */}
+      {/* Search Bar - Full Width with proper padding */}
       <div className="p-4 border-b bg-background shrink-0">
         <SearchInput
           value={searchQuery}
@@ -122,10 +124,10 @@ export function CalendarAgendaView({ singleDayEvents, multiDayEvents }: IProps) 
         )}
       </div>
 
-      {/* Events List - Scrollable */}
+      {/* Events List - Scrollable with proper padding */}
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full" type="always">
-          <div className="space-y-6 p-4">
+          <div className="space-y-6 py-4 px-2 sm:px-4">
             {eventsByDay.map(dayGroup => (
               <AgendaDayGroup 
                 key={format(dayGroup.date, "yyyy-MM-dd")} 

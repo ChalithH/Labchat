@@ -1,21 +1,23 @@
-
 {
     "name": "capstone-project-2025-s1-team-13",
     "version": "1.0.0",
     "description": "Capstone Project with Client and Server",
     "main": "index.js",
     "scripts": {
-      "client": "cd client && npm run dev",
-      "server": "cd server && npm run dev",
-      "dev": "concurrently \"npm run server\" \"npm run client\"",
-      "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-      "build": "cd client && npm run build && cd ../server && npm run build",
-      "start": "concurrently \"cd server && npm start\" \"cd client && npm start\""
+        "client": "cd client && npm run dev",
+        "server": "cd server && npm run dev",
+        "dev": "concurrently \"npm run server\" \"npm run client\"",
+        "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+        "build": "cd client && npm run build && cd ../server && npm run build",
+        "start": "concurrently \"cd server && npm start\" \"cd client && npm start\""
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
-      "concurrently": "^8.2.2"
+        "concurrently": "^8.2.2"
+    },
+    "dependencies": {
+        "node-cron": "^4.1.0"
     }
-  }
+}

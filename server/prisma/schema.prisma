@@ -12,66 +12,69 @@ datasource db {
 
 // Session Management
 model Session {
-  id          String   @id
-  sid         String   @unique
-  data        String
-  expiresAt   DateTime @map("expires_at")
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime @map("expires_at")
 
   @@map("session")
 }
 
 // User Management
 model User {
-  id            Int        @id @default(autoincrement())
-  roleId        Int
-  universityId  String     @db.VarChar(16)
-  username      String     @unique
-  loginEmail    String     @unique
-  loginPassword String
-  firstName     String
-  lastName      String
-  displayName   String
-  jobTitle      String?
-  office        String?
-  bio           String?
-  dateJoined    DateTime   @default(now())
-  lastViewed    String?
+  id              Int            @id @default(autoincrement())
+  roleId          Int
+  universityId    String         @db.VarChar(16)
+  username        String         @unique
+  loginEmail      String         @unique
+  loginPassword   String
+  firstName       String
+  lastName        String
+  displayName     String
+  jobTitle        String?
+  office          String?
+  bio             String?
+  dateJoined      DateTime       @default(now())
+  lastViewed      String?
   lastViewedLabId Int?
-  profilePic    String? 
+  profilePic      String?
   // Relationships
-  role          Role       @relation(fields: [roleId], references: [id])
-  lastViewedLab Lab?       @relation("LastViewedLab", fields: [lastViewedLabId], references: [id])
-  labMembers    LabMember[]
-  LabAdmission LabAdmission[]
-  contacts      Contact[]
-  auditLogs     AuditLog[]
-  inventoryLogs InventoryLog[]
-  notifications Notification[]
+  role            Role           @relation(fields: [roleId], references: [id])
+  lastViewedLab   Lab?           @relation("LastViewedLab", fields: [lastViewedLabId], references: [id])
+  labMembers      LabMember[]
+  LabAdmission    LabAdmission[]
+  contacts        Contact[]
+  auditLogs       AuditLog[]
+  inventoryLogs   InventoryLog[]
+  notifications   Notification[]
+
   @@map("user")
 }
 
 model Role {
-  id              Int      @id @default(autoincrement())
+  id              Int     @id @default(autoincrement())
   name            String
   description     String?
   permissionLevel Int
 
   // Relationships
-  users           User[]
+  users User[]
 
   @@map("role")
 }
 
 model Contact {
-  id             Int          @id @default(autoincrement())
-  userId         Int
-  type           String
-  info           String
-  useCase        String?
-  name           String
+  id       Int     @id @default(autoincrement())
+  userId   Int
+  labId    Int?
+  memberId Int?
+  type     String
+  info     String
+  useCase  String?
+  name     String
 
   // Relationships
-  user           User         @relation(fields: [userId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
   memberStatuses MemberStatus[]
 
   @@map("contact")
@@ -79,8 +82,8 @@ model Contact {
 
 // Status Management
 model Status {
-  id           Int            @id @default(autoincrement())
-  statusName   String         @unique
+  id           Int    @id @default(autoincrement())
+  statusName   String @unique
   statusWeight Int
 
   // Relationships
@@ -91,40 +94,38 @@ model Status {
 
 // Lab Management
 model Lab {
-  id             Int                @id @default(autoincrement())
-  name           String
-  location       String
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  status         String
-  labPic         String?
+  id        Int      @id @default(autoincrement())
+  name      String
+  location  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    String
+  labPic    String?
 
   // Relationships
-  usersLastViewed User[]     @relation("LastViewedLab")
-  LabAdmission LabAdmission[]
-  labMembers     LabMember[]
-  inventoryItems LabInventoryItem[]
-  discussions    Discussion[]
-  events         Event[]
-  auditLogs      AuditLog[]
+  usersLastViewed User[]             @relation("LastViewedLab")
+  LabAdmission    LabAdmission[]
+  labMembers      LabMember[]
+  inventoryItems  LabInventoryItem[]
+  discussions     Discussion[]
+  events          Event[]
+  auditLogs       AuditLog[]
+
   @@map("lab")
-  
 }
 
 model LabRole {
-  id              Int         @id @default(autoincrement())
+  id              Int     @id @default(autoincrement())
   name            String
   description     String?
   permissionLevel Int
 
   // Relationships
-  labMembers      LabMember[]
+  labMembers   LabMember[]
   LabAdmission LabAdmission[]
 
   @@map("lab_role")
 }
-
-
 
 enum AdmissionStatus {
   PENDING
@@ -134,125 +135,123 @@ enum AdmissionStatus {
 }
 
 // Updated model using the enum
-model LabAdmission { 
-  id              Int              @id @default(autoincrement())
-  labId           Int
-  userId          Int
-  roleId          Int
-  status          AdmissionStatus  @default(PENDING)
-  isPCI           Boolean          @default(false)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+model LabAdmission {
+  id        Int             @id @default(autoincrement())
+  labId     Int
+  userId    Int
+  roleId    Int
+  status    AdmissionStatus @default(PENDING)
+  isPCI     Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   // Relationships
-  lab             Lab              @relation(fields: [labId], references: [id])
-  user            User             @relation(fields: [userId], references: [id])
-  role            LabRole          @relation(fields: [roleId], references: [id])
+  lab  Lab     @relation(fields: [labId], references: [id])
+  user User    @relation(fields: [userId], references: [id])
+  role LabRole @relation(fields: [roleId], references: [id])
+
   @@map("lab_admission")
 }
 
-
 model LabMember {
-  id                      Int                      @id @default(autoincrement())
-  userId                  Int               
-  labId                   Int
-  labRoleId               Int
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  inductionDone           Boolean                  @default(false)
-  isPCI                   Boolean                  @default(false)
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  labId         Int
+  labRoleId     Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  inductionDone Boolean  @default(false)
+  isPCI         Boolean  @default(false)
 
   // Relationships
-  user                    User                     @relation(fields: [userId], references: [id])
-  lab                     Lab                      @relation(fields: [labId], references: [id])
-  labRole                 LabRole                  @relation(fields: [labRoleId], references: [id])
-  memberStatus            MemberStatus[]
-  discussionPosts         DiscussionPost[]
-  discussionReplies       DiscussionReply[]
-  discussionPostReactions DiscussionPostReaction[]
+  user                     User                      @relation(fields: [userId], references: [id])
+  lab                      Lab                       @relation(fields: [labId], references: [id])
+  labRole                  LabRole                   @relation(fields: [labRoleId], references: [id])
+  memberStatus             MemberStatus[]
+  discussionPosts          DiscussionPost[]
+  discussionReplies        DiscussionReply[]
+  discussionPostReactions  DiscussionPostReaction[]
   discussionReplyReactions DiscussionReplyReaction[]
-  events                  Event[]
-  eventAssignments        EventAssignment[]
-  labAttendance           LabAttendance[]
-  inventoryLogs           InventoryLog[]
+  events                   Event[]
+  eventAssignments         EventAssignment[]
+  labAttendance            LabAttendance[]
+  inventoryLogs            InventoryLog[]
 
   @@map("lab_member")
 }
 
 model MemberStatus {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   contactId   Int
   memberId    Int
   statusId    Int
-  isActive    Boolean  @default(true)
-  description String?  @db.Text
+  isActive    Boolean @default(true)
+  description String? @db.Text
 
   // Relationships
-  contact     Contact  @relation(fields: [contactId], references: [id])
-  labMember   LabMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  status      Status   @relation(fields: [statusId], references: [id])
+  contact   Contact   @relation(fields: [contactId], references: [id])
+  labMember LabMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  status    Status    @relation(fields: [statusId], references: [id])
 
   @@map("member_status")
 }
 
 // Inventory Management
 model Item {
-  id             Int                  @id @default(autoincrement())
-  name           String
-  description    String?
-  safetyInfo     String?
-  approval       Boolean              @default(false)
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  safetyInfo  String?
+  approval    Boolean @default(false)
 
   // Relationships
-  labInventory   LabInventoryItem[]
+  labInventory LabInventoryItem[]
 
   @@map("item")
 }
 
 model LabInventoryItem {
-  id              Int          @id @default(autoincrement())
-  itemId          Int
-  labId           Int
-  location        String
-  itemUnit        String
-  currentStock    Int
-  minStock        Int
-  updatedAt       DateTime     @updatedAt
-  itemPic       String?
+  id           Int      @id @default(autoincrement())
+  itemId       Int
+  labId        Int
+  location     String
+  itemUnit     String
+  currentStock Int
+  minStock     Int
+  updatedAt    DateTime @updatedAt
+  itemPic      String?
 
   // Relationships
-  item            Item         @relation(fields: [itemId], references: [id])
-  lab             Lab          @relation(fields: [labId], references: [id])
-  labItemTags     LabItemTag[]
-  inventoryLogs   InventoryLog[]
+  item          Item           @relation(fields: [itemId], references: [id])
+  lab           Lab            @relation(fields: [labId], references: [id])
+  labItemTags   LabItemTag[]
+  inventoryLogs InventoryLog[]
 
   @@map("lab_inventory_item")
 }
 
 model ItemTag {
-  id             Int          @id @default(autoincrement())
+  id             Int     @id @default(autoincrement())
   name           String
   tagDescription String?
 
   // Relationships
-  labItemTags    LabItemTag[]
+  labItemTags LabItemTag[]
 
   @@map("item_tag")
 }
 
 model LabItemTag {
-  id              Int              @id @default(autoincrement())
+  id              Int @id @default(autoincrement())
   itemTagId       Int
   inventoryItemId Int
 
   // Relationships
-  itemTag         ItemTag          @relation(fields: [itemTagId], references: [id], onDelete: Cascade)
-  inventoryItem   LabInventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  itemTag       ItemTag          @relation(fields: [itemTagId], references: [id], onDelete: Cascade)
+  inventoryItem LabInventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
 
   @@map("lab_item_tag")
 }
-
-
 
 enum DiscussionCategoryState {
   OPEN
@@ -260,71 +259,71 @@ enum DiscussionCategoryState {
 }
 
 enum DiscussionPostReplyState {
-  REPLIES_OPEN      // Visible to all, open to replies
-  REPLIES_CLOSED    // Visible to all, replies closed
+  REPLIES_OPEN // Visible to all, open to replies
+  REPLIES_CLOSED // Visible to all, replies closed
 }
 
 enum DiscussionPostState {
   DEFAULT
-  HIDDEN            // Visible to lab managers+, open to replies to those who can see
-  STICKY            // Stuck to top of category
+  HIDDEN // Visible to lab managers+, open to replies to those who can see
+  STICKY // Stuck to top of category
 }
 
 // Discussion Board
 model Discussion {
-  id                    Int              @id @default(autoincrement())
-  labId                 Int
-  name                  String
-  description           String?
-  
-  visiblePermission     Int?   // Permission to be able to see the category at all
-  postPermission        Int?   // Permission to be able to post within the category
+  id          Int     @id @default(autoincrement())
+  labId       Int
+  name        String
+  description String?
+
+  visiblePermission Int? // Permission to be able to see the category at all
+  postPermission    Int? // Permission to be able to post within the category
 
   // Relationships
-  lab         Lab                        @relation(fields: [labId], references: [id])
-  posts       DiscussionPost[]
+  lab   Lab              @relation(fields: [labId], references: [id])
+  posts DiscussionPost[]
 
   @@map("discussion")
 }
 
 model DiscussionPost {
-  id                      Int                      @id @default(autoincrement())
-  discussionId            Int
-  memberId                Int
-  title                   String
-  content                 String                   @db.Text
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  isPinned                Boolean                  @default(false)
-  isAnnounce              Boolean                  @default(false)
+  id           Int      @id @default(autoincrement())
+  discussionId Int
+  memberId     Int
+  title        String
+  content      String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  isPinned     Boolean  @default(false)
+  isAnnounce   Boolean  @default(false)
 
-  replyState              DiscussionPostReplyState      @default(REPLIES_OPEN)
-  state                   DiscussionPostState           @default(DEFAULT)
+  replyState DiscussionPostReplyState @default(REPLIES_OPEN)
+  state      DiscussionPostState      @default(DEFAULT)
 
   // Relationships
-  discussion              Discussion               @relation(fields: [discussionId], references: [id])
-  member                  LabMember                @relation(fields: [memberId], references: [id])
-  replies                 DiscussionReply[]
-  tags                    DiscussionPostTag[]
-  reactions               DiscussionPostReaction[]
+  discussion Discussion               @relation(fields: [discussionId], references: [id])
+  member     LabMember                @relation(fields: [memberId], references: [id])
+  replies    DiscussionReply[]
+  tags       DiscussionPostTag[]
+  reactions  DiscussionPostReaction[]
 
   @@map("discussion_post")
 }
 
 model DiscussionReply {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   postId    Int
   memberId  Int
-  content   String    @db.Text
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   parentId  Int?
 
   // Relationships
-  post      DiscussionPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  member    LabMember          @relation(fields: [memberId], references: [id])
-  parent    DiscussionReply?  @relation("ReplyToReply", fields: [parentId], references: [id])
-  children  DiscussionReply[] @relation("ReplyToReply")
+  post      DiscussionPost            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  member    LabMember                 @relation(fields: [memberId], references: [id])
+  parent    DiscussionReply?          @relation("ReplyToReply", fields: [parentId], references: [id])
+  children  DiscussionReply[]         @relation("ReplyToReply")
   reactions DiscussionReplyReaction[]
 
   @@map("discussion_reply")
@@ -332,9 +331,9 @@ model DiscussionReply {
 
 // Post Reaction System
 model PostReaction {
-  id            Int                      @id @default(autoincrement())
-  reactionName  String                   @db.VarChar(64)
-  reaction      String                   @db.VarChar(64)
+  id           Int    @id @default(autoincrement())
+  reactionName String @db.VarChar(64)
+  reaction     String @db.VarChar(64)
 
   // Relationships
   postReactions DiscussionPostReaction[]
@@ -343,24 +342,24 @@ model PostReaction {
 }
 
 model DiscussionPostReaction {
-  id         Int          @id @default(autoincrement())
+  id         Int @id @default(autoincrement())
   postId     Int
   memberId   Int
   reactionId Int
 
   // Relationships
-  post       DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  member     LabMember      @relation(fields: [memberId], references: [id])
-  reaction   PostReaction   @relation(fields: [reactionId], references: [id], onDelete: Cascade)
+  post     DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  member   LabMember      @relation(fields: [memberId], references: [id])
+  reaction PostReaction   @relation(fields: [reactionId], references: [id], onDelete: Cascade)
 
   @@map("discussion_post_reaction")
 }
 
 // Reply Reaction
 model ReplyReaction {
-  id            Int         @id @default(autoincrement())
-  reactionName  String      @db.VarChar(64)
-  reaction      String      @db.VarChar(64)
+  id           Int    @id @default(autoincrement())
+  reactionName String @db.VarChar(64)
+  reaction     String @db.VarChar(64)
 
   // Relationships
   replyReactions DiscussionReplyReaction[]
@@ -369,47 +368,44 @@ model ReplyReaction {
 }
 
 model DiscussionReplyReaction {
-  id          Int           @id @default(autoincrement())
-  replyId     Int
-  memberId    Int
-  reactionId  Int
+  id         Int @id @default(autoincrement())
+  replyId    Int
+  memberId   Int
+  reactionId Int
 
   // Relationships
-  reply       DiscussionReply   @relation(fields: [replyId], references: [id], onDelete: Cascade)
-  member      LabMember         @relation(fields: [memberId], references: [id])
-  reaction    ReplyReaction     @relation(fields: [reactionId], references: [id], onDelete: Cascade)
+  reply    DiscussionReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  member   LabMember       @relation(fields: [memberId], references: [id])
+  reaction ReplyReaction   @relation(fields: [reactionId], references: [id], onDelete: Cascade)
 
-  @@map("discussion_reply_reaction")
   @@unique([replyId, memberId, reactionId])
+  @@map("discussion_reply_reaction")
 }
 
 // Post Tag System
 model PostTag {
-  id          Int                 @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   tag         String
-  description String?             @db.Text
-  colour      String?             @db.Text
+  description String? @db.Text
+  colour      String? @db.Text
 
   // Relationships
-  postTags    DiscussionPostTag[]
+  postTags DiscussionPostTag[]
 
   @@map("post_tag")
 }
 
 model DiscussionPostTag {
-  id          Int            @id @default(autoincrement())
-  postId      Int
-  postTagId   Int
+  id        Int @id @default(autoincrement())
+  postId    Int
+  postTagId Int
 
   // Relationships
-  post        DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postTag     PostTag        @relation(fields: [postTagId], references: [id], onDelete: Cascade)
+  post    DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postTag PostTag        @relation(fields: [postTagId], references: [id], onDelete: Cascade)
 
   @@map("discussion_post_tag")
 }
-
-
-
 
 // Equipment Management
 model Instrument {
@@ -418,7 +414,7 @@ model Instrument {
   description String?
 
   // Relationships
-  events      Event[]
+  events Event[]
 
   @@map("instrument")
 }
@@ -431,7 +427,7 @@ model Event {
   instrumentId     Int?
   title            String
   description      String?
-  status           String?
+  statusId           Int
   startTime        DateTime
   endTime          DateTime
   updatedAt        DateTime          @updatedAt
@@ -442,19 +438,21 @@ model Event {
   assigner         LabMember         @relation(fields: [memberId], references: [id])
   instrument       Instrument?       @relation(fields: [instrumentId], references: [id])
   type             EventType?         @relation(fields: [typeId], references: [id])
+  status           EventStatus       @relation(fields: [statusId], references: [id])
 
   eventAssignments EventAssignment[]
+
   @@map("event")
 }
 
 model EventAssignment {
-  id       Int       @id @default(autoincrement())
+  id       Int @id @default(autoincrement())
   eventId  Int
   memberId Int
 
   // Relations
-  member   LabMember @relation(fields: [memberId], references: [id])
-  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  member LabMember @relation(fields: [memberId], references: [id])
+  event  Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@map("event_assignment")
 }
@@ -463,32 +461,45 @@ model EventType {
   id          Int     @id @default(autoincrement())
   name        String
   description String?
+  color       String? @db.VarChar(7) // Hex color code, e.g. "#FF5733"
 
   // Relationships
-  events      Event[]
+  events Event[]
 
   @@map("event_type")
+}
+
+model EventStatus {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique // "booked", "scheduled", "cancelled", "completed", "elapsed"
+  description String?
+  color       String? @db.VarChar(7) // Hex color code for status-specific colors
+  
+  // Relationships
+  events      Event[]
+  
+  @@map("event_status")
 }
 
 
 // Audit Logging System
 model AuditLog {
-  id          Int           @id @default(autoincrement())
-  action      AuditAction
-  entityType  String        @db.VarChar(255) 
-  entityId    String        @db.VarChar(255) 
-  userId      Int           
-  labId       Int?          
-  timestamp   DateTime      @default(now())
-  oldValues   Json?         
-  newValues   Json?         
-  ipAddress   String?       @db.VarChar(45) 
-  userAgent   String?       @db.VarChar(255) 
+  id         Int         @id @default(autoincrement())
+  action     AuditAction
+  entityType String      @db.VarChar(255)
+  entityId   String      @db.VarChar(255)
+  userId     Int
+  labId      Int?
+  timestamp  DateTime    @default(now())
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?     @db.VarChar(45)
+  userAgent  String?     @db.VarChar(255)
 
   // Relationships
-  user        User          @relation(fields: [userId], references: [id])
-  lab         Lab?          @relation(fields: [labId], references: [id])
-  details     AuditDetail[]
+  user    User          @relation(fields: [userId], references: [id])
+  lab     Lab?          @relation(fields: [labId], references: [id])
+  details AuditDetail[]
 
   @@index([entityType, entityId])
   @@index([userId])
@@ -519,7 +530,7 @@ model AuditDetail {
   newValue   String? @db.Text // New value (as string)
 
   // Relationship
-  auditLog   AuditLog @relation(fields: [auditLogId], references: [id], onDelete: Cascade)
+  auditLog AuditLog @relation(fields: [auditLogId], references: [id], onDelete: Cascade)
 
   @@index([auditLogId])
   @@map("audit_detail")
@@ -538,23 +549,23 @@ model LabAttendance {
 
 // Inventory Logging System
 model InventoryLog {
-  id                Int                @id @default(autoincrement())
-  labInventoryItemId Int?              // Made optional to preserve logs when items are deleted
-  userId            Int                // Always present - who performed the action
-  memberId          Int?               // Optional - null for non-member admin operations
-  action            InventoryAction   
-  source            InventorySource   
-  previousValues    Json?             
-  newValues         Json?             
-  quantityChanged   Int?              
-  reason            String?           
-  createdAt         DateTime          @default(now())
-  
+  id                 Int             @id @default(autoincrement())
+  labInventoryItemId Int? // Made optional to preserve logs when items are deleted
+  userId             Int // Always present - who performed the action
+  memberId           Int? // Optional - null for non-member admin operations
+  action             InventoryAction
+  source             InventorySource
+  previousValues     Json?
+  newValues          Json?
+  quantityChanged    Int?
+  reason             String?
+  createdAt          DateTime        @default(now())
+
   // Relationships
-  labInventoryItem  LabInventoryItem?  @relation(fields: [labInventoryItemId], references: [id], onDelete: SetNull)
-  user              User              @relation(fields: [userId], references: [id])
-  member            LabMember?        @relation(fields: [memberId], references: [id])
-  
+  labInventoryItem LabInventoryItem? @relation(fields: [labInventoryItemId], references: [id], onDelete: SetNull)
+  user             User              @relation(fields: [userId], references: [id])
+  member           LabMember?        @relation(fields: [memberId], references: [id])
+
   @@index([labInventoryItemId])
   @@index([userId])
   @@index([memberId])
@@ -564,23 +575,24 @@ model InventoryLog {
 
 // Inventory action enum
 enum InventoryAction {
-  STOCK_ADD        // Adding stock
-  STOCK_REMOVE     // Removing/using stock  
-  STOCK_UPDATE     // Manual stock correction
-  LOCATION_CHANGE  // Moving item location
+  STOCK_ADD // Adding stock
+  STOCK_REMOVE // Removing/using stock  
+  STOCK_UPDATE // Manual stock correction
+  LOCATION_CHANGE // Moving item location
   MIN_STOCK_UPDATE // Changing minimum stock threshold
-  ITEM_ADDED       // New item added to lab
-  ITEM_REMOVED     // Item removed from lab
-  ITEM_UPDATE      // Updating item properties
+  ITEM_ADDED // New item added to lab
+  ITEM_REMOVED // Item removed from lab
+  ITEM_UPDATE // Updating item properties
 }
 
 // Inventory source enum
 enum InventorySource {
-  ADMIN_PANEL      // Changes made via admin/manage-lab inventory tab
-  LAB_INTERFACE    // Changes made from within lab context
-  API_DIRECT       // Direct API calls
-  BULK_IMPORT      // Bulk operations
+  ADMIN_PANEL // Changes made via admin/manage-lab inventory tab
+  LAB_INTERFACE // Changes made from within lab context
+  API_DIRECT // Direct API calls
+  BULK_IMPORT // Bulk operations
 }
+
 model Notification {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -588,7 +600,7 @@ model Notification {
   timestamp DateTime @default(now())
   read      Boolean  @default(false)
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }

@@ -7,36 +7,21 @@ import { Clock, Text, User, Users, Microscope } from "lucide-react";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { EventDetailsDialog } from "@/calendar/components/dialogs/event-details-dialog";
 import { Badge } from "@/components/ui/badge";
+import { generateColorStyles } from "@/calendar/utils/color-utils";
 
 import type { IEvent } from "@/calendar/interfaces";
-import type { VariantProps } from "class-variance-authority";
 
 const agendaEventCardVariants = cva(
-  "flex select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+  "flex select-none flex-col gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full mx-2 sm:mx-0",
   {
     variants: {
-      color: {
-        // Colored variants
-        blue: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 [&_.event-dot]:fill-blue-600",
-        green: "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300 [&_.event-dot]:fill-green-600",
-        red: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300 [&_.event-dot]:fill-red-600",
-        yellow: "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 [&_.event-dot]:fill-yellow-600",
-        purple: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-300 [&_.event-dot]:fill-purple-600",
-        orange: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300 [&_.event-dot]:fill-orange-600",
-        gray: "border-neutral-200 bg-neutral-50 text-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 [&_.event-dot]:fill-neutral-600",
-
-        // Dot variants
-        "blue-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-blue-600",
-        "green-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-green-600",
-        "red-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-red-600",
-        "orange-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-orange-600",
-        "purple-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-purple-600",
-        "yellow-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-yellow-600",
-        "gray-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-neutral-600",
+      variant: {
+        colored: "border-[var(--event-border)] bg-[var(--event-bg)]",
+        dot: "bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700",
       },
     },
     defaultVariants: {
-      color: "blue-dot",
+      variant: "colored",
     },
   }
 );
@@ -77,16 +62,13 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, search
   // Get the type name with proper formatting
   const typeName = event.type?.name || "Event";
   
-  // Determine the badge variant based on the event color
-  const getBadgeVariant = (color: string) => {
-    if (color === "blue") return "default";
-    if (color === "purple") return "secondary";
-    return "outline";
-  };
+  // Generate dynamic color styles
+  const colorStyles = badgeVariant === "dot" ? {} : generateColorStyles(event.color);
 
-  const color = (badgeVariant === "dot" ? `${event.color}-dot` : event.color) as VariantProps<typeof agendaEventCardVariants>["color"];
+  // Determine which variant to use
+  const variant = badgeVariant === "dot" ? "dot" : "colored";
 
-  const agendaEventCardClasses = agendaEventCardVariants({ color });
+  const agendaEventCardClasses = agendaEventCardVariants({ variant });
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -100,87 +82,117 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, search
 
   return (
     <EventDetailsDialog event={event}>
-      <div role="button" tabIndex={0} className={agendaEventCardClasses} onKeyDown={handleKeyDown}>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1.5">
+      <div 
+        role="button" 
+        tabIndex={0} 
+        className={agendaEventCardClasses} 
+        style={colorStyles}
+        onKeyDown={handleKeyDown}
+      >
+        {/* Header section with title and type */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
             {["mixed", "dot"].includes(badgeVariant) && (
-              <svg width="8" height="8" viewBox="0 0 8 8" className="event-dot shrink-0">
-                <circle cx="4" cy="4" r="4" />
+              <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
+                <circle cx="4" cy="4" r="4" fill={event.color} />
               </svg>
             )}
 
-            <div className="flex items-center gap-2">
-              <p className="font-medium">
-                {eventCurrentDay && eventTotalDays && (
-                  <span className="mr-1 text-xs">
-                    Day {eventCurrentDay} of {eventTotalDays} •{" "}
-                  </span>
-                )}
+            <p className="font-medium text-gray-900 truncate max-w-[200px] sm:max-w-[300px] md:max-w-none">
+              {eventCurrentDay && eventTotalDays && (
+                <span className="mr-1 text-xs whitespace-nowrap">
+                  Day {eventCurrentDay} of {eventTotalDays} •{" "}
+                </span>
+              )}
+              <span className="break-words">
                 {highlightText(event.title, searchQuery)}
-              </p>
-              
-              <Badge 
-                variant={getBadgeVariant(event.color)}
-                className="ml-1"
-              >
-                {highlightText(typeName, searchQuery)}
-              </Badge>
-            </div>
+              </span>
+            </p>
           </div>
+          
+          <div className="flex items-center gap-2 shrink-0">
+            <Badge 
+              className="text-white border-0 font-medium text-xs"
+              style={{
+                backgroundColor: event.type?.color || event.color,
+                color: 'white'
+              }}
+            >
+              {highlightText(typeName, searchQuery)}
+            </Badge>
+            
+            {event.status && (
+              <Badge 
+                className="text-white border-0 font-medium text-xs"
+                style={{
+                  backgroundColor: event.status.color || '#6B7280',
+                  color: 'white'
+                }}
+              >
+                {highlightText(event.status.name, searchQuery)}
+              </Badge>
+            )}
+          </div>
+        </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <User className="size-3.5 shrink-0 text-muted-foreground" />
-              <p className="text-xs text-foreground">
+        {/* Main info section - stacked on mobile, side by side on larger screens */}
+        <div className="flex flex-col gap-3 sm:gap-4">
+          {/* First row of info */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-1 min-w-0">
+              <User className="size-3.5 shrink-0 text-gray-500" />
+              <p className="text-xs text-gray-700 truncate">
                 Assigner: {highlightText(event.user.name, searchQuery)}
               </p>
             </div>
 
+            <div className="flex items-center gap-1 min-w-0">
+              <Clock className="size-3.5 shrink-0 text-gray-500" />
+              <p className="text-xs text-gray-700">
+                {format(startDate, "h:mm a")} - {format(endDate, "h:mm a")}
+              </p>
+            </div>
+          </div>
+
+          {/* Second row of info */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             {hasAssignments && (
-              <div className="flex items-center gap-1">
-                <Users className="size-3.5 shrink-0 text-muted-foreground" />
-                <p className="text-xs text-foreground">
+              <div className="flex items-center gap-1 min-w-0">
+                <Users className="size-3.5 shrink-0 text-gray-500" />
+                <p className="text-xs text-gray-700">
                   {event.assignments?.length ?? 0} {event.assignments?.length === 1 ? "member" : "members"} assigned
                 </p>
               </div>
             )}
 
             {hasInstrument && (
-              <div className="flex items-center gap-1">
-                <Microscope className="size-3.5 shrink-0 text-muted-foreground" />
-                <p className="text-xs text-foreground">
+              <div className="flex items-center gap-1 min-w-0">
+                <Microscope className="size-3.5 shrink-0 text-gray-500" />
+                <p className="text-xs text-gray-700 truncate">
                   {event.instrument?.name ? highlightText(event.instrument.name, searchQuery) : "N/A"}
                 </p>
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Clock className="size-3.5 shrink-0 text-muted-foreground" />
-              <p className="text-xs text-foreground">
-                {format(startDate, "h:mm a")} - {format(endDate, "h:mm a")}
+          {/* Description - full width */}
+          {event.description && (
+            <div className="flex items-start gap-1">
+              <Text className="size-3.5 shrink-0 text-gray-500 mt-0.5" />
+              <p className="text-xs text-gray-700 break-words">
+                {highlightText(event.description, searchQuery)}
               </p>
             </div>
-
-            {event.description && (
-              <div className="flex items-center gap-1">
-                <Text className="size-3.5 shrink-0 text-muted-foreground" />
-                <p className="text-xs text-foreground max-w-[300px] truncate">
-                  {highlightText(event.description, searchQuery)}
-                </p>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Show assigned member names if they match search */}
           {searchQuery && hasAssignments && event.assignments?.some(assignment => 
             assignment.name.toLowerCase().includes(searchQuery.toLowerCase())
           ) && (
-            <div className="flex items-center gap-1 mt-1">
-              <Users className="size-3.5 shrink-0 text-muted-foreground" />
-              <div className="text-xs text-foreground">
-                <span className="text-muted-foreground">Assigned to:</span>{" "}
+            <div className="flex items-start gap-1">
+              <Users className="size-3.5 shrink-0 text-gray-500 mt-0.5" />
+              <div className="text-xs text-gray-700 break-words">
+                <span className="text-gray-500">Assigned to:</span>{" "}
                 {event.assignments
                   ?.filter(assignment => assignment.name.toLowerCase().includes(searchQuery.toLowerCase()))
                   .map((assignment, index, arr) => (
@@ -194,12 +206,6 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, search
             </div>
           )}
         </div>
-        
-        {event.status && (
-          <Badge variant="outline" className="capitalize">
-            {event.status}
-          </Badge>
-        )}
       </div>
     </EventDetailsDialog>
   );

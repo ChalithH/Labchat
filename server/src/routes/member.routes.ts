@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getMemberById, getMemberByUserId, getMembershipsByUserId, getStatuses, setStatus, getMemberWithStatus } from '../controllers/member/member.controller';
+import { getMemberById, getMemberByUserId, getMembershipsByUserId, getStatuses, setStatus, getMemberWithStatus, getMemberByUserIdAndLabId } from '../controllers/member/member.controller';
 
 /**
  * @swagger
@@ -12,6 +12,7 @@ const router = Router();
 
 router.get('/get/:id', getMemberById);
 router.get('/get/user/:id', getMemberByUserId);
+router.get('/get/user-lab/:userId/:labId', getMemberByUserIdAndLabId);
 router.get('/memberships/user/:id', getMembershipsByUserId);
 router.get('/statuses', getStatuses);
 router.post('/set-status', setStatus);

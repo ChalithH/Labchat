@@ -1,13 +1,9 @@
 
 import { Separator } from '@/components/ui/separator'
-import ThreadAuthorGroup from '@/components/discussion/ThreadAuthorGroup'
 import { ContactType, ProfileDataType } from '../types/profile.types'
-
 import ContactGroup from './ContactGroup'
 import EditProfile from './EditProfile'
 import AddContact from './AddContact'
-import ProfilePicture from '@/components/profilePicture/ProfilePicture'
-import { UserType } from '@/types/account_user.type'
 import ProfilePictureGroup from '@/components/profilePicture/ProfilePictureGroup'
 
 

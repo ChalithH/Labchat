@@ -27,25 +27,27 @@ import { Contact } from '@prisma/client';
  */
 export const addContact = async (req: Request, res: Response): Promise<void> => {
   try {
-    const contact_data = req.body;
-    const { userId, type, name, useCase, info } = contact_data;
+    const { userId, labId, memberId, type, name, useCase, info } = req.body;
 
     const contact: Contact = await prisma.contact.create({
       data: {
-        userId, type, name, useCase, info
+        userId,
+        labId: labId ?? null,
+        memberId: memberId ?? null,
+        type,
+        name,
+        useCase,
+        info
       }
-    })
+    });
 
-    res.status(201).json(contact)
-    return
-
+    res.status(201).json(contact);
   } catch (error) {
-    console.log(error)
-
-    res.status(500).json({ error: 'Failed to create contact' })
-    return
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create contact' });
   }
-}
+};
+
 
 /**
  * @swagger
@@ -102,22 +104,31 @@ export const getContacts = async (_: Request, res: Response): Promise<void> => {
  *       500:
  *         description: Failed to retrieve contacts.
  */
-export const getContactsByUserId = async (req: Request, res: Response): Promise<void> => {
+export const getContactsByLabMemberId = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = parseInt(req.params.id)
+    const labId = parseInt(req.params.lab)
+    const userId = parseInt(req.params.user)
+
     const contacts = await prisma.contact.findMany({
-      where: { userId },
+      where: { userId, labId },
+      include: {
+        user: {
+          include: {
+            contacts: true,
+          },
+        },
+      },
     })
-    
+
     if (!contacts) {
       res.status(404).json({ error: 'Contacts not found' })
       return
     }
-    
-    res.json(contacts)
 
+    res.json(contacts)
   } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve contacts' })
+    console.error(error)
+    res.status(500).json({ error: 'Failed to retrieve contacts for lab member' })
   }
 }
 

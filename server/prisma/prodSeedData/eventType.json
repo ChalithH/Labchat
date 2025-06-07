@@ -1,83 +1,22 @@
 [
-    {
-      "name": "Booking",
-      "description": "Scheduled time for using a lab instrument or space."
-    },
-    {
-      "name": "Meeting",
-      "description": "Lab or project meeting."
-    },
-    {
-      "name": "Training",
-      "description": "Training session for equipment or procedures."
-    },
-    {
-      "name": "Maintenance",
-      "description": "Scheduled maintenance for lab equipment."
-    },
-    {
-      "name": "Experiment",
-      "description": "Dedicated time for conducting a specific experiment."
-    },
-    {
-      "name": "Presentation",
-      "description": "Presentation or seminar within the lab."
-    },
-    {
-      "name": "Cleanup",
-      "description": "Scheduled lab cleanup time."
-    },
-    {
-      "name": "Calibration",
-      "description": "Instrument calibration."
-    },
-    {
-      "name": "Field Work",
-      "description": "Time allocated for research conducted outside the lab."
-    },
-    {
-      "name": "Data Analysis",
-      "description": "Dedicated time for analyzing experimental data."
-    },
-    {
-      "name": "Writing",
-      "description": "Time allocated for writing papers, reports, or thesis."
-    },
-    {
-      "name": "Consultation",
-      "description": "Meeting with a supervisor or collaborator."
-    },
-    {
-      "name": "Safety Drill",
-      "description": "Scheduled safety drill or exercise."
-    },
-    {
-      "name": "Visitor Tour",
-      "description": "Tour for visitors or prospective students."
-    },
-    {
-      "name": "Purchasing",
-      "description": "Time allocated for ordering supplies or equipment."
-    },
-    {
-      "name": "Sample Preparation",
-      "description": "Dedicated time for preparing samples."
-    },
-    {
-      "name": "Software Session",
-      "description": "Session for using specific lab software."
-    },
-    {
-      "name": "Review",
-      "description": "Reviewing data, proposals, or papers."
-    },
-    {
-      "name": "Workshop",
-      "description": "Internal lab workshop on a specific topic."
-    },
-    {
-      "name": "Discussion",
-      "description": "Informal discussion session."
-    }
-  ]
-  
+  {
+    "name": "Lab Booking",
+    "description": "Scheduled time for using a lab instrument.",
+    "color": "#1E90FF" 
+  },
+  {
+    "name": "Task",
+    "description": "Lab task assigned to lab members.",
+    "color": "#32CD32" 
+  },
+  {
+    "name": "Instrument Booking",
+    "description": "Scheduled time for using a lab instrument.",
+    "color": "#FFA500" 
+  },
+  {
+    "name": "Other",
+    "description": "Scheduled maintenance for lab equipment.",
+    "color": "#A9A9A9" 
+  }
+]

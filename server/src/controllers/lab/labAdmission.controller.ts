@@ -436,7 +436,7 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                     where: { id: admissionRequest.userId },
                     data: {
                         lastViewedLabId: admissionRequest.labId,
-                        lastViewed: `/lab/${admissionRequest.labId}` // or '/dashboard'
+                        lastViewed: `/dashboard` // or '/dashboard'
                     }
                 });
             }

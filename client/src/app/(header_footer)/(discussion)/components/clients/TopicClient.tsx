@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react'
-
+'use client'
+import React, { useState } from 'react'
 import Title from '../Title'
 import Thread from '@/components/discussion/Thread'
 import { PostType } from '@/types/post.type';
 import { CategoryType } from '@/types/category.type';
-import { useCurrentLabId } from '@/contexts/lab-context';
-import api from '@/lib/api';
-import getUserFromSession from '@/lib/get_user';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,7 +15,17 @@ import {
 import { UserType } from '@/types/User.type';
 
 
-const TopicClient = async ({ params, user, userPermission, category, posts }:{ params: { id: string }, user: UserType, userPermission: number, category: CategoryType, posts: PostType[]}) => {
+const TopicClient = ({ params, user, userPermission, category, posts }:{ params: { id: string }, user: UserType, userPermission: number, category: CategoryType, posts: PostType[]}) => {
+    const [filter, setFilter] = useState<Record<number, 'recent' | 'popular'>>({})
+    const getPosts = () => {
+        const mode = filter[category.id] ?? 'recent'
+        if (mode === 'popular') 
+            return [...posts].sort((a, b) => b.reactions.length - a.reactions.length)
+        return [...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    }
+    const filteredPosts = getPosts()
+    console.log(filteredPosts)
+    
     return (
         <main className="m-auto w-[90dvw]">
             <Breadcrumb className='mb-4'>
@@ -36,16 +43,25 @@ const TopicClient = async ({ params, user, userPermission, category, posts }:{ p
             </Breadcrumb>
 
             <div className="mb-8">
-                <Title b_categories={ true } b_view_all={ false } user={ user } perm_to_add={ userPermission >= (category.postPermission ?? 0) ? true : false } category={ category }/>
+                <Title
+                b_categories={true}
+                b_view_all={false}
+                user={user}
+                perm_to_add={userPermission >= (category.postPermission ?? 0)}
+                category={category}
+                filter={filter[category.id] ?? 'recent'}
+                setFilter={(mode) => {
+                    setFilter(prev => ({ ...prev, [category.id]: mode }))
+                }}/>
             </div>
 
-            { posts.map( (thread, idx, arr) => (
+            { filteredPosts.map( (thread, idx, arr) => (
                 <div key={ idx } className={ idx !== arr.length - 1 ? "mb-6" : "" }>
                     <Thread key={ idx } thread={ thread } b_show_blurb={ true }/>
                 </div>
             ))}
 
-            { posts.length === 0 && (
+            { filteredPosts.length === 0 && (
                 <div className="text-gray-500 italic text-center py-8">
                     No posts found in this category for the current lab.
                 </div>

@@ -26,7 +26,11 @@ async function main() {
     console.log(`Starting server on Environment: ${ENV}..`);
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
-      console.log(`API Documentation: ${origin}:${PORT}/api-docs`);
+      if (ENV === 'production') {
+        console.log(`API Documentation: ${origin}/api-docs`);
+      } else { 
+        console.log(`API Documentation: ${origin}:${PORT}/api-docs`);
+      }
     });
   } catch (error) {
     console.error('Failed to start server:', error);
