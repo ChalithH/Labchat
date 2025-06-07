@@ -1,0 +1,27 @@
+[
+    {
+      "name": "booked",
+      "description": "Event is booked and confirmed",
+      "color": null 
+    },
+    {
+      "name": "scheduled", 
+      "description": "Event is scheduled and pending",
+      "color": null 
+    },
+    {
+      "name": "cancelled",
+      "description": "Event has been cancelled",
+      "color": "#DC2626" 
+    },
+    {
+      "name": "completed",
+      "description": "Event has been completed",
+      "color": "#16A34A" 
+    },
+    {
+      "name": "elapsed",
+      "description": "Event time has passed without completion",
+      "color": "#9CA3AF" 
+    }
+]

@@ -32,7 +32,6 @@ import type { TEventFormData } from "@/calendar/schemas";
 interface IProps {
   children: React.ReactNode;
   event: IEvent;
-  onEventUpdate?: (updatedEvent: IEvent) => void;
 }
 
 export function EditEventDialog({ children, event }: IProps) {
@@ -129,7 +128,7 @@ export function EditEventDialog({ children, event }: IProps) {
       user,
       title: values.title,
       description: values.description,
-      color: selectedType?.color || "green", // Use color from type or default to green
+      color: selectedType?.color || "#10B981", // Use hex color from type or default to green
       type: selectedType,
       instrument: selectedInstrument,
       startDate: startDateTime.toISOString(),
@@ -193,8 +192,8 @@ export function EditEventDialog({ children, event }: IProps) {
 
       <DialogContent className="max-h-[80vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Edit Event</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-gray-900">Edit Event</DialogTitle>
+          <DialogDescription className="text-gray-600">
             Update the event details below
           </DialogDescription>
         </DialogHeader>
@@ -215,9 +214,9 @@ export function EditEventDialog({ children, event }: IProps) {
                   name="user"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Assigner</FormLabel>
+                      <FormLabel className="text-gray-900">Assigner</FormLabel>
                       <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
+                        <Select value={field.value} disabled>
                           <SelectTrigger data-invalid={fieldState.invalid}>
                             <SelectValue placeholder="Select an option" />
                           </SelectTrigger>
@@ -228,10 +227,10 @@ export function EditEventDialog({ children, event }: IProps) {
                                 <div className="flex items-center gap-2">
                                   <Avatar key={user.id} className="size-6">
                                     <AvatarImage src={user.picturePath ?? undefined} alt={user.name} />
-                                    <AvatarFallback className="text-xxs">{user.name[0]}</AvatarFallback>
+                                    <AvatarFallback className="text-xxs bg-gray-100 text-gray-700">{user.name[0]}</AvatarFallback>
                                   </Avatar>
 
-                                  <p className="truncate">{user.name}</p>
+                                  <p className="truncate text-gray-900">{user.name}</p>
                                 </div>
                               </SelectItem>
                             ))}
@@ -249,7 +248,7 @@ export function EditEventDialog({ children, event }: IProps) {
                   name="type"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Event Type</FormLabel>
+                      <FormLabel className="text-gray-900">Event Type</FormLabel>
                       <FormControl>
                         <Select 
                           value={field.value} 
@@ -264,8 +263,11 @@ export function EditEventDialog({ children, event }: IProps) {
                             {eventTypes.map(type => (
                               <SelectItem key={type.id} value={type.id.toString()}>
                                 <div className="flex items-center gap-2">
-                                  <div className={`size-3.5 rounded-full bg-${type.color || 'green'}-600`} />
-                                  {type.name}
+                                  <div 
+                                    className="size-3.5 rounded-full" 
+                                    style={{ backgroundColor: type.color || '#10B981' }}
+                                  />
+                                  <span className="text-gray-900">{type.name}</span>
                                 </div>
                               </SelectItem>
                             ))}
@@ -278,12 +280,13 @@ export function EditEventDialog({ children, event }: IProps) {
                 />
 
                 {/* Instrument Selection - show for equipment events */}
+                {isEquipmentType && (
                   <FormField
                     control={form.control}
                     name="instrumentId"
                     render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>Instrument</FormLabel>
+                        <FormLabel className="text-gray-900">Instrument</FormLabel>
                         <FormControl>
                           <Select
                             value={field.value !== null ? field.value : "none"}
@@ -295,14 +298,14 @@ export function EditEventDialog({ children, event }: IProps) {
                             <SelectContent>
                               <SelectItem value="none">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground">No instrument</span>
+                                  <span className="text-gray-600">No instrument</span>
                                 </div>
                               </SelectItem>
                               {instruments.map(instrument => (
                                 <SelectItem key={instrument.id} value={instrument.id.toString()}>
                                   <div className="flex items-center gap-2">
-                                    <Microscope className="h-4 w-4 text-muted-foreground" />
-                                    {instrument.name}
+                                    <Microscope className="h-4 w-4 text-gray-600" />
+                                    <span className="text-gray-900">{instrument.name}</span>
                                   </div>
                                 </SelectItem>
                               ))}
@@ -313,11 +316,13 @@ export function EditEventDialog({ children, event }: IProps) {
                       </FormItem>
                     )}
                   />
+                )}
 
                 {/* Assignees management section - only show for non-equipment events */}
+                {!isEquipmentType && hasUsers && (
                   <div className="space-y-3 border rounded-md p-3">
                     <div className="flex justify-between items-center">
-                      <h3 className="text-sm font-medium">Assigned Members</h3>
+                      <h3 className="text-sm font-medium text-gray-900">Assigned Members</h3>
                       <div className="flex gap-2 items-center">
                         <Select onValueChange={handleAddAssignee}>
                           <SelectTrigger className="w-[180px] h-8">
@@ -328,9 +333,9 @@ export function EditEventDialog({ children, event }: IProps) {
                               <SelectItem key={user.id} value={user.id}>
                                 <div className="flex items-center gap-2">
                                   <Avatar className="h-5 w-5">
-                                    <AvatarFallback className="text-[10px]">{user.name[0]}</AvatarFallback>
+                                    <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">{user.name[0]}</AvatarFallback>
                                   </Avatar>
-                                  <span className="truncate">{user.name}</span>
+                                  <span className="truncate text-gray-900">{user.name}</span>
                                 </div>
                               </SelectItem>
                             ))}
@@ -354,16 +359,16 @@ export function EditEventDialog({ children, event }: IProps) {
                     )}
                     
                     {selectedAssignees.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic">No members assigned yet</p>
+                      <p className="text-xs text-gray-600 italic">No members assigned yet</p>
                     ) : (
                       <div className="space-y-2 mt-2">
                         {selectedAssignees.map(assignee => (
                           <div key={assignee.id} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Avatar className="h-6 w-6">
-                                <AvatarFallback>{assignee.name[0]}</AvatarFallback>
+                                <AvatarFallback className="bg-gray-100 text-gray-700">{assignee.name[0]}</AvatarFallback>
                               </Avatar>
-                              <span className="text-sm">{assignee.name}</span>
+                              <span className="text-sm text-gray-900">{assignee.name}</span>
                             </div>
                             <Button
                               type="button"
@@ -379,13 +384,14 @@ export function EditEventDialog({ children, event }: IProps) {
                       </div>
                     )}
                   </div>
+                )}
 
                 <FormField
                   control={form.control}
                   name="title"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel htmlFor="title">Title</FormLabel>
+                      <FormLabel htmlFor="title" className="text-gray-900">Title</FormLabel>
 
                       <FormControl>
                         <Input id="title" placeholder="Enter a title" data-invalid={fieldState.invalid} {...field} />
@@ -402,7 +408,7 @@ export function EditEventDialog({ children, event }: IProps) {
                     name="startDate"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel htmlFor="startDate">Start Date</FormLabel>
+                        <FormLabel htmlFor="startDate" className="text-gray-900">Start Date</FormLabel>
 
                         <FormControl>
                           <SingleDayPicker
@@ -424,7 +430,7 @@ export function EditEventDialog({ children, event }: IProps) {
                     name="startTime"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>Start Time</FormLabel>
+                        <FormLabel className="text-gray-900">Start Time</FormLabel>
 
                         <FormControl>
                           <TimeInput value={field.value as TimeValue} onChange={field.onChange} hourCycle={12} data-invalid={fieldState.invalid} />
@@ -442,7 +448,7 @@ export function EditEventDialog({ children, event }: IProps) {
                     name="endDate"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>End Date</FormLabel>
+                        <FormLabel className="text-gray-900">End Date</FormLabel>
                         <FormControl>
                           <SingleDayPicker
                             value={field.value}
@@ -461,7 +467,7 @@ export function EditEventDialog({ children, event }: IProps) {
                     name="endTime"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>End Time</FormLabel>
+                        <FormLabel className="text-gray-900">End Time</FormLabel>
                         <FormControl>
                           <TimeInput value={field.value as TimeValue} onChange={field.onChange} hourCycle={12} data-invalid={fieldState.invalid} />
                         </FormControl>
@@ -476,7 +482,7 @@ export function EditEventDialog({ children, event }: IProps) {
                   name="description"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel className="text-gray-900">Description</FormLabel>
 
                       <FormControl>
                         <Textarea {...field} value={field.value} data-invalid={fieldState.invalid} />

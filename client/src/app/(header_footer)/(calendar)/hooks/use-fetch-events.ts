@@ -19,16 +19,17 @@ type FetchCache = {
   startDate: string;
   endDate: string;
   view: TCalendarView;
-  userId: string;
-  typeId: string;
-  labId: number;
+  labId: number; 
   events: IEvent[];
 };
 
 export const useFetchEvents = () => {
-  const { selectedDate, selectedUserId, selectedTypeId, setLocalEvents } = useCalendar();
-  const currentLabId = useCurrentLabId(); // Get current lab ID from context
+  const { 
+    selectedDate, 
+    setLocalEvents
+  } = useCalendar();
   const [loading, setLoading] = useState(false);
+  const currentLabId = useCurrentLabId(); // Get current lab ID from context
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<TCalendarView>('month');
   
@@ -64,11 +65,16 @@ export const useFetchEvents = () => {
     return { startDate, endDate };
   }, []);
   
-  const fetchEventsForDateRange = useCallback(async (date: Date, viewType: TCalendarView, userId: string, typeId: string, labId: number, force = false) => {
+  const fetchEventsForDateRange = useCallback(async (
+    date: Date, 
+    viewType: TCalendarView, 
+    labId: number,
+    force = false
+  ) => {
     const { startDate, endDate } = getDateRange(date, viewType);
     
     // Create a cache key
-    const startKey = startDate.toISOString();
+    const startKey = startDate.toISOString(); 
     const endKey = endDate.toISOString();
     
     // Check cache for existing data
@@ -77,11 +83,11 @@ export const useFetchEvents = () => {
       fetchCacheRef.current && 
       fetchCacheRef.current.startDate === startKey &&
       fetchCacheRef.current.endDate === endKey &&
-      fetchCacheRef.current.view === viewType && 
-      fetchCacheRef.current.userId === userId &&
-      fetchCacheRef.current.typeId === typeId &&
-      fetchCacheRef.current.labId === labId
+      fetchCacheRef.current.view === viewType &&
+      fetchCacheRef.current.labId === labId 
     ) {
+      // Use cached events but still set them in state
+      setLocalEvents(fetchCacheRef.current.events);
       return;
     }
     
@@ -91,44 +97,18 @@ export const useFetchEvents = () => {
     try {
       console.log(`Fetching events for ${viewType} view from ${startDate.toDateString()} to ${endDate.toDateString()} for lab ${labId}`);
       
-      const fetchedEvents = await getEvents(startDate, endDate, labId); // Pass lab ID to getEvents
-      
-      // Filter events by user if needed - now checks assignments
-      let filteredEvents = fetchedEvents;
-      
-      if (userId !== "all") {
-        filteredEvents = filteredEvents.filter(event => {
-          // If no assignments, check if the user is the assigner
-          if (!event.assignments || event.assignments.length === 0) {
-            return event.user.id === userId;
-          }
-          
-          // Check if the user is in the assignments
-          return event.assignments.some((assignment: any) => 
-            assignment.memberId?.toString() === userId
-          );
-        });
-      }
-      
-      // Filter events by type if needed
-      if (typeId !== "all") {
-        filteredEvents = filteredEvents.filter(event => 
-          event.type && event.type.id.toString() === typeId
-        );
-      }
+      const fetchedEvents = await getEvents(startDate, endDate, labId);
       
       // Store in cache
       fetchCacheRef.current = {
         startDate: startKey,
         endDate: endKey,
         view: viewType,
-        userId,
-        typeId,
-        labId,
-        events: filteredEvents
+        events: fetchedEvents,
+        labId: labId
       };
       
-      setLocalEvents(filteredEvents);
+      setLocalEvents(fetchedEvents);
     } catch (err) {
       console.error("Error fetching events:", err);
       setError("Failed to fetch events. Please try again later.");
@@ -137,16 +117,24 @@ export const useFetchEvents = () => {
     }
   }, [getDateRange, setLocalEvents]);
   
-  // Fetch events when selected parameters change (including lab ID)
   useEffect(() => {
-    fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId), currentLabId);
-  }, [selectedDate, view, selectedUserId, selectedTypeId, currentLabId, fetchEventsForDateRange]);
+    fetchEventsForDateRange(
+      selectedDate, 
+      view, 
+      currentLabId
+    );
+  }, [selectedDate, view, currentLabId, fetchEventsForDateRange]);
   
   return {
     loading,
     error,
     view,
     setView,
-    refreshEvents: () => fetchEventsForDateRange(selectedDate, view, String(selectedUserId), String(selectedTypeId), currentLabId, true)
+    refreshEvents: () => fetchEventsForDateRange(
+      selectedDate, 
+      view, 
+      currentLabId,
+      true
+    )
   };
 };

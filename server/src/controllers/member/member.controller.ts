@@ -142,6 +142,65 @@ export const getMemberByUserId = async (req: Request, res: Response): Promise<vo
   }
 };
 
+
+/**
+ * Get lab member by user ID and lab ID
+ * 
+ * @param {Request} req - Express request object with userId and labId parameters
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} JSON response with lab member data or error
+ * 
+ * @swagger
+ * /member/get/user-lab/{userId}/{labId}:
+ *   get:
+ *     summary: Get lab member by user ID and lab ID
+ *     description: Retrieve a specific lab member using their user ID and the lab ID
+ *     tags: [Lab members]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: Numeric ID of the user
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         description: Numeric ID of the lab
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     responses:
+ *       200:
+ *         description: Lab member found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LabMember'
+ *       404:
+ *         description: Lab member not found for the given user ID and lab ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Lab member not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Failed to retrieve lab member"
+ */
 export const getMemberByUserIdAndLabId = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = parseInt(req.params.userId);

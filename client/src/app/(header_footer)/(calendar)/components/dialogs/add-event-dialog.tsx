@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Plus, X, Microscope } from "lucide-react";
+import { AlertCircle, Plus, X, Microscope, ChevronDown, ChevronUp, Repeat, Calendar as CalendarIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
@@ -21,12 +21,16 @@ import { Form, FormField, FormLabel, FormItem, FormControl, FormMessage } from "
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogHeader, DialogClose, DialogContent, DialogTrigger, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
 
 import { eventSchema } from "@/calendar/schemas";
+import { recurringEventSchema } from "@/calendar/schemas";
 
 import type { TimeValue } from "react-aria-components";
 import type { TEventFormData } from "@/calendar/schemas";
 import type { IAssignment, IEventType } from "@/calendar/interfaces";
+import type { TRecurringEventFormData } from "@/calendar/schemas";
 
 interface IProps {
   children: React.ReactNode;
@@ -35,8 +39,8 @@ interface IProps {
 }
 
 export function AddEventDialog({ children, startDate, startTime }: IProps) {
-  const { users, eventTypes: contextEventTypes, instruments } = useCalendar();
-  const { addEvent, isAdding, error: addError } = useAddEvent();
+  const { users, eventTypes: contextEventTypes, instruments, currentUser } = useCalendar();
+  const { addEvent, addRecurringEvents, isAdding, error: addError } = useAddEvent();
   const { isOpen, onClose, onToggle } = useDisclosure();
   
   // State for managing event types
@@ -46,6 +50,13 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
   // State for managing assigned members
   const [selectedAssignees, setSelectedAssignees] = useState<IAssignment[]>([]);
   const [assignmentError, setAssignmentError] = useState<string | null>(null);
+
+  const [isRecurringExpanded, setIsRecurringExpanded] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  
+  // State for preview of recurring events
+  const [recurringPreview, setRecurringPreview] = useState<Date[]>([]);
+
 
   // Fetch event types on component mount or use context event types if available
   useEffect(() => {
@@ -69,8 +80,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     fetchEventTypes();
   }, [contextEventTypes]);
 
-  const form = useForm<TEventFormData>({
-    resolver: zodResolver(eventSchema),
+ const form = useForm<TRecurringEventFormData>({
+    resolver: zodResolver(recurringEventSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -87,10 +98,68 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
         : undefined,
       type: "1", // Default type ID as string
       instrumentId: null, // Default to no instrument
+      user: "", // Will be set in useEffect
+      isRecurring: false,
+      frequency: "daily", // Default frequency
+      repetitions: 1, 
     },
   });
 
-  const onSubmit = async (values: TEventFormData) => {
+  // Set the current user when users data is available
+  useEffect(() => {
+    const getCurrentUserId = () => {
+      console.log("currentUser:", currentUser);
+      if (currentUser && users && users.length > 0) {
+        // Find the user that matches the current lab member's userId
+        const matchingUser = users.find(user => user.id === currentUser.id);
+        return matchingUser?.id || users[0]?.id;
+      }
+      return users && users.length > 0 ? users[0]?.id : "";
+    };
+    
+    const currentUserId = getCurrentUserId();
+    if (currentUserId && currentUserId !== form.getValues("user")) {
+      form.setValue("user", currentUserId);
+    }
+  }, [users, currentUser, form]);
+
+  // Watch form values for recurring preview
+  const watchedStartDate = form.watch("startDate");
+  const watchedFrequency = form.watch("frequency");
+  const watchedRepetitions = form.watch("repetitions");
+
+  // Generate preview of recurring event dates
+  useEffect(() => {
+    if (!isRecurring || !watchedStartDate || !watchedFrequency || !watchedRepetitions) {
+      setRecurringPreview([]);
+      return;
+    }
+
+    const dates: Date[] = [];
+    const startDate = new Date(watchedStartDate);
+    
+    for (let i = 0; i < Math.min(watchedRepetitions, 10); i++) { // Limit preview to 10 events
+      const eventDate = new Date(startDate);
+      
+      switch (watchedFrequency) {
+        case 'daily':
+          eventDate.setDate(startDate.getDate() + i);
+          break;
+        case 'weekly':
+          eventDate.setDate(startDate.getDate() + (i * 7));
+          break;
+        case 'monthly':
+          eventDate.setMonth(startDate.getMonth() + i);
+          break;
+      }
+      
+      dates.push(eventDate);
+    }
+    
+    setRecurringPreview(dates);
+  }, [isRecurring, watchedStartDate, watchedFrequency, watchedRepetitions]);
+
+  const onSubmit = async (values: TRecurringEventFormData) => {
     const startDateTime = new Date(values.startDate);
     startDateTime.setHours(values.startTime.hour, values.startTime.minute);
 
@@ -114,22 +183,52 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
       memberId: typeof assignee.memberId === 'number' ? assignee.memberId : parseInt(assignee.memberId as unknown as string)
     }));
 
-    const result = await addEvent({
+    const eventData = {
       title: values.title,
       description: values.description,
-      color: selectedType?.color || "green", // Use color from type or default to green
+      color: selectedType?.color || "#10B981", // Use hex color from type or default to green
       user,
       type: selectedType,
       instrument: selectedInstrument,
       startDate: startDateTime.toISOString(),
       endDate: endDateTime.toISOString(),
       assignments: assignmentsWithMemberIds,
-    });
+    };
+
+    let result: boolean;
+
+    if (values.isRecurring) {
+      // Create recurring events
+      result = await addRecurringEvents(eventData, values.frequency, values.repetitions);
+    } else {
+      // Create single event
+      result = await addEvent(eventData);
+    }
+    
 
     if (result) {
       onClose();
-      form.reset();
+      form.reset({
+        title: "",
+        description: "",
+        startDate: typeof startDate !== "undefined" ? startDate : undefined,
+        startTime: typeof startTime !== "undefined" ? startTime : undefined,
+        endDate: typeof startDate !== "undefined" 
+          ? new Date(startDate.getTime() + (startTime?.hour === 23 ? 24 * 60 * 60 * 1000 : 0)) 
+          : undefined,
+        endTime: typeof startTime !== "undefined" 
+          ? { 
+              hour: (startTime.hour + 1) % 24, 
+              minute: startTime.minute 
+            } 
+          : undefined,
+        type: "1",
+        instrumentId: null,
+        user: currentUser && users?.find(user => user.id === currentUser.id)?.id || (users && users.length > 0 ? users[0]?.id : ""), // Reset to current user
+      });
       setSelectedAssignees([]);
+      setIsRecurring(false);
+      setIsRecurringExpanded(false);
     }
   };
   
@@ -175,6 +274,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
   // Reset assignments when dialog closes
   const handleOpenChange = (open: boolean) => {
     if (!open) {
+      setIsRecurringExpanded(false);
+      setIsRecurring(false);
       setSelectedAssignees([]);
     }
     onToggle();
@@ -190,8 +291,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
 
       <DialogContent className="max-h-[85vh] py-3 overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Add New Event</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-gray-900">Add New Event</DialogTitle>
+          <DialogDescription className="text-gray-600">
             Input values to create a task/booking. Fill in all required fields to create a calendar event.
           </DialogDescription>
         </DialogHeader>
@@ -212,22 +313,26 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   name="user"
                   render={({ field, fieldState }) => (
                     <FormItem className="w-full">
-                      <FormLabel>Assigner (Required)</FormLabel>
+                      <FormLabel className="text-gray-900">Assigner</FormLabel>
                       <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger data-invalid={fieldState.invalid}>
-                            <SelectValue placeholder="Select who is creating this event" />
+                        <Select value={field.value} disabled>
+                          <SelectTrigger data-invalid={fieldState.invalid} className="opacity-75">
+                            <SelectValue placeholder="Select assigner" />
                           </SelectTrigger>
-
                           <SelectContent>
                             {users.map(user => (
-                              <SelectItem key={user.id} value={user.id} className="flex-1">
+                              <SelectItem key={user.id} value={user.id}>
                                 <div className="flex items-center gap-2">
-                                  <Avatar key={user.id} className="size-6">
-                                    <AvatarImage src={user.picturePath ?? undefined} alt={user.name} />
-                                    <AvatarFallback className="text-xxs">{user.name[0]}</AvatarFallback>
+                                  <Avatar className="h-5 w-5">
+                                    <AvatarImage src={user.picturePath || undefined} />
+                                    <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">
+                                      {user.name[0]}
+                                    </AvatarFallback>
                                   </Avatar>
-                                  <p className="truncate">{user.name}</p>
+                                  <span className="text-gray-900">{user.name}</span>
+                                  {currentUser && user.id === currentUser.id && (
+                                    <span className="text-xs text-blue-600 font-medium">(You)</span>
+                                  )}
                                 </div>
                               </SelectItem>
                             ))}
@@ -246,7 +351,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="type"
                     render={({ field, fieldState }) => (
                       <FormItem className="w-full">
-                        <FormLabel>Event Type (Required)</FormLabel>
+                        <FormLabel className="text-gray-900">Event Type (Required)</FormLabel>
                         <FormControl>
                           <Select value={field.value} onValueChange={field.onChange} disabled={loadingTypes}>
                             <SelectTrigger className="w-full" data-invalid={fieldState.invalid}>
@@ -256,8 +361,11 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                               {eventTypes.map(type => (
                                 <SelectItem key={type.id} value={type.id.toString()}>
                                   <div className="flex items-center gap-2">
-                                    <div className={`size-3.5 rounded-full bg-${type.color || 'green'}-600`} />
-                                    {type.name}
+                                    <div 
+                                      className="size-3.5 rounded-full" 
+                                      style={{ backgroundColor: type.color || '#10B981' }}
+                                    />
+                                    <span className="text-gray-900">{type.name}</span>
                                   </div>
                                 </SelectItem>
                               ))}
@@ -275,7 +383,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="instrumentId"
                     render={({ field, fieldState }) => (
                       <FormItem className="w-full">
-                        <FormLabel>Instrument</FormLabel>
+                        <FormLabel className="text-gray-900">Instrument</FormLabel>
                         <FormControl>
                           <Select
                             value={field.value !== null ? field.value : "none"}
@@ -287,14 +395,14 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                             <SelectContent>
                               <SelectItem value="none">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground">No instrument</span>
+                                  <span className="text-gray-600">No instrument</span>
                                 </div>
                               </SelectItem>
                               {instruments.map(instrument => (
                                 <SelectItem key={instrument.id} value={instrument.id.toString()}>
                                   <div className="flex items-center gap-2">
-                                    <Microscope className="h-4 w-4 text-muted-foreground" />
-                                    {instrument.name}
+                                    <Microscope className="h-4 w-4 text-gray-600" />
+                                    <span className="text-gray-900">{instrument.name}</span>
                                   </div>
                                 </SelectItem>
                               ))}
@@ -307,10 +415,10 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   />
                 </div>
 
-                {/* Assignees section - only show for non-equipment events */}
+                {/* Assignees section */}
                 <div className="space-y-3 border rounded-md p-3">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium">Assigned Members</h3>
+                    <h3 className="text-sm font-medium text-gray-900">Assigned Members</h3>
                     <div className="flex gap-2 items-center">
                       <Select onValueChange={handleAddAssignee}>
                         <SelectTrigger className="w-[180px] h-8">
@@ -321,9 +429,9 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                             <SelectItem key={user.id} value={user.id}>
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-5 w-5">
-                                  <AvatarFallback className="text-[10px]">{user.name[0]}</AvatarFallback>
+                                  <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">{user.name[0]}</AvatarFallback>
                                 </Avatar>
-                                <span className="truncate">{user.name}</span>
+                                <span className="truncate text-gray-900">{user.name}</span>
                               </div>
                             </SelectItem>
                           ))}
@@ -347,16 +455,16 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   )}
                   
                   {selectedAssignees.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No members assigned yet</p>
+                    <p className="text-xs text-gray-600 italic">No members assigned yet</p>
                   ) : (
                     <div className="space-y-2 mt-2">
                       {selectedAssignees.map(assignee => (
                         <div key={assignee.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
-                              <AvatarFallback>{assignee.name[0]}</AvatarFallback>
+                              <AvatarFallback className="bg-gray-100 text-gray-700">{assignee.name[0]}</AvatarFallback>
                             </Avatar>
-                            <span className="text-sm">{assignee.name}</span>
+                            <span className="text-sm text-gray-900">{assignee.name}</span>
                           </div>
                           <Button
                             type="button"
@@ -372,12 +480,13 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     </div>
                   )}
                 </div>
+
                 <FormField
                   control={form.control}
                   name="title"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel htmlFor="title">Title (Required)</FormLabel>
+                      <FormLabel htmlFor="title" className="text-gray-900">Title (Required)</FormLabel>
 
                       <FormControl>
                         <Input id="title" placeholder="Enter a title" data-invalid={fieldState.invalid} {...field} />
@@ -394,7 +503,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="startDate"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel htmlFor="startDate">Start Date (Required)</FormLabel>
+                        <FormLabel htmlFor="startDate" className="text-gray-900">Start Date (Required)</FormLabel>
 
                         <FormControl>
                           <SingleDayPicker
@@ -416,7 +525,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="startTime"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>Start Time (Required)</FormLabel>
+                        <FormLabel className="text-gray-900">Start Time (Required)</FormLabel>
 
                         <FormControl>
                           <TimeInput value={field.value as TimeValue} onChange={field.onChange} hourCycle={12} data-invalid={fieldState.invalid} />
@@ -434,7 +543,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="endDate"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>End Date (Required)</FormLabel>
+                        <FormLabel className="text-gray-900">End Date (Required)</FormLabel>
                         <FormControl>
                           <SingleDayPicker
                             value={field.value}
@@ -453,7 +562,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     name="endTime"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex-1">
-                        <FormLabel>End Time (Required)</FormLabel>
+                        <FormLabel className="text-gray-900">End Time (Required)</FormLabel>
 
                         <FormControl>
                           <TimeInput value={field.value as TimeValue} onChange={field.onChange} hourCycle={12} data-invalid={fieldState.invalid} />
@@ -470,7 +579,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   name="description"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Description (Required)</FormLabel>
+                      <FormLabel className="text-gray-900">Description (Required)</FormLabel>
 
                       <FormControl>
                         <Textarea {...field} value={field.value} data-invalid={fieldState.invalid} />
@@ -480,6 +589,132 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     </FormItem>
                   )}
                 />
+
+                
+                {/* Recurring Events Section */}
+                <Collapsible open={isRecurringExpanded} onOpenChange={setIsRecurringExpanded}>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Repeat className="h-4 w-4" />
+                        <span>Recurring Events</span>
+                        {isRecurring && (
+                          <Badge variant="secondary" className="ml-2">
+                            {form.watch("frequency")} × {form.watch("repetitions")}
+                          </Badge>
+                        )}
+                      </div>
+                      {isRecurringExpanded ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent className="space-y-4 mt-4 p-4 border rounded-md bg-gray-50">
+                    <FormField
+                      control={form.control}
+                      name="isRecurring"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              checked={isRecurring}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setIsRecurring(checked);
+                                field.onChange(checked);
+                              }}
+                              className="h-4 w-4"
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            Create recurring events
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+
+                    {isRecurring && (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="frequency"
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-900">Frequency</FormLabel>
+                                <FormControl>
+                                  <Select value={field.value} onValueChange={field.onChange}>
+                                    <SelectTrigger data-invalid={fieldState.invalid}>
+                                      <SelectValue placeholder="Select frequency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="daily">Daily</SelectItem>
+                                      <SelectItem value="weekly">Weekly</SelectItem>
+                                      <SelectItem value="monthly">Monthly</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="repetitions"
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-900">Repetitions</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    max="365"
+                                    placeholder="Number of events"
+                                    data-invalid={fieldState.invalid}
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Preview of recurring events */}
+                        {recurringPreview.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <CalendarIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">Preview ({recurringPreview.length}{watchedRepetitions > 10 ? ` of ${watchedRepetitions}` : ''} events):</span>
+                            </div>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {recurringPreview.map((date, index) => (
+                                <div key={index} className="text-xs bg-white p-2 rounded border">
+                                  Event {index + 1}: {date.toLocaleDateString()}
+                                </div>
+                              ))}
+                              {watchedRepetitions > 10 && (
+                                <div className="text-xs text-gray-500 italic p-2">
+                                  ... and {watchedRepetitions - 10} more events
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
               </form>
             </Form>
           </div>

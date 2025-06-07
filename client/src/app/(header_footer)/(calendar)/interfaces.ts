@@ -1,9 +1,16 @@
-import type { TEventColor } from "@/calendar/types";
-
 export interface IUser {
   id: string;
   name: string;
   picturePath: string | null;
+}
+
+export interface ILabMember {
+  id: string;
+  userId: string;
+  labRoleId: string;
+  labId: string;
+  picturePath: string | null;
+  name: string;
 }
 
 export interface IInstrument {
@@ -25,7 +32,14 @@ export interface IAssignment {
 export interface IEventType {
   id: number;
   name: string;
-  color?: TEventColor;
+  color?: string;
+}
+
+export interface IEventStatus {
+  id: number;
+  name: string;
+  color?: string;
+  description?: string;
 }
 
 export interface IEvent {
@@ -33,9 +47,9 @@ export interface IEvent {
   startDate: string;
   endDate: string;
   title: string;
-  color: TEventColor;
+  color: string;
   description: string;
-  status?: string | null;
+  status?: IEventStatus | null;
   user: IUser;  // This is the assigner
   type?: IEventType;
   instrument?: IInstrument | null;

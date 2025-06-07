@@ -421,23 +421,24 @@ model Instrument {
 
 // Event Management
 model Event {
-  id           Int      @id @default(autoincrement())
-  labId        Int
-  memberId     Int
-  instrumentId Int?
-  title        String
-  description  String?
-  status       String?
-  startTime    DateTime
-  endTime      DateTime
-  updatedAt    DateTime @updatedAt
-  typeId       Int
+  id               Int               @id @default(autoincrement())
+  labId            Int
+  memberId         Int
+  instrumentId     Int?
+  title            String
+  description      String?
+  statusId           Int
+  startTime        DateTime
+  endTime          DateTime
+  updatedAt        DateTime          @updatedAt
+  typeId           Int
 
   // Relations
-  lab        Lab         @relation(fields: [labId], references: [id])
-  assigner   LabMember   @relation(fields: [memberId], references: [id])
-  instrument Instrument? @relation(fields: [instrumentId], references: [id])
-  type       EventType?  @relation(fields: [typeId], references: [id])
+  lab              Lab               @relation(fields: [labId], references: [id])
+  assigner         LabMember         @relation(fields: [memberId], references: [id])
+  instrument       Instrument?       @relation(fields: [instrumentId], references: [id])
+  type             EventType?         @relation(fields: [typeId], references: [id])
+  status           EventStatus       @relation(fields: [statusId], references: [id])
 
   eventAssignments EventAssignment[]
 
@@ -460,12 +461,26 @@ model EventType {
   id          Int     @id @default(autoincrement())
   name        String
   description String?
+  color       String? @db.VarChar(7) // Hex color code, e.g. "#FF5733"
 
   // Relationships
   events Event[]
 
   @@map("event_type")
 }
+
+model EventStatus {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique // "booked", "scheduled", "cancelled", "completed", "elapsed"
+  description String?
+  color       String? @db.VarChar(7) // Hex color code for status-specific colors
+  
+  // Relationships
+  events      Event[]
+  
+  @@map("event_status")
+}
+
 
 // Audit Logging System
 model AuditLog {

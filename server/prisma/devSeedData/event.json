@@ -5,7 +5,7 @@
     "instrumentId": 1,
     "title": "HPLC System 1 Booking - Project Y Analysis",
     "description": "Booking for HPLC analysis of samples for Project Y.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-10T09:00:00Z",
     "endTime": "2025-06-10T13:00:00Z",
     "typeId": 1
@@ -16,7 +16,7 @@
     "instrumentId": 1,
     "title": "HPLC System 1 Booking - Project Z Analysis",
     "description": "Booking for HPLC analysis of samples for Project Z.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-10T14:00:00Z",
     "endTime": "2025-06-10T17:00:00Z",
     "typeId": 1
@@ -27,7 +27,7 @@
     "instrumentId": 4,
     "title": "UV-Vis Spectrophotometer Booking - Material A",
     "description": "Booking for UV-Vis measurements of Material A.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-11T10:00:00Z",
     "endTime": "2025-06-11T12:00:00Z",
     "typeId": 1
@@ -38,7 +38,7 @@
     "instrumentId": 5,
     "title": "XRD Booking - Sample 1 Characterization",
     "description": "Booking for XRD analysis of Sample 1.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-11T13:00:00Z",
     "endTime": "2025-06-11T15:00:00Z",
     "typeId": 1
@@ -49,7 +49,7 @@
     "instrumentId": 6,
     "title": "Confocal Microscope Booking - Cell Imaging",
     "description": "Booking for imaging cells using the confocal microscope.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-12T09:30:00Z",
     "endTime": "2025-06-12T12:30:00Z",
     "typeId": 1
@@ -60,7 +60,7 @@
     "instrumentId": 8,
     "title": "PCR Machine Booking - Gene Amplification",
     "description": "Booking for gene amplification using the PCR machine.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-12T14:00:00Z",
     "endTime": "2025-06-12T16:00:00Z",
     "typeId": 1
@@ -71,7 +71,7 @@
     "instrumentId": null,
     "title": "Lab Alpha Safety Training Session",
     "description": "Mandatory safety training session for new members.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-13T10:00:00Z",
     "endTime": "2025-06-13T11:30:00Z",
     "typeId": 3
@@ -82,7 +82,7 @@
     "instrumentId": null,
     "title": "Lab Beta Chemical Waste Disposal Talk",
     "description": "Brief talk on proper chemical waste disposal procedures.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-13T14:00:00Z",
     "endTime": "2025-06-13T14:30:00Z",
     "typeId": 2
@@ -93,7 +93,7 @@
     "instrumentId": null,
     "title": "Weekly Lab Alpha Meeting",
     "description": "Regular weekly lab meeting to discuss progress and plans.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-14T09:00:00Z",
     "endTime": "2025-06-14T10:00:00Z",
     "typeId": 2
@@ -104,7 +104,7 @@
     "instrumentId": null,
     "title": "Weekly Lab Beta Meeting",
     "description": "Regular weekly lab meeting to discuss progress and plans.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-14T11:00:00Z",
     "endTime": "2025-06-14T12:00:00Z",
     "typeId": 2
@@ -115,7 +115,7 @@
     "instrumentId": null,
     "title": "Biotech Lab Journal Club",
     "description": "Discussion of recent relevant research papers.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-14T14:00:00Z",
     "endTime": "2025-06-14T15:00:00Z",
     "typeId": 2
@@ -126,7 +126,7 @@
     "instrumentId": 3,
     "title": "FTIR Maintenance Schedule",
     "description": "Routine maintenance for the FTIR spectrometer.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-17T09:00:00Z",
     "endTime": "2025-06-17T11:00:00Z",
     "typeId": 4
@@ -137,7 +137,7 @@
     "instrumentId": 20,
     "title": "NMR Booking - Compound A Analysis",
     "description": "Booking for NMR analysis of Compound A.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-17T13:00:00Z",
     "endTime": "2025-06-17T15:00:00Z",
     "typeId": 1
@@ -148,7 +148,7 @@
     "instrumentId": 7,
     "title": "Flow Cytometer Booking - Cell Sorting",
     "description": "Booking for cell sorting using the flow cytometer.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-18T10:00:00Z",
     "endTime": "2025-06-18T13:00:00Z",
     "typeId": 1
@@ -159,7 +159,7 @@
     "instrumentId": 18,
     "title": "Particle Size Analyzer Booking - Nanoparticle Study",
     "description": "Booking for analyzing nanoparticle size distribution.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-18T14:00:00Z",
     "endTime": "2025-06-18T16:00:00Z",
     "typeId": 1
@@ -170,7 +170,7 @@
     "instrumentId": 13,
     "title": "Rotary Evaporator Booking - Solvent Removal",
     "description": "Booking for using the rotary evaporator to remove solvent.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-19T09:00:00Z",
     "endTime": "2025-06-19T11:00:00Z",
     "typeId": 1
@@ -181,7 +181,7 @@
     "instrumentId": 15,
     "title": "Biosafety Cabinet Booking - Sterile Prep",
     "description": "Booking for sterile work in the biosafety cabinet.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-19T13:00:00Z",
     "endTime": "2025-06-19T16:00:00Z",
     "typeId": 1
@@ -192,7 +192,7 @@
     "instrumentId": 19,
     "title": "Rheometer Booking - Polymer Sample Testing",
     "description": "Booking for rheological measurements of polymer samples.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-20T10:00:00Z",
     "endTime": "2025-06-20T13:00:00Z",
     "typeId": 1
@@ -203,7 +203,7 @@
     "instrumentId": 22,
     "title": "AAS Booking - Metal Ion Analysis",
     "description": "Booking for Atomic Absorption Spectrometry to analyze metal ions.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-20T14:00:00Z",
     "endTime": "2025-06-20T16:00:00Z",
     "typeId": 1
@@ -214,18 +214,18 @@
     "instrumentId": 21,
     "title": "Freeze Dryer Booking - Sample Prep",
     "description": "Booking for using the freeze dryer for sample preparation.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-23T09:00:00Z",
     "endTime": "2025-06-23T17:00:00Z",
     "typeId": 1
   },
-    {
+  {
     "labId": 1,
     "memberId": 7,
     "instrumentId": 11,
     "title": "Electrochemical Analyzer Booking - Battery Research",
     "description": "Booking for electrochemical measurements for battery research.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-24T10:00:00Z",
     "endTime": "2025-06-24T12:00:00Z",
     "typeId": 1
@@ -236,7 +236,7 @@
     "instrumentId": 14,
     "title": "Schlenk Line Booking - Air-Sensitive Synthesis",
     "description": "Booking for using the Schlenk line for air-sensitive synthesis.",
-    "status": "Booked",
+    "statusId": 1,
     "startTime": "2025-06-24T13:00:00Z",
     "endTime": "2025-06-24T17:00:00Z",
     "typeId": 1
@@ -247,10 +247,10 @@
     "instrumentId": null,
     "title": "Data Analysis Session - Project X",
     "description": "Dedicated time for analyzing data from Project X.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-25T09:00:00Z",
     "endTime": "2025-06-25T12:00:00Z",
-    "typeId": 10
+    "typeId": 2
   },
   {
     "labId": 2,
@@ -258,10 +258,10 @@
     "instrumentId": null,
     "title": "Thesis Writing Block",
     "description": "Focused time for writing thesis chapters.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-25T13:00:00Z",
     "endTime": "2025-06-25T17:00:00Z",
-    "typeId": 11
+    "typeId": 3
   },
   {
     "labId": 3,
@@ -269,9 +269,9 @@
     "instrumentId": null,
     "title": "Consultation with Dr. Smith",
     "description": "Meeting with PI to discuss project progress.",
-    "status": "Scheduled",
+    "statusId": 2,
     "startTime": "2025-06-26T10:00:00Z",
     "endTime": "2025-06-26T11:00:00Z",
-    "typeId": 12
+    "typeId": 4
   }
 ]

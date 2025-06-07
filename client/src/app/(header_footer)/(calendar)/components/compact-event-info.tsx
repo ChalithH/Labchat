@@ -1,4 +1,4 @@
-import { Users, Microscope } from "lucide-react";
+import { Users, Microscope, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -8,24 +8,24 @@ interface CompactEventInfoProps {
   event: IEvent;
   className?: string;
   showBadges?: boolean;
+  showStatus?: boolean;
 }
 
-export function CompactEventInfo({ event, className, showBadges = true }: CompactEventInfoProps) {
+export function CompactEventInfo({ 
+  event, 
+  className, 
+  showBadges = true, 
+  showStatus = true 
+}: CompactEventInfoProps) {
   // Get the type name with proper formatting
   const typeName = event.type?.name || "Event";
   
-  // Determine the badge variant based on the event color
-  const getBadgeVariant = (color: string) => {
-    if (color === "blue") return "default";
-    if (color === "purple") return "secondary";
-    return "outline";
-  };
-  
   const hasAssignments = event.assignments && event.assignments.length > 0;
   const hasInstrument = !!event.instrument;
+  const hasStatus = !!event.status;
   
   // Don't render anything if there's nothing to show and badges are hidden
-  if (!showBadges && !hasAssignments && !hasInstrument) {
+  if (!showBadges && !hasAssignments && !hasInstrument && !hasStatus) {
     return null;
   }
   
@@ -37,8 +37,11 @@ export function CompactEventInfo({ event, className, showBadges = true }: Compac
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <Badge 
-                variant={getBadgeVariant(event.color)}
-                className="px-1 py-0 h-4 text-[10px]"
+                className="px-1 py-0 h-4 text-[10px] text-white border-0 font-medium"
+                style={{
+                  backgroundColor: event.type?.color || event.color,
+                  color: 'white'
+                }}
               >
                 {typeName}
               </Badge>
@@ -49,13 +52,35 @@ export function CompactEventInfo({ event, className, showBadges = true }: Compac
           </Tooltip>
         </TooltipProvider>
       )}
+
+      {/* Status Badge (if showing status and status exists) */}
+      {showStatus && hasStatus && (
+        <TooltipProvider>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <Badge 
+                className="px-1 py-0 h-4 text-[10px] text-white border-0 font-medium"
+                style={{
+                  backgroundColor: event.status?.color || '#6B7280',
+                  color: 'white'
+                }}
+              >
+                {event.status?.name}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              Status: {event.status?.name}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       
       {/* Assignments Indicator */}
       {hasAssignments && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-0.5 text-muted-foreground">
+              <div className="flex items-center gap-0.5 text-gray-600">
                 <Users className="h-3 w-3" />
                 <span>{event.assignments?.length ?? 0}</span>
               </div>
@@ -77,7 +102,7 @@ export function CompactEventInfo({ event, className, showBadges = true }: Compac
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center text-muted-foreground">
+              <div className="flex items-center text-gray-600">
                 <Microscope className="h-3 w-3" />
               </div>
             </TooltipTrigger>
