@@ -27,7 +27,9 @@ import  {getAllLabs, getLabById, createLab, assignUserToLab,
            deleteTag,
            getLabInventoryLogs,
            getAvailableUsersForLab,
-           addUserToLabEndpoint
+           addUserToLabEndpoint,
+           getAllInstruments,
+           createInstrument
            } from '../controllers/admin/admin.controller';
 
 import { requirePermission, requireLabPermission, extractLabIdFromLabMember, extractLabIdFromMemberStatus } from '../middleware/permission.middleware';
@@ -109,4 +111,9 @@ router.get('/get-all-items', requirePermission(100), getAllItems);
 router.post('/create-global-item', requirePermission(100), createGlobalItem); 
 router.put("/update-item/:id", updateItem);
 router.delete("/delete-item/:id", deleteItem);
+
+// Instrument endpoints
+router.get('/get-all-instruments', requirePermission(100), getAllInstruments);
+router.post('/create-instrument', requirePermission(100), createInstrument);
+
 export default router;
