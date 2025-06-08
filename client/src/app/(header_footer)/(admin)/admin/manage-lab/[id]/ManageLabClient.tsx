@@ -23,6 +23,7 @@ import InventoryTab from './tabs/InventoryTab';
 import ClockLogTab from './tabs/ClockLogTab';
 import InventoryLogTab from './tabs/InventoryLogTab';
 import AdmissionRequestsTab from './tabs/AdmissionRequestsTab';
+import DiscussionTab from './tabs/DiscussionTab';
 
 // Import types
 import { LabDetails, LabRoleData, LabMemberData } from './types/LabTypes';
@@ -218,6 +219,9 @@ export default function ManageLabClient({ params, isRootAdmin }: ManageLabClient
               <TabsTrigger value="admission_requests" className="px-3 py-1.5 text-sm font-medium whitespace-nowrap">
                 Admission Requests
               </TabsTrigger>
+              <TabsTrigger value="discussion" className="px-3 py-1.5 text-sm font-medium whitespace-nowrap">
+                Discussion
+              </TabsTrigger>
               <TabsTrigger value="inventory" className="px-3 py-1.5 text-sm font-medium whitespace-nowrap">
                 Inventory
               </TabsTrigger>
@@ -270,6 +274,13 @@ export default function ManageLabClient({ params, isRootAdmin }: ManageLabClient
           <AdmissionRequestsTab 
             labId={parseInt(params.id)} 
             isActive={activeTab === "admission_requests"}
+          />
+        </TabsContent>
+
+        <TabsContent value="discussion" className="mt-0">
+          <DiscussionTab 
+            labId={parseInt(params.id)} 
+            isActive={activeTab === "discussion"}
           />
         </TabsContent>
 

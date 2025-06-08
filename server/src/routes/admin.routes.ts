@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import  {getAllLabs, getLabById, createLab, assignUserToLab,
          updateRole, resetUserPassword, resetLabMemberPassword, removeUserFromLab,
-          createDiscussionTag, createDiscussionCategory, getAllItems,
+          createDiscussionTag, createDiscussionCategory, updateDiscussionCategory, getAllItems,
            createGlobalItem,
            updateItem,
            deleteItem,
@@ -79,6 +79,7 @@ router.put('/lab/:labId/reset-member-password', requireLabPermission(70, 60), re
 
 router.post('/create-discussion-tag', requirePermission(60), createDiscussionTag);
 router.post('/create-discussion-category', requirePermission(60), createDiscussionCategory);
+router.put('/lab/:labId/update-discussion/:discussionId', requireLabPermission(70, 60), updateDiscussionCategory);
 
 // Lab Inventory Management stuff - Permission checking handled in controllers
 // Requires authentication (permission level = 0) but lab-specific logic handled in controllers
