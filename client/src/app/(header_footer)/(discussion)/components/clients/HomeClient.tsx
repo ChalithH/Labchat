@@ -29,41 +29,39 @@ const HomeClient = ({ user, userPermission, recentActivity, categories, posts }:
 
   return (
   	<main>
-      <section className='mb-8'>
-        <h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Browse Recent Discussions</h1>
-        <RecentActivity posts={ recentActivity }/>
-      </section>
+		{ recentActivity.length > 0 && 
+		<section className='mb-8'>
+			<h1 className="play-font w-[90dvw] m-auto text-3xl font-bold">Browse Recent Discussions</h1>
+			<RecentActivity posts={ recentActivity }/>
+		</section>}
 
-			<section className="w-[90dvw] m-auto">
-				{ filtered.map(({ category, posts }) => {
-					const sortedPosts = getPosts(category.id, posts)
-
-					return (
-					<div key={ category.id } className="mb-12">
-						<Title
-							user={ user }
-							category={ category }
-							perm_to_add={ userPermission >= (category.postPermission ?? 0) }
-							b_view_all={ true }
-							b_categories={ true }
-							filter={ filter[category.id] ?? 'recent' }
-							setFilter={(mode) => {
-								setFilter(prev => ({ ...prev, [category.id]: mode }))
-							}}/>
-
-						<div className="mt-2 space-y-6">
-						{sortedPosts.slice(0, THREADS_PER_TOPIC).map(post => (
-							<Thread key={post.id} thread={post} b_show_blurb={true} />
-						))}
-
-						{sortedPosts.length === 0 && (
-							<div className="text-gray-500 italic">No posts in this category yet.</div>
-						)}
-						</div>
+		<section className="w-[90dvw] m-auto">
+			{ filtered.map(({ category, posts }) => {
+				const sortedPosts = getPosts(category.id, posts)
+				return (
+				<div key={ category.id } className="mb-12">
+					<Title
+						user={ user }
+						category={ category }
+						perm_to_add={ userPermission >= (category.postPermission ?? 0) }
+						b_view_all={ true }
+						b_categories={ true }
+						filter={ filter[category.id] ?? 'recent' }
+						setFilter={(mode) => {
+							setFilter(prev => ({ ...prev, [category.id]: mode }))
+						}}/>
+					<div className="mt-2 space-y-6">
+					{sortedPosts.slice(0, THREADS_PER_TOPIC).map(post => (
+						<Thread key={post.id} thread={post} b_show_blurb={true} />
+					))}
+					{sortedPosts.length === 0 && (
+						<div className="text-gray-500 italic">No posts in this category yet.</div>
+					)}
 					</div>
-					)
-				})}
-			</section>
+				</div>
+				)
+			})}
+		</section>
 		</main>
 	)
 }
