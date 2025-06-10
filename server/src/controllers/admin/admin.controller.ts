@@ -3470,7 +3470,7 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
                     where: { id: userId },
                     data: {
                         lastViewedLabId: labId,
-                        lastViewed: `/lab/${labId}`
+                        lastViewed: `/home`
                     }
                 });
             }
