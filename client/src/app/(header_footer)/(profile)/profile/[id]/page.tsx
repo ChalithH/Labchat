@@ -41,8 +41,6 @@ export default async function ProfilePage(props:{ params: Params}) {
   // Add data requried for Profile page
   const contact_response: AxiosResponse = await api.get(`/profile/get/${ profile_data.data.labId }/${ profile_data.data.userId }`)
   profile_data.data.contacts = contact_response.data
-
-  console.log(profile_data.data)
   
   profile_data.data.role = profile_data.data.labRole.name
 
@@ -53,6 +51,8 @@ export default async function ProfilePage(props:{ params: Params}) {
   const is_users_profile = user_id == profile_data.data.userId
   
   
+  console.log('Profile data:', data)
+
   return (
     <LabProvider initialLabId={lastViewedLabId}>
      <ProfileClient data={ data } is_users_profile={ is_users_profile } />

@@ -5,9 +5,13 @@ export interface Status {
     statusWeight: number
   }
   isActive: boolean
-  contactType: string
-  contactInfo: string
-  contactName: string
+  contact: { 
+    id: number
+    info: string
+    name: string
+    type: string
+    useCase: string
+    }
 }
 
 export interface LabMember {

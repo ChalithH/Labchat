@@ -96,13 +96,13 @@ export function MobileRow({ member, isExpanded, toggleExpand }: MemberRowProps) 
                       </span>
                     </div>
                     <p className="text-sm">
-                      <span className="font-medium">Contact Name:</span> {activeStatus.contactName || "Not provided"}
+                      <span className="font-medium">Contact Name:</span> {activeStatus.contact.name || "Not provided"}
                     </p>
                     <p className="text-sm">
-                      <span className="font-medium">Contact Type:</span> {activeStatus.contactType || "Not provided"}
+                      <span className="font-medium">Contact Type:</span> {activeStatus.contact.type || "Not provided"}
                     </p>
                     <p className="text-sm">
-                      <span className="font-medium">Contact Info:</span> {activeStatus.contactInfo || "Not provided"}
+                      <span className="font-medium">Contact Info:</span> {activeStatus.contact.info || "Not provided"}
                     </p>
                   </div>
                 ) : (
@@ -203,13 +203,13 @@ export function DesktopRow({ member, isExpanded, toggleExpand }: MemberRowProps)
                           </span>
                         </div>
                         <p className="text-sm">
-                          <span className="font-medium">Contact Name:</span> {activeStatus.contactName || "Not provided"}
+                          <span className="font-medium">Contact Name:</span> {activeStatus.contact.name || "Not provided"}
                         </p>
                         <p className="text-sm">
-                          <span className="font-medium">Contact Type:</span> {activeStatus.contactType || "Not provided"}
+                          <span className="font-medium">Contact Type:</span> {activeStatus.contact.type || "Not provided"}
                         </p>
                         <p className="text-sm">
-                          <span className="font-medium">Contact Info:</span> {activeStatus.contactInfo || "Not provided"}
+                          <span className="font-medium">Contact Info:</span> {activeStatus.contact.info || "Not provided"}
                         </p>
                       </div>
                     ) : (
