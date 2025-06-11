@@ -13,16 +13,10 @@ export default function ProfileClient({ data, is_users_profile }: { data: Profil
   return (
     <main className="barlow-font w-[90dvw] m-auto mt-4">
       <section className='flex flex-col justify-between'>
-        <div className='bg-green-500 text-center text-sm text-white tracking-tight py-2 rounded-md mb-8 w-[100%]'>
-          <p>Currently In Lab</p>
-        </div>
-
         <div className={ `flex items-center w-[100%] ${ is_users_profile ? 'justify-between' : 'justify-center' }` }>
-
           <ProfilePictureGroup 
             id={data.id} 
             profilePic={data.profilePic} 
-            universityId={data.universityId} 
             firstName={data.firstName}
             lastName={data.lastName}
             role={ data.role }
@@ -73,12 +67,12 @@ export default function ProfileClient({ data, is_users_profile }: { data: Profil
         <p className='text-sm'>{ data.bio || 'Write a short bio about your background, interests, current role or career and key skills.' }</p>
       </div>
 
-      <section>
+      { is_users_profile &&  <section>
         <div className='flex justify-between'>
           <h1 className='text-3xl mb-1 font-semibold barlow-font'>Contact Details</h1>
-          { is_users_profile && 
+          
             <AddContact />
-          }
+          
         </div>
 
         { contacts.length > 0 ?
@@ -92,6 +86,7 @@ export default function ProfileClient({ data, is_users_profile }: { data: Profil
               { data.firstName } has no contacts
             </p> }
       </section>
+      }
     </main>
   )
 }

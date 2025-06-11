@@ -30,6 +30,7 @@ export function useMembersData() {
       }
 
       const data = response.data;
+      console.log("Fetched members:", data);
       setMembers(data);
       return data;
     } catch (err) {

@@ -124,7 +124,7 @@ const Thread = ({ thread, b_show_blurb }: { thread: PostType, b_show_blurb: bool
 
 			<div className="mt-4 flex flex-col max-[400px]:flex-col sm:flex-row justify-between">
 				{ author ? (
-					<ThreadAuthorGroup role={ authorRole.name } name={ author.displayName } size={ 42 } />
+					<ThreadAuthorGroup id={author.id} role={ authorRole.name } name={ author.displayName } profilePic={author.profilePic} size={10 } />
 				) : (
 					<div className="text-sm italic">Loading author...</div>
 				)}

@@ -14,7 +14,8 @@ import {
   SheetContent,
   SheetTitle,
   SheetHeader,
-  SheetClose
+  SheetClose,
+  SheetDescription
 } from "@/components/ui/sheet";
 
 import { ModeSwitch } from "@/components/ui/mode-switch";
@@ -30,6 +31,7 @@ import frank from '/public/FrankIcon.svg';
 
 import React from "react";
 import { SimpleLabSwitcher } from "@/components/labSwitcher/LabSwitcher"; 
+import ProfilePicture from "../profilePicture/ProfilePicture";
 
 
 export default function Header() {
@@ -62,6 +64,7 @@ export default function Header() {
 
       try {
         const response = await api.get(`/auth/check-lab-access/${userData.lastViewedLabId}`);
+        console.log('Lab access check response:', response.data);
         if (response.data && response.data.isLabManager) {
           setIsLabManager(true);
         } else {
@@ -80,7 +83,7 @@ export default function Header() {
     };
 
     checkLabPermissions();
-  }, [userData?.lastViewedLabId, isLoggedIn, userData]);
+    }, [userData?.lastViewedLabId, isLoggedIn, userData]);
 
   const handleLinkClick = (href: string) => setActiveLink(href);
 
@@ -115,14 +118,17 @@ export default function Header() {
     }
   };
 
-  const handleLabChange = (labId: number) => {
+  const handleLabChange = async (labId: number) => {
     console.log('Switched to lab:', labId);
     
     // Check if we're currently on a manage lab page
     const manageLabMatch = pathname.match(/^\/admin\/manage-lab\/(\d+)$/);
     
-    // Refresh user data to get the new lastViewedLabId
-    const getUser = async () => {
+    // Check if we're on a profile page
+    const profileMatch = pathname.match(/^\/profile\/(\d+)$/);
+    
+    try {
+      // Refresh user data to get the new lastViewedLabId
       const user = await getUserFromSession();
       if (user) {
         user.role = await ResolveRoleName(user.roleId);
@@ -131,10 +137,29 @@ export default function Header() {
         // If on a manage lab page navigate to the new lab's manage page
         if (manageLabMatch) {
           router.push(`/admin/manage-lab/${labId}`);
+          return;
         }
+        
+        // If on a profile page, navigate to the user's profile in the new lab
+        if (profileMatch) {
+          try {
+            const member = await api.get(`/member/get/user-lab/${user.id}/${labId}`);
+            router.push(`/profile/${member.data.id}`);
+            return;
+          } catch (error) {
+            console.error('Failed to get member data for new lab:', error);
+            // Fall back to just refreshing the page
+          }
+        }
+        
+        // For other pages, just refresh
+        router.refresh();
       }
-    };
-    getUser();
+    } catch (error) {
+      console.error('Error handling lab change:', error);
+      // Fallback: just refresh the page
+      router.refresh();
+    }
   };
 
   interface NavItem {
@@ -201,33 +226,42 @@ export default function Header() {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[350px] py-10 flex flex-col justify-between">
-              <div>
-                {/* Header */}
-                <SheetHeader className="items-center justify-center text-center mb-6">
-                  <SheetTitle className="sr-only">
-                    {isLoggedIn ? `Navigation Menu - ${userData?.username}` : 'Labchat Navigation Menu'}
-                  </SheetTitle>
-                  <SheetClose asChild>
-                    {isLoggedIn ? (
-                      <div className="flex items-center space-x-3">
-                        <Button onClick={handleProfile} variant="outline" className="w-12 h-12 overflow-hidden">
-                          <img src="/default_pfp.svg" alt="User" />
-                        </Button>
-                        <div className="flex flex-col items-center">
-                          <Badge>{userData.role}</Badge>
-                          <p className="font-semibold play-font">{userData.username}</p>
-                        </div>
+            <SheetContent side="right" className="w-[350px] p-0 flex flex-col h-full overflow-hidden">
+              {/* Fixed Header */}
+              <SheetHeader className="flex-shrink-0 items-center justify-center text-center p-6 border-b">
+                <SheetTitle className="sr-only">
+                  {isLoggedIn ? `Navigation Menu - ${userData?.username}` : 'Labchat Navigation Menu'}
+                </SheetTitle>
+                <SheetClose asChild>
+                  {isLoggedIn ? (
+                    <div className="flex items-center space-x-3">
+                      <Button onClick={handleProfile} variant="ghost" className="w-12 h-12 overflow-hidden">
+                         <ProfilePicture 
+                              user_id={userData.id} 
+                              profilePic={userData.profilePic} 
+                              name={userData.firstName}
+                              size={10} 
+                          />
+                      </Button>
+                      <div className="flex flex-col items-center">
+                        <Badge>{userData.role}</Badge>
+                        <p className="font-semibold play-font">{userData.username}</p>
                       </div>
-                    ) : (
-                      <h2 className="text-2xl font-bold play-font text-labchat-blue-500">Labchat Navigation</h2>
-                    )}
-                  </SheetClose>
-                </SheetHeader>
+                    </div>
+                  ) : (
+                    <h2 className="text-2xl font-bold play-font text-labchat-blue-500">Labchat Navigation</h2>
+                  )}
+                </SheetClose>
+                <SheetDescription>
+                  {isLoggedIn ? `Welcome, ${userData?.firstName || 'User'}` : 'Explore our features and labs'}
+                </SheetDescription>
+              </SheetHeader>
 
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto">
                 {/* Lab Switcher (Mobile) */}
                 {isLoggedIn && userData && (
-                  <div className="px-4 py-4 border-b">
+                  <div className="px-4 py-4 border-b flex-shrink-0">
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Switch Lab:</p>
                     <SimpleLabSwitcher
                       userId={userData.id}
@@ -259,9 +293,9 @@ export default function Header() {
                 </div>
               </div>
 
-              {/* Bottom Actions */}
+              {/* Fixed Bottom Actions */}
               {isLoggedIn && (
-                <div className="px-4 pb-4 space-y-3">
+                <div className="flex-shrink-0 px-4 pb-4 pt-2 border-t space-y-3 bg-background">
                   <Button variant="outline" className="w-full" onClick={handleProfile}>
                     My Profile
                   </Button>

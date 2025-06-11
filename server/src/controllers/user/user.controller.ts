@@ -310,6 +310,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
         dateJoined: true,
         lastViewed: true,
         lastViewedLabId: true,
+        profilePic: true,
         // Explicitly exclude 'loginPassword'
       }
     });
@@ -443,6 +444,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
         dateJoined: true,
         lastViewed: true,
         lastViewedLabId: true,
+        profilePic: true,
       }
     });
     
