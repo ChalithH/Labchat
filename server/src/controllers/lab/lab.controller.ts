@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { profile } from 'console';
 
 const prisma = new PrismaClient();
 
@@ -101,6 +102,7 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
                         jobTitle: true,
                         office: true,
                         bio: true,
+                        profilePic: true
                     },
                 },
                 memberStatus: {
@@ -140,6 +142,7 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
                 jobTitle: member.user.jobTitle,
                 office: member.user.office,
                 bio: member.user.bio,
+                profilePic: member.user.profilePic || null, // Ensure profilePic is included
             } : {
                 id: -1,
                 firstName: 'Unknown',
@@ -148,11 +151,11 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
                 jobTitle: null,
                 office: null,
                 bio: null,
+                profilePic: null,
             };
 
             return {
                 ...userData,
-
                 memberID: member.id,
                 labID: member.labId,
                 labRoleId: member.labRoleId,
@@ -160,6 +163,7 @@ export const getLabMembers = async (req: Request, res: Response): Promise<void> 
                 inductionDone: member.inductionDone,
                 isPCI: member.isPCI,
                 status: member.memberStatus,
+                profilePic: member.user?.profilePic || null, // Ensure profilePic is included
             };
         });
 
@@ -230,6 +234,7 @@ export const getLabMembersList = async (req: Request, res: Response): Promise<vo
                         firstName: true,
                         lastName: true,
                         displayName: true,
+                        profilePic: true
                     },
                 }, 
             },
@@ -492,3 +497,29 @@ export const getUserLabs = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: 'Failed to update user' });
   };
 }
+
+export const getLabRoleById = async (req: Request, res: Response): Promise<void> => {
+  const { labId, roleId } = req.params;
+
+  try {
+    const lab = await prisma.lab.findUnique({ where: { id: Number(labId) } });
+    if (!lab) {
+      res.status(404).json({ error: 'Lab not found' });
+      return;
+    }
+
+    const role = await prisma.labRole.findUnique({
+      where: { id: Number(roleId) }
+    });
+
+    if (!role) {
+      res.status(404).json({ error: 'Lab role not found' });
+      return;
+    }
+
+    res.json(role);
+  } catch (error) {
+    console.error(`Error fetching role ID ${roleId} in lab ID ${labId}:`, error);
+    res.status(500).json({ error: 'Failed to fetch lab role details' });
+  }
+};

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllLabs, getLab, getLabMembers, getLabMembersList, getLabRoles, getUserLabs } from '../controllers/lab/lab.controller';
+import { getAllLabs, getLab, getLabMembers, getLabMembersList, getLabRoleById, getLabRoles, getUserLabs } from '../controllers/lab/lab.controller';
 
 
 
@@ -12,6 +12,7 @@ import { getAllLabs, getLab, getLabMembers, getLabMembersList, getLabRoles, getU
 const router = Router();
 router.get('/all', getAllLabs);
 router.get('/roles', getLabRoles);
+router.get('/role/:labId/:roleId', getLabRoleById);
 // Contacts
 router.get('/:labId', getLab); 
 router.get('/getMembers/:labId', getLabMembers);

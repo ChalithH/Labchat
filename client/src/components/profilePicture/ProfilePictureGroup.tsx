@@ -7,7 +7,6 @@ import ProfilePicture from './ProfilePicture'
 type ProfilePictureGroupTypes = {
   id: number,
   profilePic?: string, 
-  universityId: string,
   firstName: string,
   lastName: string,
   size: number,
@@ -15,15 +14,13 @@ type ProfilePictureGroupTypes = {
   role: string
 }
 
-const ProfilePictureGroup = ({ id, profilePic, universityId, firstName, lastName,  size, role, job_title }: ProfilePictureGroupTypes) => {
+const ProfilePictureGroup = ({ id, profilePic, firstName, lastName,  size, role, job_title }: ProfilePictureGroupTypes) => {
   return (
     <div className="flex justify-start gap-2 items-center">
         <ProfilePicture 
-            user_id={id} 
-            profilePic={profilePic} 
-            universityId={universityId} 
-            firstName={firstName}
-            lastName={lastName}
+            user_id={id}
+            profilePic={profilePic}
+            name={`${firstName} ${lastName}`}
             size={size} 
         />
 

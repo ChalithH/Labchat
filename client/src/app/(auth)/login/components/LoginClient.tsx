@@ -48,7 +48,6 @@ const LoginClient = () => {
 
         if (user.lastViewedLabId) {
           const labs = await api.get(`/lab/user/${ user.id }/labs/`)
-          console.log(labs.data)
 
           if (labs.data.length > 0) {
             router.push(`${baseUrl}/${redirectPath}`)

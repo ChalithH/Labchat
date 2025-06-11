@@ -27,6 +27,7 @@ export interface IAssignment {
   id: number;
   memberId?: number;
   name: string;
+  picturePath: string | null; // Add profile picture support
 }
 
 export interface IEventType {

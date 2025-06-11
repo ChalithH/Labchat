@@ -119,6 +119,7 @@ export interface ApiEvent {
   assigner: {
     id: number;
     name: string;
+    picturePath: string | null; // Add profile picture support
   };
   instrument: {
     id: number;
@@ -128,6 +129,7 @@ export interface ApiEvent {
     id: number;
     memberId?: number;
     name: string;
+    picturePath: string | null; // Add profile picture support
   }[];
 }
 
@@ -140,6 +142,7 @@ export interface ApiUser {
   displayName: string;
   firstName: string;
   lastName: string;
+  profilePic?: string | null; // Add profile picture support
 }
 
 // Transform API event format to our application event format
@@ -157,7 +160,7 @@ export const transformApiEvent = (apiEvent: ApiEvent): IEvent => {
     user: {
       id: String(apiEvent.assigner.id),
       name: apiEvent.assigner.name,
-      picturePath: null,
+      picturePath: apiEvent.assigner.picturePath, // Include profile picture from API
     },
     type: {
       id: apiEvent.type.id,
@@ -181,7 +184,7 @@ export const transformAPIUser = (apiUser: ApiUser): IEvent["user"] => {
   return {
     id: String(apiUser.memberID),
     name: apiUser.displayName,
-    picturePath: null,
+    picturePath: apiUser.profilePic || null, // Include profile picture from API
   };
 };
 
