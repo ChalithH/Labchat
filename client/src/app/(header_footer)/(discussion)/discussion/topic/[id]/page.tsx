@@ -21,8 +21,9 @@ const DiscussionTopic = async (props:{ params: Params}) => {
     
     const user = await getUserFromSessionServer()
     const currentLabId = user.lastViewedLabId || 1
-
-    const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
+    const member = await api.get(`/member/get/user-lab/${ user.id }/${ currentLabId }`)
+    
+    const roleResponse: AxiosResponse = await api.get(`/lab/role/${ member.data.labId }/${ member.data.labRoleId }`)
     const userPermission = roleResponse.data.permissionLevel
 
     const categoryRequest: AxiosResponse = await api.get(`/discussion/categories/${ id }`)
