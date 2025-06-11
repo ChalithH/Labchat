@@ -3,12 +3,25 @@ import React, { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-import getUserFromSession from '@/lib/get_user'
 import { Button } from '@/components/ui/button'
 import ErrorBox from './ErrorBox'
 import isValidEmail from '../lib/valid_email.util'
 import { DialogClose } from '@/components/ui/dialog'
 import hashPassword from '../lib/hash_password.util'
+
+const validatePassword = (password: string): string | null => {
+  if (password.length < 8)
+    return "Password must be at least 8 characters long"
+  if (!/[A-Z]/.test(password))
+    return "Password must include at least one uppercase letter"
+  if (!/[a-z]/.test(password))
+    return "Password must include at least one lowercase letter"
+  if (!/[0-9]/.test(password))
+    return "Password must include at least one number"
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
+    return "Password must include at least one special character"
+  return null
+}
 
 type AccountTabProps = {
   values: {
@@ -27,19 +40,15 @@ type AccountTabProps = {
 const AccountTab = ({ values, setters, onSubmit }: AccountTabProps) => {
   const [error, setError] = useState<string>('')
   
-  useEffect( () => {
-    const getUser = async () => {
-      const user = await getUserFromSession()
-      setters.setEmail(user.loginEmail)
-      setters.setPassword('')
-      setters.setConfirmPassword('')
-    }
-    getUser()
-  }, )
-  
   const handleSubmit = async () => {
     if (values.email === '') {
       setError('Fill in the form before submitting')
+      return
+    }
+
+    const passwordError = validatePassword(values.password)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
 

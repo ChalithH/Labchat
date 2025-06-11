@@ -50,8 +50,8 @@ const DiscussionThread = async (props:{ params: Params}) => {
     if (!user || (!canSeeEverything && (isNotVisible || isWrongLab || (isHidden && !canSeeHidden)))) {
       redirect('/home')
     }
-
-    const authorRole = await ResolveRoleName(post.member.user.roleId)
+    const authorRoleResponse: AxiosResponse = await api.get(`/lab/role/${ memberResponse.data.labId }/${ memberResponse.data.labRoleId }`)
+    const authorRole = authorRoleResponse.data.name
     const member = await api.get(`/member/get/user/${ user.id }`)
 
     return (

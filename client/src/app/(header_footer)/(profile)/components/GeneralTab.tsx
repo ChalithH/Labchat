@@ -32,20 +32,6 @@ type GeneralTabProps = {
 const GeneralTab = ({ values, setters, onSubmit }: GeneralTabProps) => {
   const [error, setError] = useState<string>('')
   
-  useEffect( () => {
-    const getUser = async () => {
-      const user = await getUserFromSession()
-
-      setters.setDisplayName(user.displayName)
-      setters.setJobTitle(user.jobTitle)
-      setters.setOffice(user.office)
-      setters.setBio(user.bio)
-    }
-
-    getUser()
-  }, [setters])
-  
-
   const handleSubmit = () => {
     if (!values.displayName){
       setError('Fill in the form before submitting')
