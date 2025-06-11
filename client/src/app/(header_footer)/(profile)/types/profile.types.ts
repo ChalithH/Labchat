@@ -1,4 +1,3 @@
-
 export type ContactType = {
   // Mimic of schema
   id?: number
@@ -7,6 +6,22 @@ export type ContactType = {
   info: string
   useCase: string
   name: string
+}
+
+export type Status = {
+  id: number;
+  statusName: string;
+  statusWeight: number;
+}
+
+export type MemberStatus = {
+  id: number;
+  status: Status;
+  isActive: boolean;
+  contactType?: string;
+  contactInfo?: string;
+  contactName?: string;
+  contactId?: number;
 }
 
 export type ProfileDataType = {
@@ -29,7 +44,9 @@ export type ProfileDataType = {
   profilePic?: string,
   lastViewedLabId?: string,
   contacts: ContactType[],
+  memberStatuses?: MemberStatus[],
+  memberId?: number,
 
   // Custom field for frontend
   is_users_profile: boolean
-} 
+}
