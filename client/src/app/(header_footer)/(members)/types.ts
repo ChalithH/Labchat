@@ -27,6 +27,7 @@ export interface LabMember {
   createdAt: string
   inductionDone: boolean
   status: Status[]
+  profilePic?: string | null
 }
 
 export interface SortedMembers {

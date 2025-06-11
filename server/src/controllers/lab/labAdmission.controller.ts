@@ -703,7 +703,8 @@ export const getLabAdmissionRequests = async (req: Request, res: Response): Prom
                         lastName: true,
                         displayName: true,
                         jobTitle: true,
-                        office: true
+                        office: true,
+                        profilePic: true,
                     }
                 },
                 role: {

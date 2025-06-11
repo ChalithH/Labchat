@@ -111,12 +111,14 @@ export function transformEvents(events: EventWithRelations[]): TransformedEvent[
             ...event,
             assigner: {
                 id: event.assigner.id,
-                name: event.assigner.user.displayName
+                name: event.assigner.user.displayName,
+                picturePath: event.assigner.user.profilePic || null // Add profile picture
             },
             eventAssignments: event.eventAssignments.map(assignment => ({
                 id: assignment.id,
                 memberId: assignment.memberId,
-                name: assignment.member.user.displayName
+                name: assignment.member.user.displayName,
+                picturePath: assignment.member.user.profilePic || null // Add profile picture for assigned members
             }))
         };
     });
@@ -153,7 +155,8 @@ export const EVENT_INCLUDE = {
                 select: {
                     firstName: true,
                     lastName: true,
-                    displayName: true
+                    displayName: true,
+                    profilePic: true // Add profile picture for assigner
                 }
             }
         }
@@ -172,7 +175,8 @@ export const EVENT_INCLUDE = {
                 select: {
                     user: {
                         select: {
-                            displayName: true
+                            displayName: true,
+                            profilePic: true // Add profile picture for assigned members
                         }
                     }
                 }

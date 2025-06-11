@@ -255,7 +255,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
       {
         id: Date.now(), // Temporary ID
         memberId: userIdAsNumber,
-        name: user.name
+        name: user.name,
+        picturePath: user.picturePath || null, // Use user's picture if available
       }
     ]);
   };
@@ -429,6 +430,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                             <SelectItem key={user.id} value={user.id}>
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-5 w-5">
+                                  <AvatarImage src={user.picturePath || undefined} />
                                   <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">{user.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <span className="truncate text-gray-900">{user.name}</span>
@@ -462,6 +464,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                         <div key={assignee.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
+                              <AvatarImage src={assignee.picturePath || undefined} />
                               <AvatarFallback className="bg-gray-100 text-gray-700">{assignee.name[0]}</AvatarFallback>
                             </Avatar>
                             <span className="text-sm text-gray-900">{assignee.name}</span>

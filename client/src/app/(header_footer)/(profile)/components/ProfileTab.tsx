@@ -166,9 +166,7 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
                   key={`profile-${profilePic}`}
                   user_id={userData.id}
                   profilePic={profilePic}
-                  universityId={userData.universityId}
-                  firstName={userData.firstName}
-                  lastName={userData.lastName}
+                  name={`${userData.firstName} ${userData.lastName}`}
                   size={16}
                 />
               </div>
@@ -188,12 +186,9 @@ const ProfileTab = ({ onSubmit }: ProfileTabProps) => {
             <div className="relative">
               <div className="w-[100px] h-[100px] rounded-full overflow-hidden">
                 <ProfilePicture
-                  key={`profile-fallback-${userData.id}`}
                   user_id={userData.id}
-                  profilePic={undefined}
-                  universityId={userData.universityId}
-                  firstName={userData.firstName}
-                  lastName={userData.lastName}
+                  profilePic={profilePic}
+                  name={`${userData.firstName} ${userData.lastName}`}
                   size={16}
                 />
               </div>

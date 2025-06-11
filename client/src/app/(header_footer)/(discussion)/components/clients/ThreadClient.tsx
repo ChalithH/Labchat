@@ -168,7 +168,7 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
       </div>
 
       <div className="flex justify-between items-center">
-        <ThreadAuthorGroup role={authorRole} name={author.displayName} size={48} />
+        <ThreadAuthorGroup id={author.id} role={authorRole} name={author.displayName} profilePic={author.profilePic} size={10} />
 
         <div>
           <div className="text-right text-xs play-font">
@@ -200,7 +200,7 @@ const ThreadClient = ({ post, category, replies, replyUsers, author, authorRole,
             placeholder="Type a comment"
           />
           <div className="w-full flex justify-between items-center">
-            <ThreadAuthorGroup role={userRole} name={user.displayName} size={42} />
+            <ThreadAuthorGroup id={user.id} role={userRole} name={user.displayName} profilePic={user.profilePic} size={10} />
             <Button onClick={handlePostReply} variant="outline">Post Reply</Button>
           </div>
         </div>

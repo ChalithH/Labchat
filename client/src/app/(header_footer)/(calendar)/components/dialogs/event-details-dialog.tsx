@@ -9,7 +9,7 @@ import { EditEventDialog } from "@/calendar/components/dialogs/edit-event-dialog
 import { DeleteEventDialog } from "@/calendar/components/dialogs/delete-event-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EventLink } from "@/calendar/components/event-link";
 import { StatusAction } from "@/calendar/components/status-action";
@@ -33,6 +33,8 @@ export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
   const handleStatusChange = (updatedEvent: IEvent) => {
     setEvent(updatedEvent);
   };
+
+  console.log("User picture path:", event.user.picturePath);
 
   return (
     <>
@@ -59,6 +61,7 @@ export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
                   <p className="text-sm font-medium text-gray-900">Assigner</p>
                   <div className="flex items-center gap-2 mt-1">
                     <Avatar className="h-6 w-6">
+                       <AvatarImage src={event.user.picturePath ?? undefined} alt={event.user.name} />
                       <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">
                         {event.user.name.charAt(0)}
                       </AvatarFallback>
@@ -78,6 +81,7 @@ export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
                       {event.assignments.map((assignment) => (
                         <div key={assignment.id} className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
+                            <AvatarImage src={assignment.picturePath ?? undefined} alt={event.user.name} />
                             <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">
                               {assignment.name.charAt(0)}
                             </AvatarFallback>

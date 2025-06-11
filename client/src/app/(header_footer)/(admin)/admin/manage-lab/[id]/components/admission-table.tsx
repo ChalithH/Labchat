@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ interface User {
   id: number;
   displayName: string;
   jobTitle?: string;
+  profilePic?: string | null;
 }
 
 interface Lab {
@@ -35,6 +36,7 @@ interface AdmissionRequest {
   user: User;
   lab: Lab;
   role?: Role;
+  profilePic?: string | null;
 }
 
 interface LabRole {
@@ -267,6 +269,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Adm
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-3">
                 <Avatar className="h-10 w-10">
+                  <AvatarImage src={request.user.profilePic ?? undefined} alt={request.user.displayName} />
                   <AvatarFallback>{getInitials(request.user.displayName)}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -375,6 +378,7 @@ export default function AdmissionTable({ labId, searchQuery, statusFilter }: Adm
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <Avatar className="h-8 w-8">
+                      <AvatarImage src={request.user.profilePic ?? undefined} alt={request.user.displayName} />
                       <AvatarFallback>{getInitials(request.user.displayName)}</AvatarFallback>
                     </Avatar>
                     <div className="ml-3">

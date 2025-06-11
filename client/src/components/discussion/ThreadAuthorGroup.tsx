@@ -1,24 +1,27 @@
 import React from 'react'
 
 import { Badge } from '../ui/badge'
+import ProfilePicture from '../profilePicture/ProfilePicture'
 
 
 type ThreadAuthorGroupTypes = {
+  id: number,
   role: string,
   name: string,
   job_title?: string,
-
+  profilePic: string,
   size: number
 }
 
-const ThreadAuthorGroup = ({ role, name, job_title, size }: ThreadAuthorGroupTypes) => {
+const ThreadAuthorGroup = ({ id, role, name, job_title, profilePic, size }: ThreadAuthorGroupTypes) => {
   return (
     <div className="flex justify-start gap-2 items-center">
-      <img 
-        style={{ width: `${size}px`, height: `${size}px` }}
-        className="rounded-full"
-        src="/default_pfp.svg" 
-        alt="" />
+      <ProfilePicture 
+            user_id={id}
+            profilePic={profilePic}
+            name={name}
+            size={size} 
+        />
 
       <div className="flex flex-col items-start">
         <Badge>{ role }</Badge>

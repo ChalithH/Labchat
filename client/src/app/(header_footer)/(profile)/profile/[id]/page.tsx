@@ -39,7 +39,7 @@ export default async function ProfilePage(props:{ params: Params}) {
   const user_data: AxiosResponse = await api.get(`/user/get/${ profile_data.data.userId }`)
   
   // Add data requried for Profile page
-  const contact_response: AxiosResponse = await api.get(`/profile/get/${ profile_data.data.labId }/${ profile_data.data.userId }`)
+  const contact_response: AxiosResponse = await api.get(`/profile/contacts/user/${ profile_data.data.userId }`)
   profile_data.data.contacts = contact_response.data
   
   profile_data.data.role = profile_data.data.labRole.name

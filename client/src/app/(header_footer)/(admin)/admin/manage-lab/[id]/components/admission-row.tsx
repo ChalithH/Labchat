@@ -3,7 +3,7 @@ import type { AdmissionRequest, LabRole } from "@/app/(header_footer)/(admission
 import { formatDate, getInitials, getStatusColor } from "@/app/(header_footer)/(admission)/utils"
 import { CheckCircle, XCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { RoleSelect } from "./role-select"
 import { PciUserCheckbox } from "./pci-user-checkbox"
@@ -146,6 +146,7 @@ export function DesktopRow({
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
           <Avatar className="h-8 w-8">
+            <AvatarImage src={request.user.profilePic ?? undefined} alt={request.user.displayName} />
             <AvatarFallback>{getInitials(request.user.displayName)}</AvatarFallback>
           </Avatar>
           <div className="ml-3">

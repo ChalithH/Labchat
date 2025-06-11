@@ -41,6 +41,10 @@ export const loggedOutsiteConfig: navItems = {
 export const loggedInsiteConfig: navItems = {
     navItems: [
         {
+            title: "Admissions",
+            href: "/admission",
+        },
+        {
             title: "Home",
             href: "/home",
         },
@@ -63,7 +67,7 @@ export const loggedInsiteConfig: navItems = {
         {
             title: "Members",
             href: "/members",
-        },
+        }
     ],
 };
 

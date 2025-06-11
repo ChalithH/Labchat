@@ -3,7 +3,7 @@ import type { LabMember } from "@/app/(header_footer)/(members)/types"
 import { formatDate } from "@/app/(header_footer)/(members)/utils"
 import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 
 interface MemberRowProps {
@@ -12,13 +12,6 @@ interface MemberRowProps {
   toggleExpand: () => void
 }
 
-const getInitials = (name: string) => {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-}
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -47,7 +40,8 @@ export function MobileRow({ member, isExpanded, toggleExpand }: MemberRowProps) 
       <div className="flex items-center justify-between p-4 cursor-pointer" onClick={toggleExpand}>
         <div className="flex items-center space-x-3">
           <Avatar className="h-10 w-10">
-            <AvatarFallback>{getInitials(member.displayName)}</AvatarFallback>
+            <AvatarImage src={member.profilePic || undefined} />
+            <AvatarFallback>{member.displayName[0]}</AvatarFallback>
           </Avatar>
           <div>
             <p className="font-medium">{member.displayName}</p>
@@ -141,7 +135,8 @@ export function DesktopRow({ member, isExpanded, toggleExpand }: MemberRowProps)
           <div className="flex items-center">
             <div className="flex-shrink-0 h-10 w-10">
               <Avatar>
-                <AvatarFallback>{getInitials(member.displayName)}</AvatarFallback>
+                <AvatarImage src={member.profilePic || undefined} />
+                <AvatarFallback>{member.displayName[0]}</AvatarFallback>
               </Avatar>
             </div>
             <div className="ml-4">
