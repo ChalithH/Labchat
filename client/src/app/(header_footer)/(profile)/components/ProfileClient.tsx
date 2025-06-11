@@ -1,17 +1,23 @@
-
 import { Separator } from '@/components/ui/separator'
 import { ContactType, ProfileDataType } from '../types/profile.types'
-import ContactGroup from './ContactGroup'
+import ContactTable from './ContactTable'
 import EditProfile from './EditProfile'
-import AddContact from './AddContact'
 import ProfilePictureGroup from '@/components/profilePicture/ProfilePictureGroup'
+import StatusTable from './StatusTable'
 
-
-export default function ProfileClient({ data, is_users_profile }: { data: ProfileDataType, is_users_profile: boolean }) {
+export default function ProfileClient({ 
+  data, 
+  is_users_profile 
+}: { 
+  data: ProfileDataType, 
+  is_users_profile: boolean 
+}) {
   const contacts: ContactType[] = data.contacts 
+  const memberStatuses = data.memberStatuses || []
+  const memberId = data.memberId
 
   return (
-    <main className="barlow-font w-[90dvw] m-auto mt-4">
+    <main className="w-[90dvw] m-auto my-6">
       <section className='flex flex-col justify-between'>
         <div className={ `flex items-center w-[100%] ${ is_users_profile ? 'justify-between' : 'justify-center' }` }>
           <ProfilePictureGroup 
@@ -27,7 +33,7 @@ export default function ProfileClient({ data, is_users_profile }: { data: Profil
             <EditProfile /> }
         </div>
 
-      <Separator className='my-6' />
+        <Separator className='my-6' />
 
         <div className="flex items-center gap-8">
           <div className="mb-2 ">
@@ -67,26 +73,34 @@ export default function ProfileClient({ data, is_users_profile }: { data: Profil
         <p className='text-sm'>{ data.bio || 'Write a short bio about your background, interests, current role or career and key skills.' }</p>
       </div>
 
-      { is_users_profile &&  <section>
-        <div className='flex justify-between'>
-          <h1 className='text-3xl mb-1 font-semibold barlow-font'>Contact Details</h1>
-          
-            <AddContact />
-          
-        </div>
+      {/* Status Section - Show for all users, but only allow editing for lab managers/admins */}
+      {(memberStatuses.length > 0 || is_users_profile) && memberId && (
+        <>
+          <Separator className='my-6' />
+          <section className='mb-6'>
+            <StatusTable 
+              memberId={memberId}
+              userId={data.id}
+              initialStatuses={memberStatuses}
+              canEdit={is_users_profile} // You can add more sophisticated permission logic here
+            />
+          </section>
+        </>
+      )}
 
-        { contacts.length > 0 ?
-            <div className='mt-2 flex flex-col gap-4'>
-              { contacts.map( contact =>
-                <ContactGroup key={ contact.id } contact={ contact } is_users_profile={ is_users_profile } />
-              ) }
-            </div>
-          :
-            <p className='text-sm'>
-              { data.firstName } has no contacts
-            </p> }
-      </section>
-      }
+      {/* Contact Details Section - Only show for the user's own profile */}
+      {is_users_profile && (
+        <>
+          <Separator className='my-6' />
+          <section>
+            <ContactTable 
+              contacts={contacts}
+              is_users_profile={is_users_profile}
+              firstName={data.firstName}
+            />
+          </section>
+        </>
+      )}
     </main>
   )
 }

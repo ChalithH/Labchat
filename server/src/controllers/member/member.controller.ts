@@ -422,6 +422,7 @@ export const getMemberWithStatus = async (req: Request, res: Response): Promise<
       createdAt: user.createdAt,
       inductionDone: user.inductionDone,
       status: user.memberStatus.map((status) => ({
+        id: status.id,
         status: status.status,
         isActive: status.isActive,
         contactType: status.contact?.type,
@@ -457,3 +458,212 @@ export const getMembershipsByUserId = async (req: Request, res: Response): Promi
   }
 };
 
+/**
+ * Create a new member status
+ * POST /member/member-status
+ */
+export const createMemberStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { memberId, statusId, contactId } = req.body;
+
+    if (!memberId || !statusId) {
+      res.status(400).json({ error: 'memberId and statusId are required' });
+      return;
+    }
+
+    // Check if member exists
+    const member = await prisma.labMember.findUnique({
+      where: { id: memberId },
+    });
+
+    if (!member) {
+      res.status(404).json({ error: 'Member not found' });
+      return;
+    }
+
+    // Check if status exists
+    const status = await prisma.status.findUnique({
+      where: { id: statusId },
+    });
+
+    if (!status) {
+      res.status(404).json({ error: 'Status not found' });
+      return;
+    }
+
+    // If contactId is provided, verify it exists and belongs to the user
+    if (contactId) {
+      const contact = await prisma.contact.findFirst({
+        where: { 
+          id: contactId,
+          userId: member.userId,
+        },
+      });
+
+      if (!contact) {
+        res.status(404).json({ error: 'Contact not found or does not belong to this user' });
+        return;
+      }
+    }
+
+    // Check if this member already has this status
+    const existingMemberStatus = await prisma.memberStatus.findFirst({
+      where: {
+        memberId: memberId,
+        statusId: statusId,
+      },
+    });
+
+    if (existingMemberStatus) {
+      res.status(409).json({ error: 'Member already has this status' });
+      return;
+    }
+
+    // Create the member status
+    const memberStatus = await prisma.memberStatus.create({
+      data: {
+        memberId: memberId,
+        statusId: statusId,
+        contactId: contactId || null,
+        isActive: false, // New statuses are inactive by default
+      },
+      include: {
+        status: true,
+        contact: true,
+      },
+    });
+
+    res.status(201).json(memberStatus);
+  } catch (error) {
+    console.error('Error creating member status:', error);
+    res.status(500).json({ error: 'Failed to create member status' });
+  }
+};
+
+/**
+ * Update a member status (only contact association can be changed)
+ * PUT /member/member-status/:id
+ */
+export const updateMemberStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+    const { contactId } = req.body;
+
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid member status ID' });
+      return;
+    }
+
+    // Check if member status exists
+    const existingMemberStatus = await prisma.memberStatus.findUnique({
+      where: { id },
+      include: {
+        labMember: true,
+      },
+    });
+
+    if (!existingMemberStatus) {
+      res.status(404).json({ error: 'Member status not found' });
+      return;
+    }
+
+    // If contactId is provided, verify it exists and belongs to the user
+    if (contactId) {
+      const contact = await prisma.contact.findFirst({
+        where: { 
+          id: contactId,
+          userId: existingMemberStatus.labMember.userId,
+        },
+      });
+
+      if (!contact) {
+        res.status(404).json({ error: 'Contact not found or does not belong to this user' });
+        return;
+      }
+    }
+
+    // Update the member status
+    const updatedMemberStatus = await prisma.memberStatus.update({
+      where: { id },
+      data: {
+        contactId: contactId || null,
+      },
+      include: {
+        status: true,
+        contact: true,
+      },
+    });
+
+    res.json(updatedMemberStatus);
+  } catch (error) {
+    console.error('Error updating member status:', error);
+    res.status(500).json({ error: 'Failed to update member status' });
+  }
+};
+
+/**
+ * Delete a member status
+ * DELETE /member/member-status/:id
+ */
+export const deleteMemberStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid member status ID' });
+      return;
+    }
+
+    // Check if member status exists
+    const existingMemberStatus = await prisma.memberStatus.findUnique({
+      where: { id },
+    });
+
+    if (!existingMemberStatus) {
+      res.status(404).json({ error: 'Member status not found' });
+      return;
+    }
+
+    // If this is the active status, we might want to prevent deletion
+    // or automatically set another status as active
+    if (existingMemberStatus.isActive) {
+      // Option 1: Prevent deletion of active status
+      res.status(400).json({ 
+        error: 'Cannot delete active status. Please set another status as active first.' 
+      });
+      return;
+
+      // Option 2: Automatically set another status as active (uncomment if preferred)
+      /*
+      const anotherStatus = await prisma.memberStatus.findFirst({
+        where: {
+          memberId: existingMemberStatus.memberId,
+          id: { not: id },
+        },
+      });
+
+      if (anotherStatus) {
+        await prisma.memberStatus.updateMany({
+          where: { memberId: existingMemberStatus.memberId },
+          data: { isActive: false },
+        });
+
+        await prisma.memberStatus.update({
+          where: { id: anotherStatus.id },
+          data: { isActive: true },
+        });
+      }
+      */
+    }
+
+    // Delete the member status
+    await prisma.memberStatus.delete({
+      where: { id },
+    });
+
+    res.json({ message: 'Member status deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting member status:', error);
+    res.status(500).json({ error: 'Failed to delete member status' });
+  }
+};

@@ -31,11 +31,13 @@ import {
 } from "@/components/ui/select"
 import ErrorBox from "./ErrorBox"
 import { useLabContext } from "@/contexts/lab-context"
+import { Plus, MessageCircle } from "lucide-react"
 
 
 const CONTACT_TYPES: {type: string, display: string}[]= [
   { type: 'email', display: 'Email' },
-  { type: 'phone', display: 'Phone' }]
+  { type: 'phone', display: 'Phone' },
+  { type: 'other', display: 'Other' }]
 
 const AddContact = () => {
   const [type, setType] = useState<string>('')
@@ -77,11 +79,24 @@ const AddContact = () => {
     router.refresh()
   }
 
+  const handleCancel = () => {
+    // Reset form when canceling
+    setType('')
+    setName('')
+    setUseCase('')
+    setInfo('')
+    setError('')
+    setIsEditOpen(false)
+  }
+
   return (
     <>
       <Dialog open={ isEditOpen } onOpenChange={ setIsEditOpen }>
         <DialogTrigger asChild>
-            <img src="/add_to_topic_button.svg" alt="Add new contact button" />
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Contact
+          </Button>
         </DialogTrigger>
 
         <DialogContent>
@@ -95,7 +110,7 @@ const AddContact = () => {
 
             <div>
               <Label htmlFor="type" className='mb-1'>Icon</Label>
-              <Select onValueChange={ val => setType(val) }>
+              <Select value={type} onValueChange={ val => setType(val) }>
                 <SelectTrigger className="w-[100%] text-sm" id='type'>
                   <SelectValue placeholder='Select an icon' />
                 </SelectTrigger>
@@ -140,9 +155,7 @@ const AddContact = () => {
           </section>
 
           <DialogFooter>
-            <DialogClose asChild>
-							<Button variant="outline">Cancel</Button>
-						</DialogClose>
+            <Button variant="outline" onClick={handleCancel}>Cancel</Button>
             <Button onClick={ handleCreateContact }>
               Create Contact
             </Button>
