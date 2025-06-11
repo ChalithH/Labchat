@@ -1,29 +1,36 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import { Search } from "lucide-react";
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const Searchbar = () => {
+	const [query, setQuery] = useState('')
+  const router = useRouter()
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = query.trim()
+    if (trimmed.length === 0)
+      return
+
+    router.push(`/discussion/search?q=${ encodeURIComponent(trimmed) }`)
+  }
+  
 	return (
-		<form className="w-[90dvw] m-auto">
+		<form onSubmit={ handleSubmit } className="w-[90dvw] m-auto">
 			<div className="flex justify-between items-center m-auto my-6 gap-2
 				bg-gray-50 py-2 px-4 rounded-3xl shadow-xl border-2">
 
 				<input 
-					type="text" 
+					type="text"
+          className="w-full" 
+					value={ query }
+					onChange={ (e) => setQuery(e.target.value) }
 					placeholder="Search for anything..." />
 
 				<div className="flex justify-center items-center gap-2">
-					{/* <button 
-						className="flex items-center rounded-xl bg-sky-600 h-8 p-1 pr-1 text-white"
-						type="submit">
-						Title
-
-						<img 
-							className="rotate-270"
-							src="/play_arrow_filled_white.svg" 
-							alt="Drop down button to select search filters" />
-					</button> */}
-
 					<Button className="" style={{clipPath: 'circle()'}}>
 						<Search className="text-white m-auto w-5" />
 					</Button>

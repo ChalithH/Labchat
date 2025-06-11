@@ -492,3 +492,29 @@ export const getUserLabs = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: 'Failed to update user' });
   };
 }
+
+export const getLabRoleById = async (req: Request, res: Response): Promise<void> => {
+  const { labId, roleId } = req.params;
+
+  try {
+    const lab = await prisma.lab.findUnique({ where: { id: Number(labId) } });
+    if (!lab) {
+      res.status(404).json({ error: 'Lab not found' });
+      return;
+    }
+
+    const role = await prisma.labRole.findUnique({
+      where: { id: Number(roleId) }
+    });
+
+    if (!role) {
+      res.status(404).json({ error: 'Lab role not found' });
+      return;
+    }
+
+    res.json(role);
+  } catch (error) {
+    console.error(`Error fetching role ID ${roleId} in lab ID ${labId}:`, error);
+    res.status(500).json({ error: 'Failed to fetch lab role details' });
+  }
+};
