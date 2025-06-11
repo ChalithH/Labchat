@@ -4,6 +4,7 @@ import passport from 'passport';
 
 import '../../middleware/local_strategy.middleware'
 import { prisma } from '../..';
+import { PERMISSIONS } from '../../config/permissions';
 
 
 /*
@@ -138,9 +139,9 @@ export const locked = (req: Request, res: Response): void => {
   res.status(200).send({ msg: 'Access granted to protected resource' });
 }
 
-// Permission levels should ideally be imported from a shared configuration file.
-const ROOT_ADMIN_PERMISSION_LEVEL = 100; 
-const LAB_MANAGER_PERMISSION_LEVEL = 70; 
+// Permission levels imported from shared configuration
+const ROOT_ADMIN_PERMISSION_LEVEL = PERMISSIONS.GLOBAL_ADMIN; 
+const LAB_MANAGER_PERMISSION_LEVEL = PERMISSIONS.LAB_MANAGER; 
 
 /*
  * CHECK LAB ACCESS PERMISSION
@@ -273,8 +274,8 @@ export const checkAdminPermission = async (req: Request, res: Response): Promise
       return;
     }
 
-    // Check for admin privileges (permissionLevel >= 100)
-    const hasAdminPermission = userWithRole.role.permissionLevel >= 100;
+    // Check for admin privileges
+    const hasAdminPermission = userWithRole.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
 
     if (hasAdminPermission) {
       res.status(200).json({ hasAdminPermission: true });

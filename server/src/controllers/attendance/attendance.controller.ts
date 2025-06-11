@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { PERMISSIONS } from '../../config/permissions';
 
 const prisma = new PrismaClient();
 
@@ -393,7 +394,7 @@ export const getAttendanceLogs = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    const isAdmin = user.role.permissionLevel >= 100;
+    const isAdmin = user.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
     
     if (!isAdmin) {
       // Check if user is a lab manager for this lab

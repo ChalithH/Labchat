@@ -82,21 +82,20 @@ router.post('/create-lab', requirePermission(PERMISSIONS.GLOBAL_ADMIN), createLa
 router.put('/lab/:labId/reset-member-password', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), resetLabMemberPassword);
 
 
-router.post('/create-discussion-category', requirePermission(0), createDiscussionCategory); // Permission check handled in controller (lab managers can create categories)
+router.post('/create-discussion-category', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), createDiscussionCategory);
 router.put('/lab/:labId/update-discussion/:discussionId', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), updateDiscussionCategory);
 
-// Lab Inventory Management stuff - Permission checking handled in controllers
-// Requires authentication (permission level = 0) but lab-specific logic handled in controllers
-router.post('/lab/:labId/inventory', requirePermission(0), addItemToLab);
-router.put('/lab/:labId/inventory/:itemId', requirePermission(0), updateLabInventoryItem);
-router.delete('/lab/:labId/inventory/:itemId', requirePermission(0), removeItemFromLab);
-router.post('/lab/:labId/inventory/:itemId/tags', requirePermission(0), addTagsToLabItem);
-router.delete('/lab/:labId/inventory/:itemId/tags/:tagId', requirePermission(0), removeTagFromLabItem);
+// Lab Inventory Management stuff - Lab managers or global admins only
+router.post('/lab/:labId/inventory', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), addItemToLab);
+router.put('/lab/:labId/inventory/:itemId', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), updateLabInventoryItem);
+router.delete('/lab/:labId/inventory/:itemId', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), removeItemFromLab);
+router.post('/lab/:labId/inventory/:itemId/tags', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), addTagsToLabItem);
+router.delete('/lab/:labId/inventory/:itemId/tags/:tagId', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), removeTagFromLabItem);
 
 // Get inventory logs for a lab - Changed to use requireLabPermission for proper lab-specific access control
 router.get('/lab/:labId/inventory-logs', requireLabPermission(PERMISSIONS.LAB_MANAGER, PERMISSIONS.GLOBAL_ADMIN), getLabInventoryLogs);
 
-router.post('/tags', requirePermission(0), createTag);  // Lab managers can create tags - permission check in controller
+router.post('/tags', requirePermission(0), createTag);  // Permission check handled in controller - lab managers or global admins can create global tags
 // Update an existing global tag (admin only)
 router.put('/tags/:tagId', requirePermission(PERMISSIONS.GLOBAL_ADMIN), updateTag);
 // Delete a global tag (admin only)

@@ -10,8 +10,7 @@ import {
   logMinStockUpdate, 
   logItemUpdate,
   getInventoryLogsForLab,
-  getUserAndMemberIdFromRequest,
-  checkLabPermission
+  getUserAndMemberIdFromRequest
 } from '../../utils/inventoryLogging.util';
 import { InventorySource } from '@prisma/client';
 import { PERMISSIONS } from '../../config/permissions';
@@ -882,12 +881,7 @@ export const createDiscussionCategory = async (req: Request, res: Response): Pro
             return;
         }
 
-        // Check if user has permission to create categories for this lab
-        const hasPermission = await checkLabPermission(userId, labId, PERMISSIONS.LAB_MANAGER);
-        if (!hasPermission) {
-            res.status(403).json({ error: 'Insufficient permissions to create discussion categories for this lab' });
-            return;
-        }
+        // Permission check handled by middleware
 
         // Prevent duplicates
         const existingCategory = await prisma.discussion.findFirst({
@@ -1470,9 +1464,9 @@ export const createLabRole = async (req: Request, res: Response): Promise<void> 
         return;
     }
 
-    // Validate permission level range (assumption: Permissino level must be between 0-100)
+    // Validate permission level range (assumption: Permission level must be between 0 and 100)
     if (permissionLevel < 0 || permissionLevel > 100) {
-        res.status(400).json({ error: 'Permission level must be between 0 and 100' });
+        res.status(400).json({ error: `Permission level must be between 0 and 100` });
         return;
     }
 
@@ -1497,11 +1491,11 @@ export const createLabRole = async (req: Request, res: Response): Promise<void> 
         }
 
         
-        const hasGlobalPermission = user.role.permissionLevel >= 60;
+        const hasGlobalPermission = user.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
         
         // Check if user is lab manager in any lab
         const isLabManager = user.labMembers.some(member => 
-            member.labRole.permissionLevel >= 70
+            member.labRole.permissionLevel >= PERMISSIONS.LAB_MANAGER
         );
 
         if (!hasGlobalPermission && !isLabManager) {
@@ -1934,13 +1928,7 @@ export const addItemToLab = async (req: Request, res: Response): Promise<void> =
         return;
     }
 
-    // Check lab-based permissions (lab managers 60+ can manage, admins 60+ can access)
-    const permissionCheck = await checkLabPermission(req, labId, 60, 60);
-    
-    if (!permissionCheck.hasPermission) {
-        res.status(403).json({ error: permissionCheck.error || 'Access denied' });
-        return;
-    }
+    // Permission check handled by middleware
 
     if (!itemId || !location || !itemUnit || currentStock === undefined || minStock === undefined) {
         res.status(400).json({ error: 'All fields are required: itemId, location, itemUnit, currentStock, minStock' });
@@ -2024,11 +2012,12 @@ export const addItemToLab = async (req: Request, res: Response): Promise<void> =
             }
         });
 
-        // Log the item addition using permission check results
-        if (permissionCheck.userId) {
+        // Log the item addition
+        const userId = (req.session as any)?.passport?.user;
+        if (userId) {
             await logItemAdded(
                 newLabItem.id,
-                permissionCheck.userId,
+                userId,
                 {
                     itemId: newLabItem.itemId,
                     itemName: item.name,
@@ -2038,9 +2027,9 @@ export const addItemToLab = async (req: Request, res: Response): Promise<void> =
                     minStock: newLabItem.minStock,
                     labId: labId 
                 },
-                permissionCheck.source,
-                `Item added to lab via admin panel${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
-                permissionCheck.memberId
+                'ADMIN_PANEL',
+                'Item added to lab via admin panel',
+                null // memberId not needed for admin operations
             );
         }
 
@@ -2243,13 +2232,7 @@ export const removeItemFromLab = async (req: Request, res: Response): Promise<vo
         return;
     }
 
-    // Check lab-based permissions (lab managers 60+ can manage, admins 60+ can access)
-    const permissionCheck = await checkLabPermission(req, labId, 60, 60);
-    
-    if (!permissionCheck.hasPermission) {
-        res.status(403).json({ error: permissionCheck.error || 'Access denied' });
-        return;
-    }
+    // Permission check handled by middleware
 
     try {
         // Find the lab inventory item
@@ -2268,11 +2251,12 @@ export const removeItemFromLab = async (req: Request, res: Response): Promise<vo
             return;
         }
 
-        // Log the item removal before deletion using permission check results
-        if (permissionCheck.userId) {
+        // Log the item removal before deletion
+        const userId = (req.session as any)?.passport?.user;
+        if (userId) {
             await logItemRemoved(
                 itemId,
-                permissionCheck.userId,
+                userId,
                 {
                     itemId: existingItem.itemId,
                     itemName: existingItem.item.name,
@@ -2287,9 +2271,9 @@ export const removeItemFromLab = async (req: Request, res: Response): Promise<vo
                         description: existingItem.item.description
                     }
                 },
-                permissionCheck.source,
-                `Item removed from lab via admin panel${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
-                permissionCheck.memberId
+                'ADMIN_PANEL',
+                'Item removed from lab via admin panel',
+                null // memberId not needed for admin operations
             );
         }
 
@@ -2551,12 +2535,12 @@ export const createTag = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        // Check if user has permission >= 60
-        const hasGlobalPermission = user.role.permissionLevel >= 60;
+        // Check if user has global admin permission
+        const hasGlobalPermission = user.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
         
         // Check if user is a lab manager in any lab
         const isLabManager = user.labMembers.some(member => 
-            member.labRole.permissionLevel >= 70
+            member.labRole.permissionLevel >= PERMISSIONS.LAB_MANAGER
         );
 
         if (!hasGlobalPermission && !isLabManager) {
@@ -2986,7 +2970,7 @@ export const getAvailableUsersForLab = async (req: Request, res: Response): Prom
                 labId: labId,
                 labRole: {
                     permissionLevel: {
-                        gte: 0 
+                        gte: PERMISSIONS.LAB_MEMBER 
                     }
                 }
             },
@@ -3036,7 +3020,7 @@ export const getAvailableUsersForLab = async (req: Request, res: Response): Prom
                     where: {
                         labId: labId,
                         labRole: {
-                            permissionLevel: -1 // Former member
+                            permissionLevel: PERMISSIONS.FORMER_MEMBER // Former member
                         }
                     },
                     select: {
@@ -3186,7 +3170,7 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
             return;
         }
 
-        if (labRole.permissionLevel === -1) {
+        if (labRole.permissionLevel === PERMISSIONS.FORMER_MEMBER) {
             res.status(400).json({ error: 'Cannot assign Former Member role directly' });
             return;
         }
@@ -3198,7 +3182,7 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
                 labId: labId,
                 labRole: {
                     permissionLevel: {
-                        gte: 0 
+                        gte: PERMISSIONS.LAB_MEMBER 
                     }
                 }
             }
@@ -3215,7 +3199,7 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
                 userId: userId,
                 labId: labId,
                 labRole: {
-                    permissionLevel: -1 
+                    permissionLevel: PERMISSIONS.FORMER_MEMBER 
                 }
             }
         });
