@@ -1,15 +1,33 @@
 import { Request, Response, NextFunction } from 'express'
 import { prisma } from '..'
+import { PERMISSIONS } from '../config/permissions'
 
 
 export const requirePermission = (minimum_level: number) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    // Skip authentication check for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+      next()
+      return
+    }
+
+    // Check if session exists
+    if (!req.session || !(req.session as any).passport || !(req.session as any).passport.user) {
+      res.status(401).send({ msg: 'Authentication required' })
+      return
+    }
+
     const session_user_id = (req.session as any).passport.user
 
     const session_user = await prisma.user.findUnique({ where: { id: session_user_id}})
 
+    if (!session_user) {
+      res.status(401).send({ msg: 'User not found' })
+      return
+    }
+
     const role = await prisma.role.findUnique({
-      where: { id: (session_user as any).roleId }
+      where: { id: session_user.roleId }
     })
 
     if (!role) {
@@ -31,8 +49,14 @@ export const requirePermission = (minimum_level: number) => {
 // Lab specific permission middleware
 // User admin overrides lab role permissions (full access)
 // If not user role == admin, check lab role permissions
-export const requireLabPermission = (minimum_level: number, adminMinLevel: number = 60) => {
+export const requireLabPermission = (minimum_level: number, adminMinLevel: number = PERMISSIONS.GLOBAL_ADMIN) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    // Skip authentication check for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+      next()
+      return
+    }
+
     try {
       const session_user_id = (req.session as any)?.passport?.user;
       
@@ -114,6 +138,12 @@ export const requireLabPermission = (minimum_level: number, adminMinLevel: numbe
 // Middleware will extract lab ID from lab member
 export const extractLabIdFromLabMember = () => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    // Skip for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+      next()
+      return
+    }
+
     try {
       const labMemberId = parseInt(req.params.labMemberId);
       
@@ -141,6 +171,12 @@ export const extractLabIdFromLabMember = () => {
 
 export const extractLabIdFromMemberStatus = () => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    // Skip for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+      next()
+      return
+    }
+
     try {
       const memberStatusId = parseInt(req.params.memberStatusId);
       

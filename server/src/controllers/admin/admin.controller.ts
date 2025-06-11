@@ -14,6 +14,7 @@ import {
   checkLabPermission
 } from '../../utils/inventoryLogging.util';
 import { InventorySource } from '@prisma/client';
+import { PERMISSIONS } from '../../config/permissions';
 
 const prisma = new PrismaClient();
 
@@ -71,7 +72,7 @@ export const getAllLabs = async (req: Request, res: Response): Promise<void> => 
                     where: {
                         labRole: {
                             permissionLevel: {
-                                gte: 70,  // Assumption: Manager roles have permission level 70+ AND are active members
+                                gte: PERMISSIONS.LAB_MANAGER,
                             },
                         }
                     },
@@ -314,7 +315,7 @@ export const deleteLab = async (req: Request, res: Response): Promise<void> => {
         let authorized = false;
         
         // Only allow Root Admins (permission level 100+) to delete labs
-        if (currentUser.role.permissionLevel >= 100) {
+        if (currentUser.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN) {
             authorized = true;
         }
 
@@ -591,218 +592,7 @@ export const createLab = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-/**
- * @swagger
- * /admin/assign-user:
- *   post:
- *     summary: Assign a user to a lab
- *     description: Adds an existing user to a lab with a specific role (regular or manager)
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - labId
- *               - userId
- *               - role
- *             properties:
- *               labId:
- *                 type: integer
- *                 description: ID of the lab
- *               userId:
- *                 type: integer
- *                 description: ID of the user to be assigned
- *               role:
- *                 type: string
- *                 description: Role assigned to the user (e.g., "regular", "manager")
- *     responses:
- *       201:
- *         description: User assigned to lab successfully
- *       404:
- *         description: Lab not found or User does not exist
- *       409:
- *         description: User already in the lab
- *       500:
- *         description: Internal server error
- */
 
-export const assignUserToLab = async (req: Request, res: Response): Promise<void> => {
-    const { labId, userId, role } = req.body;
-    try {
-        const lab = await prisma.lab.findUnique({
-            where: { id: labId }
-        });
-        if (!lab) {
-            res.status(404).json({ error: 'Lab not found' });
-        }
-        const userExists = await prisma.user.findUnique({
-            where: { id: userId }
-        });
-        if (userExists) {
-            res.status(400).json({ error: 'User does not exist' });
-        }
-
-        const userInLab = await prisma.labMember.findFirst({
-            where: {
-                labId: labId,
-                userId: userId
-            }
-        });
-
-        if (userInLab) {
-            res.status(409).json({ error: 'User already in lab' });
-        }
-
-        const labMember = await prisma.labMember.create({
-            data: {
-                labId,
-                userId,
-                labRoleId: role,
-            }
-        });
-        res.status(201).json(labMember);
-
-    } catch (error) {
-        console.error('Error assigning user to lab:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
-/**
- * @swagger
- * /admin/update-role:
- *   put:
- *     summary: Change a user's role in a lab
- *     description: Promotes or changes a user's role in an existing lab
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - labId
- *               - userId
- *               - role
- *             properties:
- *               labId:
- *                 type: integer
- *                 description: ID of the lab
- *               userId:
- *                 type: integer
- *                 description: ID of the user
- *               role:
- *                 type: integer
- *                 description: New role for the user (e.g., "regular", "manager")
- *     responses:
- *       201:
- *         description: User role updated successfully
- *       404:
- *         description: Lab not found or User not in lab
- *       500:
- *         description: Internal server error
- */
-
-export const updateRole = async (req: Request, res: Response): Promise<void> => {
-    const { labId, userId, role } = req.body;
-    try {
-        const lab = await prisma.lab.findUnique({
-            where: { id: labId }
-        });
-        if (!lab) {
-            res.status(404).json({ error: 'Lab not found' });
-        }
-        const userExists = await prisma.user.findUnique({
-            where: { id: userId }
-        });
-        if (userExists) {
-            res.status(404).json({ error: 'User does not exist' });
-        }
-
-        const userInLab = await prisma.labMember.findFirst({
-            where: {
-                labId: labId,
-                userId: userId
-            }
-        });
-
-        if (!userInLab) {
-            res.status(404).json({ error: 'User not in lab' });
-            throw new Error('User not in lab');
-        }
-
-        const labMember = await prisma.labMember.update({
-            where: {
-                id: userInLab.id
-            },
-            data: {
-                labRoleId: role,
-            }
-        });
-        res.status(201).json(labMember);
-    } catch (error) {
-        console.error('Error promoting lab manager:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
-/**
- * @swagger
- * /admin/reset-password:
- *   put:
- *     summary: Reset a user's password
- *     description: Allows resetting a user's password
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userId
- *               - newPassword
- *             properties:
- *               userId:
- *                 type: integer
- *                 description: ID of the user
- *               newPassword:
- *                 type: string
- *                 description: New password for the user
- *     responses:
- *       200:
- *         description: Password reset successfully
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal server error
- */
-
-export const resetUserPassword = async (req: Request, res: Response): Promise<void> => {
-    const { userId, newPassword } = req.body;
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: userId }
-        });
-        if (!user) {
-            res.status(404).json({ error: 'User not found' });
-        }
-        const updatedUser = await prisma.user.update({
-            where: { id: userId },
-            data: {
-                loginPassword: await hashPassword(newPassword)
-            }
-        });
-        res.status(200).json(updatedUser);
-    } catch (error) {
-        console.error('Error resetting user password:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
 
 /**
  * @swagger
@@ -895,9 +685,8 @@ export const resetLabMemberPassword = async (req: Request, res: Response): Promi
         }
 
         // Security: Prevent lab managers from resetting admin passwords
-        const ADMIN_PERMISSION_LEVEL = 100;
-        const isRequestorAdmin = requestor.role.permissionLevel >= ADMIN_PERMISSION_LEVEL;
-        const isTargetAdmin = targetUser.role.permissionLevel >= ADMIN_PERMISSION_LEVEL;
+        const isRequestorAdmin = requestor.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
+        const isTargetAdmin = targetUser.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
 
         if (isTargetAdmin && !isRequestorAdmin) {
             res.status(403).json({ 
@@ -937,9 +726,9 @@ export const resetLabMemberPassword = async (req: Request, res: Response): Promi
 /**
  * @swagger
  * /admin/remove-user:
- *   post:
- *     summary: Remove a user from a lab
- *     description: Removes an existing user from a lab
+ *   delete:
+ *     summary: Remove a user from a lab (soft delete)
+ *     description: Removes a user from a lab by changing their role to "Former Member"
  *     tags: [Admin]
  *     requestBody:
  *       required: true
@@ -1000,7 +789,7 @@ export const removeUserFromLab = async (req: Request, res: Response): Promise<vo
 
         // Find the "Former Member" role (permission level -1)
         const formerMemberRole = await prisma.labRole.findFirst({
-            where: { permissionLevel: -1 }
+            where: { permissionLevel: PERMISSIONS.FORMER_MEMBER }
         });
 
         if (!formerMemberRole) {
@@ -1042,51 +831,7 @@ export const removeUserFromLab = async (req: Request, res: Response): Promise<vo
     }
 }
 
-/**
- * @swagger
- * /admin/create-discussion-tag:
- *   post:
- *     summary: Create a new discussion tag
- *     description: Adds a new tag for discussions
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - tag
- *             properties:
- *               tag:
- *                 type: string
- *                 description: Name of the tag
- *               description:
- *                 type: string
- *                 nullable: true
- *                 description: Optional description of the tag
- *     responses:
- *       201:
- *         description: Tag created successfully
- *       500:
- *         description: Internal server error
- */
 
-export const createDiscussionTag = async (req: Request, res: Response): Promise<void> => {
-    const { tag, description } = req.body;
-    try {
-        const newTag = await prisma.postTag.create({
-            data: {
-                tag,
-                description,
-            },
-        });
-        res.status(201).json(newTag);
-    } catch (error) {
-        console.error('Error creating discussion tag:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
 
 /**
  * @swagger
@@ -1126,6 +871,7 @@ export const createDiscussionTag = async (req: Request, res: Response): Promise<
 
 export const createDiscussionCategory = async (req: Request, res: Response): Promise<void> => {
     const { labId, name, description, postPermission, visiblePermission } = req.body;
+    const userId = (req.session as any)?.passport?.user;
 
     try {
         const lab = await prisma.lab.findUnique({
@@ -1133,6 +879,13 @@ export const createDiscussionCategory = async (req: Request, res: Response): Pro
         });
         if (!lab) {
             res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        // Check if user has permission to create categories for this lab
+        const hasPermission = await checkLabPermission(userId, labId, PERMISSIONS.LAB_MANAGER);
+        if (!hasPermission) {
+            res.status(403).json({ error: 'Insufficient permissions to create discussion categories for this lab' });
             return;
         }
 
@@ -1222,6 +975,86 @@ export const getAllItems = async (req: Request, res: Response): Promise<void> =>
         res.status(200).json(items);
     } catch (error) {
         console.error('Error fetching items:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+/**
+ * @swagger
+ * /admin/get-available-items-for-lab/{labId}:
+ *   get:
+ *     summary: Get all global items not already in a specific lab
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The lab ID to check for available items
+ *     responses:
+ *       200:
+ *         description: Available items for the lab
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: Item ID
+ *                   name:
+ *                     type: string
+ *                     description: Item name
+ *                   description:
+ *                     type: string
+ *                     description: Item description
+ *                   safetyInfo:
+ *                     type: string
+ *                     description: Safety information
+ *                   approval:
+ *                     type: boolean
+ *                     description: Whether the item is approved
+ *       400:
+ *         description: Invalid lab ID
+ *       403:
+ *         description: Forbidden - insufficient permissions for this lab
+ *       404:
+ *         description: Lab not found
+ *       500:
+ *         description: Internal server error
+ */
+export const getAvailableItemsForLab = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const labId = parseInt(req.params.labId);
+        
+        if (isNaN(labId)) {
+            res.status(400).json({ error: 'Invalid lab ID' });
+            return;
+        }
+
+        // Check if lab exists
+        const lab = await prisma.lab.findUnique({
+            where: { id: labId }
+        });
+
+        if (!lab) {
+            res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        // Get all global items (filtering is done client-side)
+        const availableItems = await prisma.item.findMany({
+            orderBy: {
+                id: 'asc'
+            }
+        });
+
+        res.status(200).json(availableItems);
+    } catch (error) {
+        console.error('Error fetching available items for lab:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
