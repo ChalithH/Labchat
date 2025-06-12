@@ -38,6 +38,7 @@ interface ManageMembersTabProps {
   isLoadingMembers: boolean;
   membersError: string | null;
   onMembersUpdate: () => void;
+  onMembersChange: (updatedMembers: LabMemberData[]) => void;
   isRootAdmin: boolean;
   labId: string;
 }
@@ -48,6 +49,7 @@ export default function ManageMembersTab({
   isLoadingMembers, 
   membersError, 
   onMembersUpdate,
+  onMembersChange,
   isRootAdmin,
   labId
 }: ManageMembersTabProps) {
@@ -99,7 +101,9 @@ export default function ManageMembersTab({
   const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const handleOpenManageStatusesModal = useCallback(async (member: LabMemberData) => {
-    setMemberForStatusModal(member);
+    // Use the latest member data from the main list to ensure status synchronization
+    const latestMemberData = labMembers.find(m => m.memberID === member.memberID);
+    setMemberForStatusModal(latestMemberData || member);
     setSelectedMemberContacts(null);
     setIsLoadingContacts(true);
     setIsManageStatusModalOpen(true);
@@ -118,7 +122,7 @@ export default function ManageMembersTab({
     } finally {
       setIsLoadingContacts(false);
     }
-  }, [globalStatuses.length]);
+  }, [globalStatuses.length, labMembers]);
 
   const handleSetActiveStatus = async (memberStatusIdToActivate: number) => {
     if (!memberForStatusModal) return;
@@ -127,7 +131,7 @@ export default function ManageMembersTab({
       await api.put(`/admin/member-status/${memberStatusIdToActivate}/activate`);
       toast.success("Status activated successfully");
       
-      // Update status activation in modal data - 'selective' update
+      // Update status activation in modal data - selective update
       const updatedStatuses = memberForStatusModal.status.map(statusEntry => ({
         ...statusEntry,
         isActive: statusEntry.id === memberStatusIdToActivate
@@ -137,6 +141,14 @@ export default function ManageMembersTab({
         ...memberForStatusModal,
         status: updatedStatuses
       });
+      
+      // Also update the main member list to keep it synchronized
+      const updatedMembers = labMembers.map(member => 
+        member.memberID === memberForStatusModal.memberID
+          ? { ...member, status: updatedStatuses }
+          : member
+      );
+      onMembersChange(updatedMembers);
     } catch (err: any) {
       console.error(`Failed to activate MemberStatus ID: ${memberStatusIdToActivate}`, err);
       toast.error(err.response?.data?.error || "Failed to activate status.");
@@ -172,6 +184,14 @@ export default function ManageMembersTab({
         ...memberForStatusModal,
         status: updatedStatuses
       });
+      
+      // Also update the main member list to keep it synchronized
+      const updatedMembers = labMembers.map(member => 
+        member.memberID === memberForStatusModal.memberID
+          ? { ...member, status: updatedStatuses }
+          : member
+      );
+      onMembersChange(updatedMembers);
     } catch (err: any) {
       console.error("Failed to update description", err);
       toast.error(err.response?.data?.error || "Failed to save description.");
@@ -203,6 +223,14 @@ export default function ManageMembersTab({
         ...memberForStatusModal,
         status: updatedStatuses
       });
+      
+      // Update main member list to keep synchronized
+      const updatedMembers = labMembers.map(member => 
+        member.memberID === memberForStatusModal.memberID
+          ? { ...member, status: updatedStatuses }
+          : member
+      );
+      onMembersChange(updatedMembers);
     } catch (err: any) {
       console.error("Failed to delete status entry", err);
       toast.error(err.response?.data?.error || "Failed to delete status entry.");
@@ -241,6 +269,14 @@ export default function ManageMembersTab({
         ...memberForStatusModal,
         status: updatedStatuses
       });
+      
+      
+      const updatedMembers = labMembers.map(member => 
+        member.memberID === memberForStatusModal.memberID
+          ? { ...member, status: updatedStatuses }
+          : member
+      );
+      onMembersChange(updatedMembers);
     } catch (err: any) {
       console.error("Failed to create new status entry", err);
       toast.error(err.response?.data?.error || "Failed to create new status entry.");
@@ -270,7 +306,17 @@ export default function ManageMembersTab({
       setIsChangeRoleModalOpen(false); 
       setMemberForRoleChange(null);
       setSelectedNewLabRoleId("");
-      onMembersUpdate();
+      
+      // Update role in local state
+      const updatedMembers = labMembers.map(member => 
+        member.memberID === memberForRoleChange.memberID
+          ? { ...member, labRoleId: parseInt(selectedNewLabRoleId) }
+          : member
+      );
+      
+      // Update parent component's state immediately
+      onMembersChange(updatedMembers);
+      
     } catch (err: any) {
       console.error("Failed to update lab role:", err);
       toast.error(err.response?.data?.error || "Failed to update lab role.");
@@ -289,7 +335,17 @@ export default function ManageMembersTab({
     try {
       await api.put(`/admin/lab-member/${member.memberID}/induction`);
       toast.success(`${member.displayName}'s induction status toggled!`);
-      onMembersUpdate();
+      
+      // Update induction status in local state
+      const updatedMembers = labMembers.map(memberItem => 
+        memberItem.memberID === member.memberID
+          ? { ...memberItem, inductionDone: !memberItem.inductionDone }
+          : memberItem
+      );
+      
+      // Update parent component's state immediately
+      onMembersChange(updatedMembers);
+      
     } catch (err: any) {
       console.error(`Failed to toggle induction for ${member.displayName}:`, err);
       toast.error(err.response?.data?.error || "Failed to toggle induction status.");
@@ -320,7 +376,15 @@ export default function ManageMembersTab({
       toast.success(`${memberToRemove.displayName} has been removed from the lab.`);
       setIsRemoveMemberConfirmOpen(false);
       setMemberToRemove(null);
-      onMembersUpdate();
+      
+      // Remove member from local state
+      const updatedMembers = labMembers.filter(
+        member => member.id !== memberToRemove.id
+      );
+      
+      // Update parent component's state immediately
+      onMembersChange(updatedMembers);
+      
     } catch (err: any) {
       console.error(`Failed to remove ${memberToRemove.displayName}:`, err);
       toast.error(err.response?.data?.error || "Failed to remove member.");
@@ -338,7 +402,17 @@ export default function ManageMembersTab({
       });
       
       toast.success(`PIC ${!memberToUpdate.isPCI ? 'assigned to' : 'removed from'} ${memberToUpdate.displayName}`);
-      onMembersUpdate();
+      
+      // Update PIC status in local state
+      const updatedMembers = labMembers.map(member => 
+        member.memberID === memberToUpdate.memberID
+          ? { ...member, isPCI: !member.isPCI }
+          : member
+      );
+      
+      // Update parent component's state immediately
+      onMembersChange(updatedMembers);
+      
     } catch (err: any) {
       console.error("Failed to toggle PIC for member:", err);
       toast.error(err.response?.data?.error || 'Failed to update PIC status');
@@ -544,9 +618,11 @@ export default function ManageMembersTab({
                                 <div className="mt-2 flex items-center space-x-1">
                                   <Button variant="outline" size="sm" onClick={() => handleStartEditDescription(ms)}>Edit</Button>
                                   {!ms.isActive && <Button variant="ghost" size="sm" onClick={() => handleSetActiveStatus(ms.id)}>Set Active</Button>}
-                                  <Button variant="destructive" size="sm" onClick={() => handleOpenConfirmDeleteDialog(ms.id)} className="p-1.5 h-auto">
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
+                                  {!ms.isActive && (
+                                    <Button variant="destructive" size="sm" onClick={() => handleOpenConfirmDeleteDialog(ms.id)} className="p-1.5 h-auto">
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
                                 </div>
                               )}
                             </div>

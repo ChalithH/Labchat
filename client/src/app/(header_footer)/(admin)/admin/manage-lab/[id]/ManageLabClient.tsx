@@ -256,6 +256,7 @@ export default function ManageLabClient({ params, isRootAdmin }: ManageLabClient
             isLoadingMembers={isLoadingMembers}
             membersError={membersError}
             onMembersUpdate={fetchLabMembers}
+            onMembersChange={setLabMembers}
             isRootAdmin={isRootAdmin}
             labId={params.id}
           />
