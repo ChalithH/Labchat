@@ -23,6 +23,15 @@ const DiscussionHome = async () => {
       redirect('/home')
     }
 
+    if (!user.lastViewedLabId) {
+      redirect('/admission');
+    }
+
+    const lab: AxiosResponse = await api.get(`/lab/${ user.lastViewedLabId }`)
+    if (!lab) {
+      redirect('/admission');
+    }
+
     const currentLabId = user.lastViewedLabId || 1
     const member = await api.get(`/member/get/user-lab/${ user.id }/${ currentLabId }`)
     

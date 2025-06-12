@@ -3,6 +3,8 @@ import InventoryClient from "../components/InventoryClient"
 import { redirect } from "next/navigation"
 import setUsersLastViewed from "@/lib/set_last_viewed"
 import { LabProvider } from "@/contexts/lab-context"
+import api from "@/lib/api"
+import { AxiosResponse } from "axios"
 
 const Inventory: React.FC = async () => {
   await setUsersLastViewed(`/inventory`)
@@ -16,6 +18,15 @@ const Inventory: React.FC = async () => {
   const lastViewedLabId = user.lastViewedLabId && !isNaN(parseInt(user.lastViewedLabId))
     ? parseInt(user.lastViewedLabId)
     : 1;
+
+  if (!user.lastViewedLabId) {
+    redirect('/admission');
+  }
+
+  const lab: AxiosResponse = await api.get(`/lab/${ user.lastViewedLabId }`)
+  if (!lab) {
+    redirect('/admission');
+  }
 
   return (
     <LabProvider initialLabId={lastViewedLabId}>

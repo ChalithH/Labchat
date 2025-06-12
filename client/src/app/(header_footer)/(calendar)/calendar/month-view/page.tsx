@@ -7,6 +7,8 @@ import { redirect } from "next/navigation";
 import { LabProvider } from "@/contexts/lab-context";
 import { transformLabMember } from "../../transform-api-event";
 import getLabMember from "@/lib/get_lab_member";
+import { AxiosResponse } from "axios";
+import api from "@/lib/api";
 
 export default async function MonthViewPage() {
   setUsersLastViewed('/calendar/month-view');
@@ -18,6 +20,14 @@ export default async function MonthViewPage() {
   }
 
   const currentLabId = user.lastViewedLabId || 1;
+  if (!user.lastViewedLabId) {
+    redirect('/admission');
+  }
+  
+  const lab: AxiosResponse = await api.get(`/lab/${ user.lastViewedLabId }`)
+  if (!lab) {
+    redirect('/admission');
+  }
   const currentDate = new Date();
   const startDate = startOfMonth(currentDate);
   const endDate = endOfMonth(currentDate);
