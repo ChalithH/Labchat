@@ -112,9 +112,16 @@ export default function Header() {
   const handleProfile = async () => {
     if (isLoggedIn) {
       const user = await getUserFromSession();
-      console.log('USERSERSER',user)
-      const member = await api.get(`/member/get/user-lab/${ user.id }/${ user.lastViewedLabId }`)
-      redirect(`/profile/${member.data.id}`);
+
+      if (!user?.lastViewedLabId)
+        redirect('/admission');
+      
+      try {
+        const member = await api.get(`/member/get/user-lab/${ user.id }/${ user.lastViewedLabId }`)
+        redirect(`/profile/${member.data.id}`);
+      } catch (_) {
+        redirect(`/admission`);
+      }
     }
   };
 
