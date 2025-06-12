@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { hashPassword } from '../../utils/hashing.util';
+import { hashPassword } from '../../../utils/hashing.util';
 import { 
   getLabMemberIdFromRequest, 
   logItemAdded, 
@@ -11,9 +11,9 @@ import {
   logItemUpdate,
   getInventoryLogsForLab,
   getUserAndMemberIdFromRequest
-} from '../../utils/inventoryLogging.util';
+} from '../../../utils/inventoryLogging.util';
 import { InventorySource } from '@prisma/client';
-import { PERMISSIONS } from '../../config/permissions';
+import { PERMISSIONS } from '../../../config/permissions';
 
 const prisma = new PrismaClient();
 
