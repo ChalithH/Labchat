@@ -126,7 +126,17 @@ export default function ManageMembersTab({
     try {
       await api.put(`/admin/member-status/${memberStatusIdToActivate}/activate`);
       toast.success("Status activated successfully");
-      onMembersUpdate(); // Refresh members data
+      
+      // Update status activation in modal data - 'selective' update
+      const updatedStatuses = memberForStatusModal.status.map(statusEntry => ({
+        ...statusEntry,
+        isActive: statusEntry.id === memberStatusIdToActivate
+      }));
+      
+      setMemberForStatusModal({
+        ...memberForStatusModal,
+        status: updatedStatuses
+      });
     } catch (err: any) {
       console.error(`Failed to activate MemberStatus ID: ${memberStatusIdToActivate}`, err);
       toast.error(err.response?.data?.error || "Failed to activate status.");
@@ -151,7 +161,17 @@ export default function ManageMembersTab({
       toast.success("Description updated!");
       setEditingMemberStatusId(null);
       setCurrentEditingDescription("");
-      onMembersUpdate();
+      
+      const updatedStatuses = memberForStatusModal.status.map(statusEntry => 
+        statusEntry.id === editingMemberStatusId
+          ? { ...statusEntry, description: currentEditingDescription }
+          : statusEntry
+      );
+      
+      setMemberForStatusModal({
+        ...memberForStatusModal,
+        status: updatedStatuses
+      });
     } catch (err: any) {
       console.error("Failed to update description", err);
       toast.error(err.response?.data?.error || "Failed to save description.");
@@ -173,7 +193,16 @@ export default function ManageMembersTab({
       toast.success("Status entry deleted!");
       setIsConfirmDeleteDialogOpen(false);
       setStatusToDeleteId(null);
-      onMembersUpdate();
+      
+      // Remove deleted status from modal data - selective update
+      const updatedStatuses = memberForStatusModal.status.filter(
+        statusEntry => statusEntry.id !== statusToDeleteId
+      );
+      
+      setMemberForStatusModal({
+        ...memberForStatusModal,
+        status: updatedStatuses
+      });
     } catch (err: any) {
       console.error("Failed to delete status entry", err);
       toast.error(err.response?.data?.error || "Failed to delete status entry.");
@@ -195,7 +224,9 @@ export default function ManageMembersTab({
         description: newStatusDescription,
       };
       
-      await api.post(`/admin/lab-member/${memberForStatusModal.memberID}/status`, payload);
+      const response = await api.post(`/admin/lab-member/${memberForStatusModal.memberID}/status`, payload);
+      const newStatusEntry = response.data;
+      
       toast.success("New status entry created successfully!");
 
       // Clear form fields
@@ -203,7 +234,13 @@ export default function ManageMembersTab({
       setNewStatusSelectedContactId("");
       setNewStatusDescription("");
 
-      onMembersUpdate();
+      // Add new status to modal data - selective update
+      const updatedStatuses = [...memberForStatusModal.status, newStatusEntry];
+      
+      setMemberForStatusModal({
+        ...memberForStatusModal,
+        status: updatedStatuses
+      });
     } catch (err: any) {
       console.error("Failed to create new status entry", err);
       toast.error(err.response?.data?.error || "Failed to create new status entry.");

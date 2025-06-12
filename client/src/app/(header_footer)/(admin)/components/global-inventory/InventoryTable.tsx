@@ -118,6 +118,7 @@ const filteredItems = useMemo(() => {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify(updatedItem),
         }
       )
@@ -148,6 +149,7 @@ const filteredItems = useMemo(() => {
         `${API_URL}/admin/delete-item/${itemToDelete}`,
         {
           method: 'DELETE',
+          credentials: 'include',
         }
       )
 
