@@ -115,11 +115,11 @@ export default function StatusPresenceCard({
   };
 
   return (
-    <Card className="h-full">
-      <CardContent className="pt-6 space-y-6">
+    <Card>
+      <CardContent className="pt-2 space-y-2">
         {/* Status Section */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-base font-medium">Status</h3>
             <Button 
               variant="outline" 
@@ -158,8 +158,8 @@ export default function StatusPresenceCard({
         </div>
 
         {/* Lab Presence Section */}
-        <div className="border-t pt-6">
-          <h3 className="text-base font-medium mb-3">Lab Presence</h3>
+        <div className="border-t pt-3">
+          <h3 className="text-base font-medium mb-2">Lab Presence</h3>
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

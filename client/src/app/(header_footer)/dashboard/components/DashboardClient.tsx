@@ -316,11 +316,11 @@ export default function DashboardClient({ user }: DashboardClientProps) {
       </section>
 
       {/* Row 1: Status & Presence + Currently On-Site */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <section className="flex flex-col lg:flex-row gap-4">
         {/* My Current Status */}
         {fullCurrentUserMember && (
-          <div>
-            <div className="flex items-center justify-between mb-4 h-8">
+          <div className="lg:w-2/5">
+            <div className="flex items-center justify-between mb-2 h-8">
               <h2 className="text-xl font-semibold text-foreground">My Current Status</h2>
             </div>
             <StatusPresenceCard
@@ -352,8 +352,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         )}
 
         {/* Currently On-Site */}
-        <div>
-          <div className="flex items-center justify-between mb-4 h-8">
+        <div className="lg:w-3/5">
+          <div className="flex items-center justify-between mb-3 h-8">
             <h2 className="text-xl font-semibold text-foreground">Currently On-Site ({currentMembers.length})</h2>
             <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
               <Link href="/members">View All</Link>
@@ -440,7 +440,11 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         <StatusManagementModal
           open={statusModalOpen}
           onOpenChange={setStatusModalOpen}
-          member={fullCurrentUserMember}
+          member={{
+            memberID: fullCurrentUserMember.memberID,
+            status: fullCurrentUserMember.status || [],
+            id: fullCurrentUserMember.id
+          }}
           onStatusUpdate={async () => {
             if (currentMemberId) {
               const res = await api.get(`/member/get-with-status/${currentMemberId}`);
