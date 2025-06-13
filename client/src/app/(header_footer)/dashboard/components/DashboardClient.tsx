@@ -1,9 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import AnnouncementCard from "./AnnouncementCard";
-import MemberCard from "./MemberCard";
+import StatusPresenceCard from "./StatusPresenceCard";
+import CurrentlyOnSiteCard from "./CurrentlyOnSiteCard";
 import JobCard from "./JobCard";
 import InventoryCard from "./InventoryCard";
+import StatusManagementModal from "./StatusManagementModal";
 import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -17,14 +19,13 @@ import type { Member, Job, InventoryItem } from "./types";
 import { PostType } from "@/types/post.type";
 import Link from "next/link";
 import api from '@/lib/api';
-import { DashboardStatusModal } from "./DashboardStatusModal";
 import { getEvents } from "@/app/(header_footer)/(calendar)/requests";
 import { useCurrentLabId } from "@/contexts/lab-context";
 import ResolveRoleName from '@/lib/resolve_role_name.util';
 import { parseISO, startOfDay, startOfToday, format, isAfter, isSameDay } from 'date-fns';
 
 // Attendance API helpers
-async function clockIn(labId: number) {
+async function checkIn(labId: number) {
   const res = await api.post('/attendance/clock-in', { labId });
   return res.data;
 }
@@ -52,12 +53,11 @@ interface DashboardClientProps {
 
 export default function DashboardClient({ user }: DashboardClientProps) {
   const currentLabId = useCurrentLabId(); // Get current lab ID from context
-  const [isClockedIn, setIsClockedIn] = useState<boolean | null>(null);
+  const [isCheckedIn, setIsCheckedIn] = useState<boolean | null>(null);
+  const [checkInTime, setCheckInTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentMembers, setCurrentMembers] = useState<Member[]>([]);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
-  const [statusModalLoading, setStatusModalLoading] = useState(false);
-  const [statusModalError, setStatusModalError] = useState<string | null>(null);
   const [fullCurrentUserMember, setFullCurrentUserMember] = useState<Member | null>(null);
   const [showAllJobs, setShowAllJobs] = useState(false);
   const [showAllInventory, setShowAllInventory] = useState(false);
@@ -67,6 +67,18 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [currentMemberId, setCurrentMemberId] = useState<number | null>(user.memberID || null);
+
+  // Handle status modal open event
+  useEffect(() => {
+    const handleOpenStatusModal = () => {
+      setStatusModalOpen(true);
+    };
+    
+    window.addEventListener('openStatusModal', handleOpenStatusModal);
+    return () => {
+      window.removeEventListener('openStatusModal', handleOpenStatusModal);
+    };
+  }, []);
 
   useEffect(() => {
     const sessionUserId = user.userId;
@@ -155,7 +167,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     
     // Fetch attendance status and current members
     getAttendanceStatus(currentLabId).then(data => {
-      setIsClockedIn(data.isClockedIn);
+      setIsCheckedIn(data.isClockedIn);
+      setCheckInTime(data.clockInTime || null);
     }).catch(err => console.error("Failed to get attendance status:", err));
     getCurrentMembers(currentLabId).then(data => {
       setCurrentMembers(data.members || []);
@@ -224,12 +237,13 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     }
   }, [currentMemberId]);
 
-  // Refresh attendance and current members after clock in/out or status change
+  // Refresh attendance and current members after check in/out or status change
   const refreshAttendanceAndMembers = async () => {
     if (currentLabId) {
       try {
         const status = await getAttendanceStatus(currentLabId);
-    setIsClockedIn(status.isClockedIn);
+        setIsCheckedIn(status.isClockedIn);
+        setCheckInTime(status.clockInTime || null);
         const membersData = await getCurrentMembers(currentLabId);
         setCurrentMembers(membersData.members || []);
       } catch (err) {
@@ -238,63 +252,48 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     }
   };
 
-  const handleClockIn = async () => {
+  const handleCheckIn = async () => {
     setStatusModalOpen(true);
   };
 
-  const handleClockOut = async () => {
+  const handleCheckOut = async () => {
     setLoading(true);
-    if (currentLabId) {
+    if (currentLabId && fullCurrentUserMember) {
       try {
-        await clockOut(currentLabId);
+        // Find the inactive status
+        const inactiveStatus = fullCurrentUserMember.status?.find(s => 
+          s.status.statusName.toLowerCase() === 'inactive'
+        );
+        
+        if (inactiveStatus) {
+          await api.post("/member/set-status", {
+            memberId: fullCurrentUserMember.memberID,
+            statusId: inactiveStatus.status.id
+          });
+        }
+        
+        await api.post('/attendance/clock-out', { labId: currentLabId });
         await refreshAttendanceAndMembers();
       } catch (err) {
-        console.error("Failed to clock out:", err);
+        console.error("Failed to check out:", err);
       }
     }
     setLoading(false);
   };
 
-  const handleStatusModalConfirm = async (statusId: number | undefined) => {
-    setStatusModalLoading(true);
-    setStatusModalError(null);
-    try {
-      if (statusId && fullCurrentUserMember) {
-        await api.post("/member/set-status", {
-          memberId: fullCurrentUserMember.memberID,
-          statusId,
-        });
-      }
-      if (currentLabId) {
-        await clockIn(currentLabId);
-      setStatusModalOpen(false);
+  const handleCheckInFromModal = async () => {
+    if (currentLabId) {
+      try {
+        await checkIn(currentLabId);
         await refreshAttendanceAndMembers();
-      // Refetch full member info after status change
-        if (currentMemberId) {
-          api.get(`/member/get-with-status/${currentMemberId}`).then(res => {
-          setFullCurrentUserMember(res.data);
-        });
-        }
+      } catch (err) {
+        console.error("Failed to check in:", err);
       }
-    } catch (err: any) {
-      setStatusModalError(err.message || "Failed to update status or clock in");
-    } finally {
-      setStatusModalLoading(false);
     }
   };
 
-  async function clockOut(labId: number) {
-    if (fullCurrentUserMember) {
-            await api.post("/member/set-status", {
-              memberId: fullCurrentUserMember.memberID,
-              statusId: 3
-            });
-          }
-      const res = await api.post('/attendance/clock-out', { labId });
-      return res.data;
-    }
   return (
-    <main className="barlow-font px-6 py-8 space-y-10 max-w-6xl mx-auto bg-background text-foreground">
+    <main className="barlow-font px-6 py-8 space-y-16 max-w-6xl mx-auto bg-background text-foreground">
       {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
@@ -316,59 +315,75 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         <p className="text-muted-foreground text-sm">Here&apos;s a quick overview of what&apos;s happening.</p>
       </section>
 
-      {/* Row 1: Announcements + Currently in Lab */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
-        {/* Announcements */}
-        <div className="md:mr-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex-grow">Recent Announcements</h2>
+      {/* Row 1: Status & Presence + Currently On-Site */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* My Current Status */}
+        {fullCurrentUserMember && (
+          <div>
+            <div className="flex items-center justify-between mb-4 h-8">
+              <h2 className="text-xl font-semibold text-foreground">My Current Status</h2>
+            </div>
+            <StatusPresenceCard
+              member={{
+                memberID: fullCurrentUserMember.memberID,
+                displayName: fullCurrentUserMember.displayName,
+                name: fullCurrentUserMember.displayName || fullCurrentUserMember.name || 
+                      (fullCurrentUserMember.firstName && fullCurrentUserMember.lastName 
+                        ? `${fullCurrentUserMember.firstName} ${fullCurrentUserMember.lastName}` 
+                        : 'Member'),
+                status: fullCurrentUserMember.status || [],
+                labAttendance: fullCurrentUserMember.labAttendance || [],
+                labId: currentLabId || undefined
+              }}
+              isCheckedIn={isCheckedIn || false}
+              checkInTime={checkInTime}
+              onStatusChange={async () => {
+                // Refresh member data after status change
+                if (currentMemberId) {
+                  const res = await api.get(`/member/get-with-status/${currentMemberId}`);
+                  setFullCurrentUserMember(res.data);
+                }
+                // Also refresh the members list to update Currently On-Site
+                await refreshAttendanceAndMembers();
+              }}
+              onAttendanceChange={refreshAttendanceAndMembers}
+            />
+          </div>
+        )}
+
+        {/* Currently On-Site */}
+        <div>
+          <div className="flex items-center justify-between mb-4 h-8">
+            <h2 className="text-xl font-semibold text-foreground">Currently On-Site ({currentMembers.length})</h2>
             <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
-              <Link href="/discussion/topic/1">View All</Link>
+              <Link href="/members">View All</Link>
             </Button>
           </div>
-          <div className="overflow-visible w-full" style={{ overflow: 'visible' }}>
-            <AnnouncementCard announcement={announcements} />
-          </div>
-        </div>
-
-        {/* Currently in Lab */}
-        <div className="md:ml-4 p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Currently in Lab ({currentMembers.length})</h2>
-            <div className="flex gap-2">
-              {isClockedIn !== null && (
-                <Button
-                  className={isClockedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}
-                  onClick={isClockedIn ? handleClockOut : handleClockIn}
-                  disabled={loading}
-                >
-                  {isClockedIn ? 'Clock Out' : 'Clock In'}
-                </Button>
-              )}
-              <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
-                <Link href="/members">View All</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {currentMembers.length === 0 ? (
-              <div className="text-muted-foreground">No members currently in lab.</div>
-            ) : (
-              currentMembers
-                .slice()
-                .sort((a, b) => b.permissionLevel - a.permissionLevel)
-                .map((member, idx) => (
-                  <MemberCard key={idx} member={member} />
-                ))
-            )}
-          </div>
+          <CurrentlyOnSiteCard members={currentMembers} />
         </div>
       </section>
 
-      {/* Upcoming Jobs */}
-      <section className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">Your Calendar</h2>
+      {/* Row 2: Announcements */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-foreground">Recent Announcements</h2>
+          <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
+            <Link href="/discussion/home">View All</Link>
+          </Button>
+        </div>
+        <div className="overflow-visible w-full">
+          {announcements.length === 0 ? (
+            <div className="text-muted-foreground">No recent announcements.</div>
+          ) : (
+            <AnnouncementCard announcement={announcements} />
+          )}
+        </div>
+      </section>
+
+      {/* Your Calendar */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-foreground">Your Calendar</h2>
           <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
             <Link href="/calendar">View All</Link>
           </Button>
@@ -392,9 +407,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
       </section>
 
       {/* Inventory Warnings */}
-      <section className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">Inventory Warnings</h2>
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-foreground">Inventory Warnings</h2>
           <Button asChild className="rounded-full bg-blue-400 hover:bg-blue-500 text-white px-6 py-1 text-sm">
             <Link href="/inventory">View All</Link>
           </Button>
@@ -420,15 +435,20 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         </div>
       </section>
 
-      {/* Status Modal for current user */}
+      {/* Status Management Modal */}
       {fullCurrentUserMember && (
-        <DashboardStatusModal
+        <StatusManagementModal
           open={statusModalOpen}
           onOpenChange={setStatusModalOpen}
           member={fullCurrentUserMember}
-          onConfirm={handleStatusModalConfirm}
-          loading={statusModalLoading}
-          error={statusModalError}
+          onStatusUpdate={async () => {
+            if (currentMemberId) {
+              const res = await api.get(`/member/get-with-status/${currentMemberId}`);
+              setFullCurrentUserMember(res.data);
+            }
+            // Refresh the members list to update Currently On-Site
+            await refreshAttendanceAndMembers();
+          }}
         />
       )}
     </main>

@@ -25,6 +25,11 @@ export interface Member {
     contactInfo?: string;
     contactName?: string;
   }>;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  labAttendance?: any[];
+  isPCI?: boolean;
 }
 
 export interface Job {

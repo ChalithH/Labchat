@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { MemberStatus, ContactType } from '../types/profile.types';
 
 interface EditStatusDialogProps {
@@ -41,10 +42,12 @@ export default function EditStatusDialog({
   const [loading, setLoading] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState<number | undefined>(undefined);
   const [localContacts, setLocalContacts] = useState<ContactType[]>(availableContacts);
+  const [description, setDescription] = useState<string>('');
 
   useEffect(() => {
     if (editingStatus) {
       setSelectedContactId(editingStatus.contactId);
+      setDescription(editingStatus.description || '');
     }
   }, [editingStatus]);
 
@@ -85,6 +88,7 @@ export default function EditStatusDialog({
     try {
       const payload = {
         contactId: selectedContactId,
+        description: description.trim() || null,
       };
 
       await api.put(`/member/member-status/${editingStatus.id}`, payload);
@@ -97,6 +101,7 @@ export default function EditStatusDialog({
         contactInfo: selectedContact?.info,
         contactName: selectedContact?.name,
         contactId: selectedContact?.id,
+        description: description.trim() || undefined,
       };
 
       onStatusUpdated(updatedStatus);
@@ -112,8 +117,9 @@ export default function EditStatusDialog({
 
   const handleCancel = () => {
     if (editingStatus) {
-      // Reset to original contact when canceling
+      // Reset to original values when canceling
       setSelectedContactId(editingStatus.contactId);
+      setDescription(editingStatus.description || '');
     }
     onOpenChange(false);
   };
@@ -167,6 +173,21 @@ export default function EditStatusDialog({
             </Select>
             <p className="text-sm text-gray-500 mt-1">
               Please select a contact to associate with this status. *Required
+            </p>
+          </div>
+          
+          <div>
+            <Label htmlFor="description">Description (Optional)</Label>
+            <Textarea
+              id="description"
+              placeholder="Add a description for this status"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="mt-1"
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Provide additional context about your status to help your team know more details.
             </p>
           </div>
         </div>

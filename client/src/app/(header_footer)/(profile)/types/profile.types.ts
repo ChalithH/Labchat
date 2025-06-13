@@ -22,6 +22,7 @@ export type MemberStatus = {
   contactInfo?: string;
   contactName?: string;
   contactId?: number;
+  description?: string;
 }
 
 export type ProfileDataType = {
