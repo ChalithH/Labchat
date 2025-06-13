@@ -42,6 +42,7 @@ const router = Router();
  *       500: 
  *         description: "Internal server error during login."
  */
+console.log('Login handler is:', login);
 router.post('/login', login);
 
 /**

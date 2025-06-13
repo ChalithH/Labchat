@@ -1,10 +1,11 @@
-import { PrismaClient } from '@prisma/client';
 import http from 'http'
 import app from './app'
 import { Server as SocketIOServer } from 'socket.io'
 import { setupSocket } from './socket'
+import { PrismaClient } from '@prisma/client';
 
 export const prisma = new PrismaClient();
+
 const PORT = process.env.PORT;
 const origin = process.env.API_URL;
 const ENV = process.env.NODE_ENV;
@@ -46,5 +47,4 @@ process.on('SIGINT', async () => {
 });
 
 main();
-setupSocket(io)
-
+setupSocket(io);
