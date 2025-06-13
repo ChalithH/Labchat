@@ -14,8 +14,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
-const SearchResults = async ({ searchParams }: { searchParams: { q?: string } }) => {
-  const query = searchParams.q?.trim() || ''
+
+type Params = Promise<{ q?: string }>
+
+const SearchResults = async (props:{ params: Params}) => {
+  const params = await props.params
+  const query = params.q?.trim() || ''
   let results: PostType[] = []
 
   if (query.length > 0) {
@@ -45,7 +49,7 @@ const SearchResults = async ({ searchParams }: { searchParams: { q?: string } })
         </BreadcrumbList>
       </Breadcrumb>
 
-      <h1 className="text-3xl font-bold mb-4">Search Results for "{ query}"</h1>
+      <h1 className="text-3xl font-bold mb-4">Search Results for &quot;{ query}&quot;</h1>
 
       { results.length === 0 ?
         <div className="text-gray-500 italic text-center py-8">
