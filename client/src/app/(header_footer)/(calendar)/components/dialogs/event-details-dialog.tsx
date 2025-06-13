@@ -15,6 +15,7 @@ import { EventLink } from "@/calendar/components/event-link";
 import { StatusAction } from "@/calendar/components/status-action";
 
 import type { IEvent } from "@/calendar/interfaces";
+import { useCalendar } from "../../contexts/calendar-context";
 
 interface IProps {
   event: IEvent;
@@ -23,9 +24,13 @@ interface IProps {
 
 export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
   const [event, setEvent] = useState(initialEvent);
+  const { currentUser } = useCalendar();
   
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
+  const canEditOrDelete = currentUser && (
+    event.user.id === currentUser.id || Number(currentUser.labRoleId) === 1
+  );
 
   // Get the type name with proper formatting
   const typeName = event.type?.name || "Event";
@@ -166,19 +171,24 @@ export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Open Event Page
               </EventLink>
-              <DeleteEventDialog event={event}>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
-                </Button>
-              </DeleteEventDialog>
-              
-              <EditEventDialog event={event}>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-              </EditEventDialog>
+              {/* Only show Edit and Delete buttons if user has permission */}
+              {canEditOrDelete && (
+              <div className="flex flex-row gap-2">
+                <DeleteEventDialog event={event}>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </DeleteEventDialog>
+                
+                <EditEventDialog event={event}>
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                </EditEventDialog>
+              </div>
+              )}
             </div>
           </DialogFooter>
         </DialogContent>
