@@ -73,7 +73,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // ===== EVENT STATUS UPDATE SERVICE =====
-initializeStatusUpdateService();
+// Only initialize in non-test environments to prevent background processes during testing
+if (ENV !== 'test') {
+  initializeStatusUpdateService();
+}
+
+// Export a cleanup function for tests
+export const cleanup = async () => {
+  // Any app-level cleanup can go here
+};
 
 // ===== API DOCUMENTATION =====
 swaggerDocs(app);

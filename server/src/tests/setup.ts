@@ -1,17 +1,17 @@
 import { execSync } from 'child_process';
-
 import dotenv from 'dotenv';
 import { prisma } from '../prisma';
+
 dotenv.config({ path: '.env' });
 
+// Store cleanup functions to call during teardown
+const cleanupFunctions: (() => Promise<void> | void)[] = [];
 
 beforeAll(async () => {
   console.log('Setting up test database...');
 
-  // Connect to test database
   await prisma.$connect();
 
-  // Run migrations on test database
   try {
     execSync('npm run remigrate', {
       env: {
@@ -24,12 +24,11 @@ beforeAll(async () => {
     console.error('Migration failed:', error);
   }
 
-  // Seed test database with production data
   try {
     execSync('npm run seed', {
       env: {
         ...process.env,
-        NODE_ENV: 'production', // Use production seed data
+        NODE_ENV: 'production', 
         DATABASE_URL: process.env.TEST_DATABASE_URL
       },
       stdio: 'inherit'
@@ -41,7 +40,34 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  console.log('Cleaning up test environment...');
+  
+  for (const cleanup of cleanupFunctions) {
+    try {
+      await cleanup();
+    } catch (error) {
+      console.warn('Cleanup function failed:', error);
+    }
+  }
+  
+  try {
+    const { cleanup: indexCleanup } = await import('../index');
+    if (indexCleanup) {
+      await indexCleanup();
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log('Index cleanup not needed or failed:', error.message);
+    } else {
+      console.log('Index cleanup not needed or failed:', error);
+    }
+  }
+  
+  // Disconnect from database
   await prisma.$disconnect();
+  
+  // Give more time for any remaining async operations to complete
+  await new Promise(resolve => setTimeout(resolve, 500));
 });
 
 // Optional: Reset specific tables between tests
@@ -56,6 +82,11 @@ export const resetTestData = async () => {
       console.warn(`Failed to reset ${table}:`, error);
     }
   }
+};
+
+// Function to register cleanup callbacks
+export const registerCleanup = (cleanupFn: () => Promise<void> | void) => {
+  cleanupFunctions.push(cleanupFn);
 };
 
 export { prisma };

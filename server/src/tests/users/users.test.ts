@@ -1,4 +1,4 @@
-import { prisma } from '../../index';
+import { prisma } from '../../prisma'; // Import from prisma.ts instead of index.ts
 
 describe('User Controller', () => {
   test('should create a new user', async () => {

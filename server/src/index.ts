@@ -10,7 +10,6 @@ const PORT = process.env.PORT;
 const origin = process.env.API_URL;
 const ENV = process.env.NODE_ENV;
 
-// Create SocketIO server
 const server = http.createServer(app)
 export const io = new SocketIOServer(server, {
   cors: {
@@ -19,20 +18,26 @@ export const io = new SocketIOServer(server, {
   }
 })
 
+let serverInstance: http.Server | null = null;
 
 async function main() {
   try {
     await prisma.$connect();
     console.log('Connected to database');
     console.log(`Starting server on Environment: ${ENV}..`);
-    server.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      if (ENV === 'production') {
-        console.log(`API Documentation: ${origin}/api-docs`);
-      } else { 
-        console.log(`API Documentation: ${origin}:${PORT}/api-docs`);
-      }
-    });
+    
+    if (ENV !== 'test') {
+      serverInstance = server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        if (ENV === 'production') {
+          console.log(`API Documentation: ${origin}/api-docs`);
+        } else { 
+          console.log(`API Documentation: ${origin}:${PORT}/api-docs`);
+        }
+      });
+      
+      setupSocket(io);
+    }
   } catch (error) {
     console.error('Failed to start server:', error);
     await prisma.$disconnect();
@@ -40,11 +45,47 @@ async function main() {
   }
 }
 
-// Handle shutdown gracefully
-process.on('SIGINT', async () => {
+const gracefulShutdown = async () => {
+  console.log('Shutting down gracefully...');
+  
+  if (serverInstance) {
+    await new Promise<void>((resolve, reject) => {
+      serverInstance!.close((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  }
+  
+  if (io) {
+    io.close();
+  }
+  
+  // Disconnect from database
   await prisma.$disconnect();
   process.exit(0);
-});
+};
 
-main();
-setupSocket(io);
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
+
+// Export cleanup function for tests
+export const cleanup = async () => {
+  if (serverInstance) {
+    await new Promise<void>((resolve, reject) => {
+      serverInstance!.close((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    serverInstance = null;
+  }
+  
+  if (io) {
+    io.close();
+  }
+};
+
+if (ENV !== 'test') {
+  main();
+}

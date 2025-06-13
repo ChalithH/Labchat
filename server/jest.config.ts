@@ -3,9 +3,10 @@ export default {
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.ts'],
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
-  globals: {
-    'ts-jest': {
-      isolatedModules: true
-    }
-  }
+  transform: {
+    '^.+\\.ts$': ['ts-jest', {
+      // ts-jest specific options go here instead of under globals
+      // isolatedModules is now handled in tsconfig.json
+    }]
+  },
 };
