@@ -9,4 +9,7 @@ export default {
       // isolatedModules is now handled in tsconfig.json
     }]
   },
+  forceExit: true,
+  detectOpenHandles: true,
+  testTimeout: 30000
 };

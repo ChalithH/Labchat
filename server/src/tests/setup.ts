@@ -1,8 +1,31 @@
 import { execSync } from 'child_process';
 import dotenv from 'dotenv';
-import { prisma } from '../prisma';
+import { prisma } from '../prisma'; // Import from prisma.ts instead of index.ts
 
 dotenv.config({ path: '.env' });
+
+// Set test environment variables
+process.env.NODE_ENV = 'test';
+process.env.SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret';
+process.env.COOKIE_SECRET = process.env.COOKIE_SECRET || 'test-cookie-secret';
+
+// Extend Jest matchers
+expect.extend({
+  toBeOneOf(received, validOptions) {
+    const pass = validOptions.includes(received);
+    if (pass) {
+      return {
+        message: () => `expected ${received} not to be one of [${validOptions.join(', ')}]`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () => `expected ${received} to be one of [${validOptions.join(', ')}]`,
+        pass: false,
+      };
+    }
+  },
+});
 
 // Store cleanup functions to call during teardown
 const cleanupFunctions: (() => Promise<void> | void)[] = [];
@@ -10,8 +33,10 @@ const cleanupFunctions: (() => Promise<void> | void)[] = [];
 beforeAll(async () => {
   console.log('Setting up test database...');
 
+  // Connect to test database
   await prisma.$connect();
 
+  // Run migrations on test database
   try {
     execSync('npm run remigrate', {
       env: {
@@ -24,11 +49,12 @@ beforeAll(async () => {
     console.error('Migration failed:', error);
   }
 
+  // Seed test database with production data
   try {
     execSync('npm run seed', {
       env: {
         ...process.env,
-        NODE_ENV: 'production', 
+        NODE_ENV: 'production', // Use production seed data
         DATABASE_URL: process.env.TEST_DATABASE_URL
       },
       stdio: 'inherit'
@@ -42,6 +68,7 @@ beforeAll(async () => {
 afterAll(async () => {
   console.log('Cleaning up test environment...');
   
+  // Run all cleanup functions
   for (const cleanup of cleanupFunctions) {
     try {
       await cleanup();
@@ -50,12 +77,14 @@ afterAll(async () => {
     }
   }
   
+  // Import and run cleanup from index if needed
   try {
     const { cleanup: indexCleanup } = await import('../index');
     if (indexCleanup) {
       await indexCleanup();
     }
   } catch (error) {
+    // Index cleanup might not be needed if server didn't start
     if (error instanceof Error) {
       console.log('Index cleanup not needed or failed:', error.message);
     } else {
