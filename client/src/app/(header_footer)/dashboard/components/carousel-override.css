@@ -10,8 +10,15 @@
 /* Make carousel container take up appropriate space */
 .dashboard-carousel-wrapper > div {
   width: 100% !important;
+  max-width: 100% !important;
   margin: 0 auto;
   overflow: visible !important;
+}
+
+/* Override the w-[87dvw] constraint from RecentActivity */
+.dashboard-carousel-wrapper [class*="w-[87dvw]"] {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 

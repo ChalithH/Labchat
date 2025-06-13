@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import AnnouncementCard from "./AnnouncementCard";
+import RecentActivity from "@/app/(header_footer)/(discussion)/components/RecentActivity";
+import "./carousel-override.css";
 import StatusPresenceCard from "./StatusPresenceCard";
 import CurrentlyOnSiteCard from "./CurrentlyOnSiteCard";
 import JobCard from "./JobCard";
@@ -316,7 +317,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
       </section>
 
       {/* Row 1: Status & Presence + Currently On-Site */}
-      <section className="flex flex-col lg:flex-row gap-4">
+      <section className="flex flex-col lg:flex-row gap-8 lg:gap-4">
         {/* My Current Status */}
         {fullCurrentUserMember && (
           <div className="lg:w-2/5">
@@ -375,7 +376,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
           {announcements.length === 0 ? (
             <div className="text-muted-foreground">No recent announcements.</div>
           ) : (
-            <AnnouncementCard announcement={announcements} />
+            <div className="dashboard-carousel-wrapper relative overflow-visible">
+              <RecentActivity posts={announcements} />
+            </div>
           )}
         </div>
       </section>
