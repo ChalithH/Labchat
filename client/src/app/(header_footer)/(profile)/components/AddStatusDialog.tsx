@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { MemberStatus, ContactType } from '../types/profile.types';
 
 interface Status {
@@ -61,6 +62,7 @@ export default function AddStatusDialog({
   const [selectedStatusId, setSelectedStatusId] = useState<number>(0);
   const [selectedContactId, setSelectedContactId] = useState<number | undefined>(undefined);
   const [localContacts, setLocalContacts] = useState<ContactType[]>(availableContacts);
+  const [description, setDescription] = useState('');
 
   // Filter out statuses that already exist for this member
   const filteredStatuses = availableStatuses.filter(
@@ -91,12 +93,18 @@ export default function AddStatusDialog({
       return;
     }
 
+    if (!selectedContactId) {
+      toast.error('Please select a contact for this status');
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
         memberId: memberId,
         statusId: selectedStatusId,
-        contactId: selectedContactId || null,
+        contactId: selectedContactId,
+        description: description.trim() || null,
       };
 
       const response = await api.post('/member/member-status', payload);
@@ -114,6 +122,7 @@ export default function AddStatusDialog({
           contactInfo: selectedContact?.info,
           contactName: selectedContact?.name,
           contactId: selectedContact?.id,
+          description: description.trim() || undefined,
         };
 
         onStatusAdded(newMemberStatus);
@@ -122,6 +131,7 @@ export default function AddStatusDialog({
         // Reset form
         setSelectedStatusId(0);
         setSelectedContactId(undefined);
+        setDescription('');
         onOpenChange(false);
       }
     } catch (err: any) {
@@ -135,6 +145,7 @@ export default function AddStatusDialog({
   const handleCancel = () => {
     setSelectedStatusId(0);
     setSelectedContactId(undefined);
+    setDescription('');
     onOpenChange(false);
   };
 
@@ -144,7 +155,7 @@ export default function AddStatusDialog({
         <DialogHeader>
           <DialogTitle>Add New Status</DialogTitle>
           <DialogDescription>
-            Add a new status for this member and optionally associate it with existing contact information.
+            Add a new status for this member. You must select both a status and contact information.
           </DialogDescription>
         </DialogHeader>
         
@@ -174,25 +185,51 @@ export default function AddStatusDialog({
           </div>
           
           <div>
-            <Label htmlFor="contact-select">Contact Information (Optional)</Label>
+            <Label htmlFor="contact-select">Contact Information *</Label>
             <Select 
-              value={selectedContactId?.toString() || "none"} 
-              onValueChange={(value) => setSelectedContactId(value === "none" ? undefined : parseInt(value))}
+              value={selectedContactId?.toString() || ""} 
+              onValueChange={(value) => setSelectedContactId(parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select existing contact..." />
+                <SelectValue placeholder="Select a contact..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No contact</SelectItem>
-                {localContacts.map((contact) => (
-                  <SelectItem key={contact.id} value={contact.id!.toString()}>
-                    {contact.name} ({contact.type}: {contact.info})
+                {localContacts.length === 0 ? (
+                  <SelectItem value="none" disabled>
+                    No contacts available
                   </SelectItem>
-                ))}
+                ) : (
+                  localContacts.map((contact) => (
+                    <SelectItem key={contact.id} value={contact.id!.toString()}>
+                      {contact.name} ({contact.type}: {contact.info})
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
+            {localContacts.length === 0 ? (
+              <p className="text-sm text-yellow-600 mt-1">
+                You need to add contact information on your profile page before creating statuses.
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500 mt-1">
+                Select the contact information to associate with this status.
+              </p>
+            )}
+          </div>
+          
+          <div>
+            <Label htmlFor="description">Description (Optional)</Label>
+            <Textarea
+              id="description"
+              placeholder="Add a description for this status"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="mt-1"
+            />
             <p className="text-sm text-gray-500 mt-1">
-              Select an existing contact to associate with this status, or leave empty for no contact.
+              Provide additional context about your status to help your team know more details.
             </p>
           </div>
         </div>
@@ -201,7 +238,7 @@ export default function AddStatusDialog({
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={loading || !selectedStatusId || filteredStatuses.length === 0}>
+          <Button onClick={handleSubmit} disabled={loading || !selectedStatusId || !selectedContactId || filteredStatuses.length === 0 || localContacts.length === 0}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Add Status
           </Button>

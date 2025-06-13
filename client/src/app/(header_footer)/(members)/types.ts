@@ -5,6 +5,7 @@ export interface Status {
     statusWeight: number
   }
   isActive: boolean
+  description?: string
   contact: { 
     id: number
     info: string

@@ -428,6 +428,7 @@ export const getMemberWithStatus = async (req: Request, res: Response): Promise<
         contactType: status.contact?.type,
         contactInfo: status.contact?.info,
         contactName: status.contact?.name,
+        description: status.description,
       })),
     };
     res.json(flattened);
@@ -464,7 +465,7 @@ export const getMembershipsByUserId = async (req: Request, res: Response): Promi
  */
 export const createMemberStatus = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { memberId, statusId, contactId } = req.body;
+    const { memberId, statusId, contactId, description } = req.body;
 
     if (!memberId || !statusId) {
       res.status(400).json({ error: 'memberId and statusId are required' });
@@ -525,6 +526,7 @@ export const createMemberStatus = async (req: Request, res: Response): Promise<v
         memberId: memberId,
         statusId: statusId,
         contactId: contactId || null,
+        description: description || null,
         isActive: false, // New statuses are inactive by default
       },
       include: {
@@ -541,13 +543,13 @@ export const createMemberStatus = async (req: Request, res: Response): Promise<v
 };
 
 /**
- * Update a member status (only contact association can be changed)
+ * Update a member status (contact association and description can be changed)
  * PUT /member/member-status/:id
  */
 export const updateMemberStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id);
-    const { contactId } = req.body;
+    const { contactId, description } = req.body;
 
     if (isNaN(id)) {
       res.status(400).json({ error: 'Invalid member status ID' });
@@ -587,6 +589,7 @@ export const updateMemberStatus = async (req: Request, res: Response): Promise<v
       where: { id },
       data: {
         contactId: contactId || null,
+        description: description !== undefined ? description : existingMemberStatus.description,
       },
       include: {
         status: true,

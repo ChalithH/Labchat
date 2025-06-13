@@ -216,16 +216,17 @@ export default function StatusTable({
                 </Badge>
               </div>
 
-              {(memberStatus.contactName || memberStatus.contactInfo) && (
-                <div className="space-y-1 text-sm mb-4">
-                  {memberStatus.contactName && (
-                    <p><span className="font-medium">Contact:</span> {memberStatus.contactName}</p>
-                  )}
-                  {memberStatus.contactType && memberStatus.contactInfo && (
-                    <p><span className="font-medium">Info:</span> {memberStatus.contactType}: {memberStatus.contactInfo}</p>
-                  )}
-                </div>
-              )}
+              <div className="space-y-1 text-sm mb-4">
+                {memberStatus.description && (
+                  <p><span className="font-medium">Description:</span> {memberStatus.description}</p>
+                )}
+                {memberStatus.contactName && (
+                  <p><span className="font-medium">Contact:</span> {memberStatus.contactName}</p>
+                )}
+                {memberStatus.contactType && memberStatus.contactInfo && (
+                  <p><span className="font-medium">Info:</span> {memberStatus.contactType}: {memberStatus.contactInfo}</p>
+                )}
+              </div>
 
               {canEdit && (
                 <div className="flex space-x-2">
@@ -256,6 +257,9 @@ export default function StatusTable({
                   Active
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Description
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Contact Info
                 </th>
                 {canEdit && (
@@ -282,6 +286,13 @@ export default function StatusTable({
                     <Badge className={getStatusColor(memberStatus.isActive)}>
                       {memberStatus.isActive ? 'Active' : 'Inactive'}
                     </Badge>
+                  </td>
+                  <td className="px-6 py-4">
+                    {memberStatus.description ? (
+                      <span className="text-sm text-gray-900">{memberStatus.description}</span>
+                    ) : (
+                      <span className="text-sm text-gray-400">No description</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {memberStatus.contactName || memberStatus.contactInfo ? (

@@ -295,19 +295,43 @@ export const getCurrentMembers = async (req: Request, res: Response): Promise<vo
           include: {
             user: true,
             labRole: true,
+            memberStatus: {
+              where: {
+                isActive: true
+              },
+              include: {
+                status: true
+              }
+            }
           },
         },
       },
     });
     // Map to Member[]
-    const members = attendances.map(a => ({
-      name: a.member.user.displayName || a.member.user.firstName || a.member.user.username || 'Unknown',
-      role: a.member.labRole?.name || 'Lab Member',
-      permissionLevel: a.member.labRole?.permissionLevel ?? 0,
-      clockIn: a.clockIn,
-      image: '/default_pfp.svg', 
-      statusName: 'In Lab',
-    }));
+    const members = attendances.map(a => {
+      // Get the active status if available
+      const activeStatus = a.member.memberStatus.find(s => s.isActive);
+      const statusName = activeStatus?.status?.statusName || 'Active';
+      
+      return {
+        memberID: a.member.id,
+        name: a.member.user.displayName || a.member.user.firstName || a.member.user.username || 'Unknown',
+        role: a.member.labRole?.name || 'Lab Member',
+        permissionLevel: a.member.labRole?.permissionLevel ?? 0,
+        isPCI: a.member.isPCI,
+        clockIn: a.clockIn,
+        image: a.member.user.profilePic || null,
+        statusName: statusName,
+        status: a.member.memberStatus.map(ms => ({
+          status: {
+            id: ms.status.id,
+            statusName: ms.status.statusName,
+            statusWeight: ms.status.statusWeight || 0
+          },
+          isActive: ms.isActive
+        }))
+      };
+    });
     res.status(200).json({ members });
     return;
   } catch (error) {
