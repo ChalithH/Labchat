@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import api from '@/lib/api';
 
-import { loggedInsiteConfig, loggedOutsiteConfig, managerInsiteConfig, adminInsiteConfig } from "@/config/site";
+import { loggedInsiteConfig, loggedOutsiteConfig, managerInsiteConfig, adminInsiteConfig, GuestSiteConfig } from "@/config/site";
 
 import {
   Sheet,
@@ -39,6 +39,7 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeLink, setActiveLink] = useState('#');
   const [isLabManager, setIsLabManager] = useState(false);
+  const [isLabMember, setIsLabMember] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -49,6 +50,9 @@ export default function Header() {
         user.role = await ResolveRoleName(user.roleId);
         setUserData(user);
         setIsLoggedIn(true);
+        if (user.lastViewedLabId) { 
+          setIsLabMember(true);
+        }
       }
     };
     getUser();
@@ -191,8 +195,10 @@ export default function Header() {
         href: `${navItems[lastIndex].href}/${userData.lastViewedLabId}`
       };
     }
-  } else if (isLoggedIn) {
+  } else if (isLabMember && isLoggedIn) {
     navItems = loggedInsiteConfig.navItems;
+  } else if (!isLabMember && isLoggedIn) { 
+    navItems = GuestSiteConfig.navItems; 
   } else { 
     navItems = loggedOutsiteConfig.navItems;
   }

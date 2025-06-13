@@ -37,7 +37,7 @@ interface IProps {
 export function EditEventDialog({ children, event }: IProps) {
   const { isOpen, onClose, onToggle } = useDisclosure();
 
-  const { users, eventTypes: contextEventTypes, instruments } = useCalendar();
+  const { users, eventTypes: contextEventTypes, instruments, currentUser } = useCalendar();
   const { updateEvent, isUpdating, error: updateError } = useUpdateEvent();
   
   // State for event types
@@ -98,6 +98,25 @@ export function EditEventDialog({ children, event }: IProps) {
     },
   });
 
+  useEffect(() => {
+      if (eventTypes.length > 0 && currentUser) {
+        const filteredTypes = Number(currentUser.labRoleId) === 1 
+          ? eventTypes 
+          : eventTypes.filter(type => !type.name?.toLowerCase().includes("booking"));
+        
+        const defaultTypeId = filteredTypes.length > 0 ? filteredTypes[0].id.toString() : "1";
+        
+        // Only update if the current value is invalid or empt
+        const currentTypeValue = form.getValues("type");
+        const isCurrentTypeValid = filteredTypes.some(type => type.id.toString() === currentTypeValue);
+        
+        if (!isCurrentTypeValid || !currentTypeValue) {
+          form.setValue("type", defaultTypeId);
+        }
+      }
+    }, [eventTypes, currentUser, form]);
+  
+
   const onSubmit = async (values: TEventFormData) => {
     const user = users.find(user => user.id === values.user);
 
@@ -113,15 +132,16 @@ export function EditEventDialog({ children, event }: IProps) {
     const selectedType = eventTypes.find(type => type.id.toString() === values.type);
     
     // Find the selected instrument if any
-    const selectedInstrument = values.instrumentId && values.instrumentId !== "none" 
+    const selectedInstrument = values.instrumentId && values.instrumentId !== "none" && currentType?.name?.toLowerCase().includes("booking")
       ? instruments.find(i => i.id.toString() === values.instrumentId)
       : null;
 
     // Prepare assignments with proper member IDs
-    const assignmentsWithMemberIds = selectedAssignees.map(assignee => ({
+    const assignmentsWithMemberIds =  !currentType?.name?.toLowerCase().includes("booking") ? 
+    selectedAssignees.map(assignee => ({
       ...assignee,
       memberId: typeof assignee.memberId === 'number' ? assignee.memberId : parseInt(assignee.memberId as unknown as string)
-    }));
+    })) : [];
 
     const result = await updateEvent({
       ...event,
@@ -178,8 +198,11 @@ export function EditEventDialog({ children, event }: IProps) {
   // Get the current type ID
   const currentTypeId = form.watch("type");
   const currentType = eventTypes.find(t => t.id.toString() === currentTypeId);
-  const isEquipmentType = currentType?.name?.toLowerCase().includes("equipment") || 
-                           currentType?.name?.toLowerCase().includes("booking");
+  const isbooking = currentType?.name?.toLowerCase().includes("booking");
+
+  const filteredEventTypes = Number(currentUser?.labRoleId) === 1 
+    ? eventTypes 
+    : eventTypes.filter(type => !type.name?.toLowerCase().includes("booking"));
 
   // Deal with empty users list case
   const hasUsers = users && users.length > 0;
@@ -261,7 +284,7 @@ export function EditEventDialog({ children, event }: IProps) {
                           </SelectTrigger>
 
                           <SelectContent>
-                            {eventTypes.map(type => (
+                            {filteredEventTypes.map(type => (
                               <SelectItem key={type.id} value={type.id.toString()}>
                                 <div className="flex items-center gap-2">
                                   <div 
@@ -281,7 +304,7 @@ export function EditEventDialog({ children, event }: IProps) {
                 />
 
                 {/* Instrument Selection - show for equipment events */}
-                {isEquipmentType && (
+                {isbooking && (
                   <FormField
                     control={form.control}
                     name="instrumentId"
@@ -320,7 +343,7 @@ export function EditEventDialog({ children, event }: IProps) {
                 )}
 
                 {/* Assignees management section - only show for non-equipment events */}
-                {!isEquipmentType && hasUsers && (
+                {!isbooking && hasUsers && (
                   <div className="space-y-3 border rounded-md p-3">
                     <div className="flex justify-between items-center">
                       <h3 className="text-sm font-medium text-gray-900">Assigned Members</h3>
