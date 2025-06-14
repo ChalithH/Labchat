@@ -438,14 +438,18 @@ export const getAnnouncementsByLab = async (req: Request, res: Response): Promis
 
     const announcements: DiscussionPost[] = await prisma.discussionPost.findMany({
       where: {
-        isAnnounce: true,
         discussion: {
           labId: labId,
+          name: "Announcements",
         },
       },
       include: {
         discussion: true, // Include discussion to confirm labId relation
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 5, // Limit to 5 most recent announcements for dashboard
     });
 
     res.status(200).json(announcements);
