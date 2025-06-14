@@ -72,14 +72,14 @@ export default function CurrentlyOnSiteCard({ members }: CurrentlyOnSiteCardProp
   };
 
   return (
-    <Card className="h-full">
-      <CardContent className="pt-6">
+    <Card>
+      <CardContent className="pt-2">
         {members.length === 0 ? (
-          <div className="text-muted-foreground text-center py-8 text-sm">
+          <div className="text-muted-foreground text-center py-6 text-sm">
             No members currently in lab.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1">
             {displayedMembers.map((member, idx) => {
               const isPIC = member.isPCI || false;
               const memberStatus = getMemberStatus(member);
@@ -87,7 +87,7 @@ export default function CurrentlyOnSiteCard({ members }: CurrentlyOnSiteCardProp
               return (
                 <div 
                   key={idx} 
-                  className="flex items-start justify-between gap-3"
+                  className="flex items-start justify-between gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   {/* Left side - Member info */}
                   <div className="flex justify-start gap-2 items-center">
@@ -140,7 +140,7 @@ export default function CurrentlyOnSiteCard({ members }: CurrentlyOnSiteCardProp
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowAll(!showAll)}
-                className="w-full mt-2 text-blue-600 hover:text-blue-700 h-8"
+                className="w-full mt-3 text-blue-600 hover:text-blue-700 h-8"
               >
                 {showAll ? (
                   <>

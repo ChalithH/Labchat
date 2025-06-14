@@ -7,6 +7,7 @@ export interface Announcement {
 }
 
 export interface Member {
+  id?: number;
   memberID: number;
   name: string;
   role: string;
@@ -15,6 +16,7 @@ export interface Member {
   permissionLevel: number;
   clockIn: string;
   status: Array<{
+    id: number;
     status: {
       id: number;
       statusName: string;
@@ -24,6 +26,7 @@ export interface Member {
     contactType?: string;
     contactInfo?: string;
     contactName?: string;
+    description?: string;
   }>;
   displayName?: string;
   firstName?: string;
