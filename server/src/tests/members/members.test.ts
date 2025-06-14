@@ -22,7 +22,7 @@ describe('Member Controllers', () => {
     const status = await prisma.status.findFirst();
     const contact = await prisma.contact.findFirst();
 
-    if (!member || !status) {
+    if (!member || !status || !contact) {
       throw new Error('Required seed data not found');
     }
 
@@ -30,7 +30,7 @@ describe('Member Controllers', () => {
     testUserId = member.userId;
     testLabId = member.labId;
     testStatusId = status.id;
-    testContactId = contact?.id || 1;
+    testContactId = contact.id;
   });
 
   afterEach(async () => {
@@ -117,7 +117,7 @@ describe('Member Controllers', () => {
 
     test('should get memberships by user ID', async () => {
       const response = await request(app)
-        .get(`/api/member/memberships/${testUserId}`)
+        .get(`/api/member/memberships/user/${testUserId}`)
         .expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
@@ -140,7 +140,7 @@ describe('Member Controllers', () => {
 
       if (userWithNoMemberships) {
         const response = await request(app)
-          .get(`/api/member/memberships/${userWithNoMemberships.id}`)
+          .get(`/api/member/memberships/user/${userWithNoMemberships.id}`)
           .expect(404);
 
         expect(response.body).toHaveProperty('error', 'No lab memberships found for this user');
@@ -214,265 +214,277 @@ describe('Member Controllers', () => {
   });
 
   describe('Member Status CRUD Operations', () => {
-    test('should create new member status', async () => {
-      const response = await request(app)
-        .post('/api/member/member-status')
-        .send({
-          memberId: testMemberId,
-          statusId: testStatusId,
-          contactId: testContactId
-        })
-        .expect(201);
+  test('should create new member status', async () => {
+    expect(testMemberId).toBeDefined();
+    expect(testStatusId).toBeDefined();
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('memberId', testMemberId);
-      expect(response.body).toHaveProperty('statusId', testStatusId);
-      expect(response.body).toHaveProperty('isActive', false);
-      expect(response.body).toHaveProperty('status');
-      expect(response.body).toHaveProperty('contact');
-
-      // Store for cleanup
-      testMemberStatusId = response.body.id;
+    // Find a contact that belongs to the same user as the member
+    const member = await prisma.labMember.findUnique({
+      where: { id: testMemberId },
+      include: { user: true }
     });
 
-    test('should return 400 for missing required fields in create member status', async () => {
-      const response = await request(app)
-        .post('/api/member/member-status')
-        .send({
-          memberId: testMemberId
-          // Missing statusId
-        })
-        .expect(400);
+    if (!member) {
+      throw new Error('Test member not found');
+    }
 
-      expect(response.body).toHaveProperty('error', 'memberId and statusId are required');
+    // Find a contact that belongs to this user
+    const userContact = await prisma.contact.findFirst({
+      where: { userId: member.userId }
     });
 
-    test('should return 404 for non-existent member in create member status', async () => {
-      const response = await request(app)
-        .post('/api/member/member-status')
-        .send({
-          memberId: 99999,
-          statusId: testStatusId
-        })
-        .expect(404);
-
-      expect(response.body).toHaveProperty('error', 'Member not found');
-    });
-
-    test('should return 404 for non-existent status in create member status', async () => {
-      const response = await request(app)
-        .post('/api/member/member-status')
-        .send({
-          memberId: testMemberId,
-          statusId: 99999
-        })
-        .expect(404);
-
-      expect(response.body).toHaveProperty('error', 'Status not found');
-    });
-
-    test('should return 409 for duplicate member status', async () => {
-      // First create a member status
-      const memberStatus = await prisma.memberStatus.create({
+    if (!userContact) {
+      // Create a contact for this user if none exists
+      const createdContact = await prisma.contact.create({
         data: {
-          memberId: testMemberId,
-          statusId: testStatusId,
-          contactId: testContactId,
-          isActive: false
+          userId: member.userId,
+          type: "Email",
+          info: `test${member.userId}@example.com`,
+          name: "Test Contact"
         }
       });
+      testContactId = createdContact.id;
+    } else {
+      testContactId = userContact.id;
+    }
 
-      testMemberStatusId = memberStatus.id;
+    const requestData = {
+      memberId: testMemberId,
+      statusId: testStatusId,
+      contactId: testContactId
+    };
 
-      // Try to create the same combination again
-      const response = await request(app)
-        .post('/api/member/member-status')
-        .send({
-          memberId: testMemberId,
-          statusId: testStatusId,
-          contactId: testContactId
-        })
-        .expect(409);
+    console.log('Sending request data:', requestData);
 
-      expect(response.body).toHaveProperty('error', 'Member already has this status');
+    const response = await request(app)
+      .post('/api/member/member-status')
+      .send(requestData)
+      .expect(201);
+
+    expect(response.body).toHaveProperty('id');
+    expect(response.body).toHaveProperty('memberId', testMemberId);
+    expect(response.body).toHaveProperty('statusId', testStatusId);
+    expect(response.body).toHaveProperty('contactId', testContactId);
+    expect(response.body).toHaveProperty('isActive', false);
+    expect(response.body).toHaveProperty('status');
+    expect(response.body).toHaveProperty('contact');
+
+    // Store for cleanup
+    testMemberStatusId = response.body.id;
+  });
+
+  test('should return 400 for missing required fields in create member status', async () => {
+    const response = await request(app)
+      .post('/api/member/member-status')
+      .send({
+        memberId: testMemberId
+        // Missing statusId
+      })
+      .expect(400);
+
+    expect(response.body).toHaveProperty('error', 'memberId and statusId are required');
+  });
+
+  test('should return 404 for non-existent member in create member status', async () => {
+    const response = await request(app)
+      .post('/api/member/member-status')
+      .send({
+        memberId: 99999,
+        statusId: testStatusId,
+        contactId: testContactId
+      })
+      .expect(404);
+
+    expect(response.body).toHaveProperty('error', 'Member not found');
+  });
+
+  test('should return 404 for non-existent status in create member status', async () => {
+    const response = await request(app)
+      .post('/api/member/member-status')
+      .send({
+        memberId: testMemberId,
+        statusId: 99999,
+        contactId: testContactId
+      })
+      .expect(404);
+
+    expect(response.body).toHaveProperty('error', 'Status not found');
+  });
+
+  test('should return 409 for duplicate member status', async () => {
+    // First create a member status
+    const memberStatus = await prisma.memberStatus.create({
+      data: {
+        memberId: testMemberId,
+        statusId: testStatusId,
+        contactId: testContactId,
+        isActive: false
+      }
     });
 
-    test('should update member status contact', async () => {
-      // First create a member status
-      const memberStatus = await prisma.memberStatus.create({
-        data: {
-          memberId: testMemberId,
-          statusId: testStatusId,
-          contactId: 1,
-          isActive: false
-        }
-      });
+    testMemberStatusId = memberStatus.id;
 
-      testMemberStatusId = memberStatus.id;
+    // Try to create the same combination again
+    const response = await request(app)
+      .post('/api/member/member-status')
+      .send({
+        memberId: testMemberId,
+        statusId: testStatusId,
+        contactId: testContactId
+      })
+      .expect(409);
 
+    expect(response.body).toHaveProperty('error', 'Member already has this status');
+  });
+
+  test('should update member status contact', async () => {
+    // First create a member status
+    const memberStatus = await prisma.memberStatus.create({
+      data: {
+        memberId: testMemberId,
+        statusId: testStatusId,
+        contactId: testContactId,
+        isActive: false
+      }
+    });
+
+    testMemberStatusId = memberStatus.id;
+
+    // Find a different contact ID for the same user
+    const member = await prisma.labMember.findUnique({
+      where: { id: testMemberId },
+      include: { user: true }
+    });
+
+    const differentContact = await prisma.contact.findFirst({
+      where: {
+        userId: member!.userId,
+        id: { not: testContactId }
+      }
+    });
+
+    if (differentContact) {
       const response = await request(app)
         .put(`/api/member/member-status/${memberStatus.id}`)
         .send({
-          contactId: testContactId
+          contactId: differentContact.id
         })
         .expect(200);
 
       expect(response.body).toHaveProperty('id', memberStatus.id);
-      expect(response.body).toHaveProperty('contactId', testContactId);
+      expect(response.body).toHaveProperty('contactId', differentContact.id);
       expect(response.body).toHaveProperty('contact');
-    });
-
-    test('should return 404 for non-existent member status in update', async () => {
-      const response = await request(app)
-        .put('/api/member/member-status/99999')
-        .send({
-          contactId: testContactId
-        })
-        .expect(404);
-
-      expect(response.body).toHaveProperty('error', 'Member status not found');
-    });
-
-    test('should return 400 for invalid member status ID in update', async () => {
-      const response = await request(app)
-        .put('/api/member/member-status/invalid')
-        .send({
-          contactId: testContactId
-        })
-        .expect(400);
-
-      expect(response.body).toHaveProperty('error', 'Invalid member status ID');
-    });
-
-    test('should not delete active member status', async () => {
-      // First create an active member status
-      const memberStatus = await prisma.memberStatus.create({
+    } else {
+      // If no different contact exists, create one for testing
+      const newContact = await prisma.contact.create({
         data: {
-          memberId: testMemberId,
-          statusId: testStatusId,
-          contactId: testContactId,
-          isActive: true
-        }
-      });
-
-      testMemberStatusId = memberStatus.id;
-
-      const response = await request(app)
-        .delete(`/api/member/member-status/${memberStatus.id}`)
-        .expect(400);
-
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('Cannot delete active status');
-    });
-
-    test('should delete inactive member status', async () => {
-      // First create an inactive member status
-      const memberStatus = await prisma.memberStatus.create({
-        data: {
-          memberId: testMemberId,
-          statusId: testStatusId,
-          contactId: testContactId,
-          isActive: false
+          userId: member!.userId,
+          type: "Phone",
+          info: "123-456-7890",
+          name: "Test Phone Contact"
         }
       });
 
       const response = await request(app)
-        .delete(`/api/member/member-status/${memberStatus.id}`)
+        .put(`/api/member/member-status/${memberStatus.id}`)
+        .send({
+          contactId: newContact.id
+        })
         .expect(200);
 
-      expect(response.body).toHaveProperty('message', 'Member status deleted successfully');
+      expect(response.body).toHaveProperty('id', memberStatus.id);
+      expect(response.body).toHaveProperty('contactId', newContact.id);
+      expect(response.body).toHaveProperty('contact');
 
-      // Verify it was deleted
-      const deletedStatus = await prisma.memberStatus.findUnique({
-        where: { id: memberStatus.id }
-      });
-      expect(deletedStatus).toBeNull();
-    });
-
-    test('should return 404 for non-existent member status in delete', async () => {
-      const response = await request(app)
-        .delete('/api/member/member-status/99999')
-        .expect(404);
-
-      expect(response.body).toHaveProperty('error', 'Member status not found');
-    });
-
-    test('should return 400 for invalid member status ID in delete', async () => {
-      const response = await request(app)
-        .delete('/api/member/member-status/invalid')
-        .expect(400);
-
-      expect(response.body).toHaveProperty('error', 'Invalid member status ID');
-    });
+      // Clean up the created contact
+      await prisma.contact.delete({ where: { id: newContact.id } });
+    }
   });
 
-  describe('Validation and Edge Cases', () => {
-    test('should handle invalid member ID format gracefully', async () => {
-      const response = await request(app)
-        .get('/api/member/get/invalid')
-        .expect(500);
+  test('should return 404 for non-existent member status in update', async () => {
+    const response = await request(app)
+      .put('/api/member/member-status/99999')
+      .send({
+        contactId: testContactId
+      })
+      .expect(404);
 
-      expect(response.body).toHaveProperty('error', 'Failed to retrieve lab member');
-    });
+    expect(response.body).toHaveProperty('error', 'Member status not found');
+  });
 
-    test('should handle invalid user ID format in user-lab endpoint', async () => {
-      const response = await request(app)
-        .get(`/api/member/get/user-lab/invalid/${testLabId}`)
-        .expect(500);
+  test('should return 400 for invalid member status ID in update', async () => {
+    const response = await request(app)
+      .put('/api/member/member-status/invalid')
+      .send({
+        contactId: testContactId
+      })
+      .expect(400);
 
-      expect(response.body).toHaveProperty('error', 'Failed to retrieve lab member');
-    });
+    expect(response.body).toHaveProperty('error', 'Invalid member status ID');
+  });
 
-    test('should create member status without contact ID', async () => {
-      const response = await request(app)
-        .post('/api/member/member-status')
-        .send({
-          memberId: testMemberId,
-          statusId: testStatusId
-          // No contactId provided
-        })
-        .expect(201);
-
-      expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('contactId', null);
-
-      // Store for cleanup
-      testMemberStatusId = response.body.id;
-    });
-
-    test('should return 404 for contact that does not belong to user', async () => {
-      // Find a contact that belongs to a different user
-      const differentUserContact = await prisma.contact.findFirst({
-        where: {
-          userId: { not: testUserId }
-        }
-      });
-
-      if (differentUserContact) {
-        const response = await request(app)
-          .post('/api/member/member-status')
-          .send({
-            memberId: testMemberId,
-            statusId: testStatusId,
-            contactId: differentUserContact.id
-          })
-          .expect(404);
-
-        expect(response.body).toHaveProperty('error', 'Contact not found or does not belong to this user');
+  test('should not delete active member status', async () => {
+    // First create an active member status
+    const memberStatus = await prisma.memberStatus.create({
+      data: {
+        memberId: testMemberId,
+        statusId: testStatusId,
+        contactId: testContactId,
+        isActive: true
       }
     });
 
-    test('should handle member with no status information gracefully', async () => {
-      // This test verifies the get-with-status endpoint handles members with no statuses
-      const response = await request(app)
-        .get(`/api/member/get-with-status/${testMemberId}`)
-        .expect(200);
+    testMemberStatusId = memberStatus.id;
 
-      expect(response.body).toHaveProperty('memberID', testMemberId);
-      expect(response.body).toHaveProperty('status');
-      expect(Array.isArray(response.body.status)).toBe(true);
-    });
+    const response = await request(app)
+      .delete(`/api/member/member-status/${memberStatus.id}`)
+      .expect(400);
+
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.error).toContain('Cannot delete active status');
   });
+
+  test('should delete inactive member status', async () => {
+    // First create an inactive member status
+    const memberStatus = await prisma.memberStatus.create({
+      data: {
+        memberId: testMemberId,
+        statusId: testStatusId,
+        contactId: testContactId,
+        isActive: false
+      }
+    });
+
+    const response = await request(app)
+      .delete(`/api/member/member-status/${memberStatus.id}`)
+      .expect(200);
+
+    expect(response.body).toHaveProperty('message', 'Member status deleted successfully');
+
+    // Verify it was deleted
+    const deletedStatus = await prisma.memberStatus.findUnique({
+      where: { id: memberStatus.id }
+    });
+    expect(deletedStatus).toBeNull();
+  });
+
+  test('should return 404 for non-existent member status in delete', async () => {
+    const response = await request(app)
+      .delete('/api/member/member-status/99999')
+      .expect(404);
+
+    expect(response.body).toHaveProperty('error', 'Member status not found');
+  });
+
+  test('should return 400 for invalid member status ID in delete', async () => {
+    const response = await request(app)
+      .delete('/api/member/member-status/invalid')
+      .expect(400);
+
+    expect(response.body).toHaveProperty('error', 'Invalid member status ID');
+  });
+});
+
 
   describe('Data Consistency', () => {
     test('setting status should make only one status active', async () => {

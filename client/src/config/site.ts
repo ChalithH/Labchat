@@ -88,6 +88,10 @@ export const loggedInsiteConfig: navItems = {
 export const managerInsiteConfig: navItems = {
     navItems: [
         {
+            title: "Admissions",
+            href: "/admission",
+        },
+        {
             title: "Home",
             href: "/home",
         },

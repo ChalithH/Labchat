@@ -324,7 +324,6 @@ export const getLabRoles = async (req: Request, res: Response): Promise<void> =>
         permissionLevel: { gte: 0 } // Exclude Former Member and other negative permission roles
       },
       orderBy: { permissionLevel: 'asc' },
-      take: 3, 
     });
     res.json(roles);
   } catch (error) {
