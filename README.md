@@ -286,6 +286,18 @@ The application will be available at:
 - **Backend API**: `http://localhost:8000`
 - **API Documentation**: `http://localhost:8000/api-docs` (Swagger UI)
 
+Intended starting flow 
+ - lab admin creates a lab on admin dashboard
+ - user registers, logs in and requests admission to the lab
+ - Admin accepts admission request (the role sould be lab manager to allow them to configure the lab aswell)
+ - User beings using labhcat platform
+
+**Account info for admin user**
+prod: admin@labchatuoa.com
+dev: admin@labchat.com
+
+pass: admin
+
 ### Alternative Installation Commands
 
 If you prefer to run commands individually:
