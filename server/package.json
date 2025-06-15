@@ -15,7 +15,7 @@
     "test:coverage": "jest --coverage",
     "test:db:reset": "cross-env NODE_ENV=test DATABASE_URL=postgresql://test_user:test_pass@localhost:5433/testlabchatdb npx prisma migrate deploy",
     "test:db:seed": "cross-env NODE_ENV=production DATABASE_URL=postgresql://test_user:test_pass@localhost:5433/testlabchatdb npx ts-node src/seed.ts",
-    "test:users": "jest tests/discussion/reaction.test.ts"
+    "test:users": "jest tests/discussion/post.test.ts"
   },
   "keywords": [],
   "author": "",
