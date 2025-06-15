@@ -7,22 +7,28 @@
 
   <em>Streamlining labs to empower research</em><br>
   <em>Project by Binary Bandits, Team 13</em>
+ 
+  
+  <h3>Links</h3>
+  <a href="https://www.labchatuoa.com/">Website</a> | <a href="https://api.labchatuoa.com/api-docs/">Api Documentation</a> | <a href="https://github.com/orgs/uoa-compsci399-2025-s1/projects/36/views/2">Github Projects </a>
+   
 </div>
 
 
 
-### About
+
+## About
 
 Labchat is a comprehensive laboratory management platform designed specifically for the [University of Auckland's](https://www.auckland.ac.nz) research community. Built to address the chaos that often disrupts lab operations, Labchat provides an all-in-one solution for small to medium-sized research labs, combining usability, coverage, and affordability without compromise.
 
 **The Problem:** Lab chaos hurts research through wasted time, duplicated work, and inconsistent practices.
 
-**Our Solution:** A tailored, user-friendly platform that actually fits how UoA researchers work.
+**Our Solution:** A tailored, user-friendly platform that actually fits how our researchers work.
 
 ### What Makes Labchat Different?
 
-- **Tailored for UoA Researchers**
-Built specifically for the University of Auckland research community with deep understanding of local workflows and requirements.
+- **Tailored for Researchers**
+Built specifically for the University of Auckland research community with deep understanding of lab workflows and requirements.
 
 - **All-in-One Platform**
 Unlike existing solutions that excel in one area, Labchat provides comprehensive coverage across all lab management needs.
@@ -34,134 +40,60 @@ Designed for small to medium-sized research labs, avoiding the complexity and co
 The perfect balance of features, ease of use, and cost-effectiveness that existing solutions fail to achieve.
 
 
-## Key Features
-
-### **Smart Admission System**
-- Streamlined user registration and lab joining process
-- Role-based access control (Guest, Member, Admin)
-- Lab-specific permissions (Student, Staff, Lab Manager)
-
-### **Member Management**
-- Comprehensive member directory with status indicators
-- Real-time availability tracking
-- Contact management and organizational hierarchy
-
-### **Integrated Calendar**
-- Lab & equipment booking 
-- Task scheduling management and deadlines
-- Supports event CRUD operations
-- Multi-view support (day, week, month, adgenda)
-
-### **Discussion Forum**
-- Threaded conversations with category support
-- Real-time updates via WebSocket
-- Post reactions and moderation tools
-- Searchable knowledge base
-
-### **Inventory Tracking**
-- Real-time stock management
-- Item categorization and filtering
-- Usage logging and history
-- Low-stock alerts
-
-### **Admin Dashboard**
-- Global system administration
-- Multi-lab management capabilities
-- User permission control
-- Analytics and reporting
-
-### **Profile Management**
-- Customizable user profiles
-- Status configuration
-- Contact information management
-- Activity tracking
-
-
-## Getting Started
-
-### Prerequisites
-
-You'll need to have `Node.js` and a package manager installed.
-
-**Node.js Installation:**
-- Use [NVM](https://github.com/nvm-sh/nvm) (Unix) or [NVM for Windows](https://github.com/coreybutler/nvm-windows)
-
-For local development, we also reccomend using docker to host the DB. 
-
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/uoa-compsci399-2025-s1/capstone-project-2025-s1-team-13.git
-   cd capstone-project-2025-s1-team-13
-   ```
-
-2. **Install Node.js (if using NVM)**
-   ```bash
-   nvm install
-   nvm use 22.14.0
-
-   # Test installation using
-   node -v
-   npm -v
-   ```
-
-3. **Install all dependencies**
-   ```bash
-   npm run install:all
-   ```
-
-4. **Set up environment variables**
-   Create a `.env` file in the `server` directory with your database credentials:
-   ```env
-   DB_USER=your_username
-   DB_PASSWORD=your_password
-   DB_NAME=your_database_name
-   ```
-
-
-
-
-
-The application will be available at `http://localhost:3000`
-
-
-
-## Architecture
+## Technologies used 
 
 ### **Frontend Stack**
-- **Next.js** - React framework with App Router
-- **Tailwind CSS** - Utility-first CSS framework
-- **ShadCN/UI** - Reusable component library
-- **Axios** - HTTP client for API communication
+- **Next.js** `15.2.4` - React framework with App Router
+- **React** `19.0.0` - JavaScript library for building user interfaces
+- **TypeScript** `5.8.3` - Enhanced JavaScript with static typing
+- **Tailwind CSS** `4.0` - Utility-first CSS framework
+- **ShadCN/UI** - Reusable component library built on Radix UI primitives
+  - **Radix UI Components** `1.1.x - 2.1.x` - Accessible React primitives (accordion, dialog, dropdown, etc.)
+- **Axios** `1.8.4` - HTTP client for API communication
+- **React Hook Form** `7.56.0` - Form state management with validation
+- **Zod** `3.24.3` - TypeScript-first schema validation
+- **Socket.IO Client** `4.8.1` - Real-time communication
+- **Lucide React** `0.485.0` - Icon library
+- **React Markdown** `10.1.0` - Markdown rendering with GitHub Flavored Markdown
+- **Date-fns** `4.1.0` - Modern JavaScript date utility library
 
 ### **Backend Stack**
-- **Express.js** - Node.js web framework
-- **Prisma** - Database ORM and query builder
-- **PostgreSQL** - Production database
-- **Socket.IO** - Real-time communication
-- **Jest** - Testing framework
+- **Node.js** `22.14.0` - JavaScript runtime environment
+- **Express.js** `5.1.0` - Node.js web framework
+- **TypeScript** `5.8.3` - Enhanced JavaScript with static typing
+- **Prisma** `6.5.0` - Database ORM and query builder
+- **PostgreSQL** - Production relational database
+- **Socket.IO** `4.8.1` - Real-time bidirectional communication
+- **Passport.js** `0.7.0` - Authentication middleware
+- **bcrypt** `5.1.1` - Password hashing library
+- **JSON Web Tokens** `9.0.2` - Token-based authentication
+- **Jest** - Testing framework for unit tests
+- **Swagger** `6.2.8` - API documentation generation
 
-### **Infrastructure**
+### **Infrastructure & Deployment**
 - **AWS** - Cloud hosting and services
+  - **AWS Amplify** - Frontend hosting and deployment
+  - **AWS EC2** - Backend server hosting
+  - **AWS RDS** - PostgreSQL database hosting
+  - **AWS S3** - Static asset storage
+  - **AWS Route 53** - DNS management
+  - **AWS VPC** - Virtual Private Cloud for security
 - **Nginx** - Reverse proxy and load balancing
-- **Docker** - Containerization
+- **PM2** - Process manager for Node.js applications
+- **Docker** - Containerization for local development
 - **GitHub Actions** - CI/CD pipeline
 
-
-## Testing
-
-We use comprehensive testing to ensure code quality and reliability.
-
-
-
+### **Development Tools**
+- **GitHub** - Version control and collaboration
+- **Figma** - UI/UX design and prototyping
+- **ESLint** `9.0` - Code linting and quality
+- **Nodemon** `3.1.9` - Development server auto-restart
 
 ## Project Structure
 
 ```
 labchat/
-├── client/                    # Next.js frontend application
+├── client/                   # Next.js frontend application
 │   ├── public/               # Static assets
 │   └── src/
 │       ├── app/              # App Router pages
@@ -183,21 +115,272 @@ labchat/
 │       ├── hooks/            # Custom React hooks
 │       ├── lib/              # Utility functions
 │       └── types/            # TypeScript type definitions
+│
 └── server/                   # Express.js backend API
     ├── prisma/               # Database schema, seed data & migrations
-    └── src/
-        ├── config/           # Server configuration
-        ├── controllers/      # Route controllers
-        ├── middleware/       # Express middleware
-        ├── models/           # Data models
-        ├── routes/           # API route definitions
-        ├── services/         # Business logic services
-        ├── utils/            # Utility functions
-        ├── app.ts            # Express app setup
-        ├── index.ts          # Server entry point
-        └── socket.ts         # WebSocket configuration
+    ├── src/
+    │    ├── config/           # Server configuration
+    │    ├── controllers/      # Route controllers
+    │    ├── middleware/       # Express middleware
+    │    ├── models/           # Data models
+    │    ├── routes/           # API route definitions
+    │    ├── services/         # Business logic services
+    │    ├── Tests/            # Jest unit tests on controllers, middleware and services. 
+    │    ├── utils/            # Utility functions
+    │    ├── app.ts            # Express app setup
+    │    ├── index.ts          # Server entry point
+    │    └── socket.ts         # WebSocket configuration
+    ├── docker-compose.yml     # Docker  container for hosting test and development DB 
+    ├── ecosystem.config.js    # PM2 script to start up server rapidly 
+    └── jest.config.ts         # Jest test configuration file 
 ```
 
+## Getting Started
+
+### Prerequisites
+
+Before you can run Labchat locally, ensure you have the following tools installed on your system:
+
+#### **Required Software**
+
+**1. Node.js [22.14.0] (via NVM)**
+- **NVM (Node Version Manager)** is recommended for managing Node.js versions
+- **Unix/Linux/macOS**: Install [NVM](https://github.com/nvm-sh/nvm)
+  ```bash
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+  ```
+- **Windows**: Install [NVM for Windows](https://github.com/coreybutler/nvm-windows)
+- **Required Node.js version**: `22.14.0` (specified in the project)
+
+**2. Git**
+- Required for cloning the repository and version control
+- **Download**: [Git Official Website](https://git-scm.com/downloads)
+- **Verify installation**: 
+  ```bash
+  git --version
+  ```
+
+**3. Docker**
+- Required for running PostgreSQL database locally during development
+- **Download**: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- **Verify installation**:
+  ```bash
+  docker --version
+  docker-compose --version
+
+  Once docker is installed its reccomended that you set up the database container
+  ```
+
+**4. Package Manager**
+- **npm** (comes with Node.js) 
+- npm is included with Node.js installation
+
+#### **Development Environment Setup**
+
+For the best development experience:
+
+1. **Install Node.js with NVM**:
+   ```bash
+   # Install and use the required Node.js version
+   nvm install 22.14.0
+   nvm use 22.14.0
+   nvm alias default 22.14.0
+   ```
+
+2. **Configure Git** (if first time):
+   ```bash
+   git config --global user.name "Your Name"
+   git config --global user.email "your.email@example.com"
+   ```
+
+3. **Start Docker** (ensure Docker Desktop is running)
+
+Once all prerequisites are installed, you're ready to proceed with the [Installation](#installation) steps.
+
+#### **Verification Steps**
+
+After installing the prerequisites, verify everything is working:
+
+```bash
+# Check Node.js and npm versions
+node --version  # Should show v22.14.0
+npm --version   # Should show npm version
+
+# Check Git
+git --version
+
+# Check Docker
+docker --version
+docker-compose --version
+```
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/uoa-compsci399-2025-s1/capstone-project-2025-s1-team-13.git
+   cd capstone-project-2025-s1-team-13
+   ```
+
+2. **Install all dependencies**
+   ```bash
+   npm run install:all
+   ```
+
+3. **Set up environment variables**
+   Create a `.env` file in the `server` directory and a `.env.local` file in the client directory by running the following commands :
+   ```bash 
+   cd client
+   cp .env.example .env.development
+   cp .env.example .env.production
+   cd ../server 
+   cp .env.example .env
+   ```
+
+4. **Stop existing PostgreSQL services (Important!)**
+   
+   Docker requires exclusive access to port 5432. If you have PostgreSQL installed locally, you must stop it first:
+
+   **Windows:**
+   - Open **Task Manager** (Ctrl + Shift + Esc)
+   - Go to the **Services** tab
+   - Find services starting with "postgresql" (e.g., `postgresql-x64-13`, `postgresql-x64-14`)
+   - Right-click each PostgreSQL service and select **Stop**
+   
+   **macOS:**
+   ```bash
+   # Stop PostgreSQL if installed via Homebrew
+   brew services stop postgresql
+   
+   # Or if installed via PostgreSQL.app
+   # Simply quit the PostgreSQL.app from the menu bar
+   ```
+   
+   **Linux:**
+   ```bash
+   # Stop PostgreSQL service
+   sudo systemctl stop postgresql
+   # or
+   sudo service postgresql stop
+   ```
+
+6. **Start the database and initialize the project**
+   ```bash
+   # From the root directory
+   npm run setup
+   ```
+   
+   This command will:
+   - Start the PostgreSQL Docker container (`docker-compose up -d`)
+   - Reset and apply database migrations (`npm run remigrate`)
+   - Seed the database with initial data (`npm run seed`)
+  
+7. **Start the development servers**
+   ```bash
+   # Start both frontend and backend concurrently
+   npm run dev
+   ```
+
+The application will be available at:
+- **Frontend**: `http://localhost:3000`
+- **Backend API**: `http://localhost:8000`
+- **API Documentation**: `http://localhost:8000/api-docs` (Swagger UI)
+
+### Alternative Installation Commands
+
+If you prefer to run commands individually:
+
+```bash
+# Start only the database
+cd server && docker-compose up -d
+
+# Install dependencies separately
+npm install                    # Root dependencies
+cd client && npm install      # Frontend dependencies
+cd ../server && npm install   # Backend dependencies
+
+# Run database migrations and seeding separately
+cd server
+npm run remigrate             # Reset and apply migrations
+npm run seed                  # Seed with initial data
+
+# Start services individually
+npm run client               # Frontend only (localhost:3000)
+npm run server               # Backend only (localhost:8000)
+
+# Or start both together
+npm run dev                  # Both frontend and backend
+```
+### Troubleshooting
+
+**Database Connection Issues:**
+- Ensure Docker is running and the PostgreSQL container is started
+- Verify no other PostgreSQL services are running on port 5432
+- Check that the `.env` file has the correct database credentials
+
+**Port Conflicts:**
+- Frontend (3000): Make sure no other applications are using this port
+- Backend (8000): Check if another service is running on this port
+- Database (5432): Ensure PostgreSQL services are stopped as mentioned above
+
+**Docker Issues:**
+```bash
+# Check if containers are running
+docker ps
+
+# Restart the database container if needed
+cd server
+docker-compose down
+docker-compose up -d
+
+# View container logs
+docker-compose logs postgres
+```
+
+
+## Testing
+
+We use comprehensive testing to ensure code quality and reliability across our backend components.
+
+### Running Tests
+
+Our backend uses **Jest** and **SuperTest** for unit testing and API endpoint testing.
+
+**Run all backend tests:**
+```bash
+# Automated test setup (recommended)
+npm run test
+```
+
+This command automatically:
+1. Resets and applies database migrations (`remigrate`)
+2. Seeds the database with test data (`seed`)
+3. Runs the complete test suite
+
+Our testing suites covers 293 unit tests across our various different controllers, middleware and services to ensure logic in the application layer is correct and meets our clients requirements. 
+
+![image](client/public//Screenshot%202025-06-15%20190131.png)
+
+
+
+### **Important: Environment Switching**
+
+When switching between **development** and **testing** environments, always remigrate and reseed the database to ensure data consistency:
+
+```bash
+# When switching TO testing environment
+npm run test              # Automatically handles remigration and seeding
+
+# When switching BACK TO development environment
+npm run regenerate        # Remigrate and reseed for development
+npm run dev               # Start development servers
+```
+
+**Why remigration is necessary:**
+- Tests may modify database state
+- Different environments require different seed data
+- Ensures clean, predictable state for both development and testing
+- Prevents data conflicts between environments
 
 
 ## Contributing
@@ -216,11 +399,11 @@ We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTIN
 
 | Role | Name | GitHub |
 |------|------|---------|
-| **Backend Developer** | Caleb Wharton | [@CalebWharton](https://github.com/CalebWharton) |
-| **Full-Stack Developer** | Chalith Hewage | [@ChalithHewage](https://github.com/ChalithHewage) |
-| **Frontend Developer** | Cole Howard | [@ColeHoward](https://github.com/ColeHoward) |
-| **Project Manager** | Mark McNaught | [@MarkMcNaught](https://github.com/MarkMcNaught) |
-| **DevOps Engineer** | Parin Kasabia | [@ParinKasabia](https://github.com/ParinKasabia) |
+| **Backend Developer** | Caleb Wharton | [@calebwharton](https://github.com/calebwharton) |
+| **Full-Stack Developer** | Chalith Hewage | [@ChalithHewage](https://github.com/ChalithH) |
+| **Frontend Developer** | Cole Howard | [@cole-howard-nz](https://github.com/cole-howard-nz) |
+| **Project Manager** | Mark McNaught | [@Mark-McNaught](https://github.com/Mark-McNaught) |
+| **DevOps Engineer** | Parin Kasabia | [@MateUrDreaming](https://github.com/MateUrDreaming) |
 
 ---
 
