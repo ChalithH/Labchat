@@ -463,7 +463,7 @@ describe('Inventory Controllers', () => {
         .send({
           itemId: testInventoryItemId,
           amountTaken: 0,
-          labId: 2
+          labId: testLabId
         })
         .expect(200);
 
