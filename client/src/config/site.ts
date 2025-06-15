@@ -38,8 +38,26 @@ export const loggedOutsiteConfig: navItems = {
     ],
 };
 
+export const GuestSiteConfig: navItems = {
+    navItems: [
+        {
+            title: "Home",
+            href: "/home",
+        },
+        {
+            title: "Admission",
+            href: "/admission",
+        },
+    ],
+};
+
+
 export const loggedInsiteConfig: navItems = {
     navItems: [
+        {
+            title: "Admissions",
+            href: "/admission",
+        },
         {
             title: "Home",
             href: "/home",
@@ -63,12 +81,16 @@ export const loggedInsiteConfig: navItems = {
         {
             title: "Members",
             href: "/members",
-        },
+        }
     ],
 };
 
 export const managerInsiteConfig: navItems = {
     navItems: [
+        {
+            title: "Admissions",
+            href: "/admission",
+        },
         {
             title: "Home",
             href: "/home",

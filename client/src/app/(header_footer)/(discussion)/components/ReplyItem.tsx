@@ -5,6 +5,7 @@ import EditReply from './EditReply'
 import { Trash } from 'lucide-react'
 import ReactionBar from './ReactionBar'
 import { PermissionConfig } from '@/config/permissions'
+import ProfilePicture from '@/components/profilePicture/ProfilePicture'
 
 export const ReplyItem = ({ reply, postId, currentMemberId, onReply, confirmDeleteReply, userPermission }:{ reply: any, postId: number, currentMemberId: number, onReply: (id: number, content: string) => void, confirmDeleteReply: (reply: any) => void, userPermission: number}) => {
   const [isReplying, setIsReplying] = useState(false)
@@ -21,7 +22,12 @@ export const ReplyItem = ({ reply, postId, currentMemberId, onReply, confirmDele
   return (
     <div className="mt-4 pl-4 border-l border-muted">
       <div className="flex gap-x-2 items-start">
-        <img src="/default_pfp.svg" alt="" className="mt-1 w-8 h-8" />
+        <ProfilePicture 
+            user_id={reply.member.user.id}
+            profilePic={reply.member.user.profilePic}
+            name={reply.member.user.displayName}
+            size={10} 
+        />
         <div className="flex-1">
           <div className="font-semibold text-sm">{reply.member.user.displayName}</div>
           <div className="text-xs text-muted-foreground">{new Date(reply.createdAt).toLocaleString('en-GB')}</div>

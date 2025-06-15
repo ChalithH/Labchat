@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { hashPassword } from '../../utils/hashing.util';
+import { hashPassword } from '../../../utils/hashing.util';
 import { 
   getLabMemberIdFromRequest, 
   logItemAdded, 
@@ -10,10 +10,10 @@ import {
   logMinStockUpdate, 
   logItemUpdate,
   getInventoryLogsForLab,
-  getUserAndMemberIdFromRequest,
-  checkLabPermission
-} from '../../utils/inventoryLogging.util';
+  getUserAndMemberIdFromRequest
+} from '../../../utils/inventoryLogging.util';
 import { InventorySource } from '@prisma/client';
+import { PERMISSIONS } from '../../../config/permissions';
 
 const prisma = new PrismaClient();
 
@@ -71,7 +71,7 @@ export const getAllLabs = async (req: Request, res: Response): Promise<void> => 
                     where: {
                         labRole: {
                             permissionLevel: {
-                                gte: 70,  // Assumption: Manager roles have permission level 70+ AND are active members
+                                gte: PERMISSIONS.LAB_MANAGER,
                             },
                         }
                     },
@@ -314,7 +314,7 @@ export const deleteLab = async (req: Request, res: Response): Promise<void> => {
         let authorized = false;
         
         // Only allow Root Admins (permission level 100+) to delete labs
-        if (currentUser.role.permissionLevel >= 100) {
+        if (currentUser.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN) {
             authorized = true;
         }
 
@@ -555,232 +555,43 @@ export const deleteLab = async (req: Request, res: Response): Promise<void> => {
 export const createLab = async (req: Request, res: Response): Promise<void> => {
     const { name, location } = req.body;
     try {
-        const newLab = await prisma.lab.create({
-            data: {
-                name,
-                location,
-                status: 'active',
-            },
+        const result = await prisma.$transaction(async (tx) => {
+            // Create the lab
+            const newLab = await tx.lab.create({
+                data: {
+                    name,
+                    location,
+                    status: 'active',
+                },
+            });
+
+            // Create default discussion categories (Announcements, General)
+            await tx.discussion.createMany({
+                data: [
+                    {
+                        labId: newLab.id,
+                        name: 'Announcements',
+                        description: 'Important announcements and updates for the lab',
+                    },
+                    {
+                        labId: newLab.id,
+                        name: 'General',
+                        description: 'General discussion and conversation for lab members',
+                    }
+                ]
+            });
+
+            return newLab;
         });
-        res.status(201).json(newLab);
+
+        res.status(201).json(result);
     } catch (error) {
         console.error('Error creating lab:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
 
-/**
- * @swagger
- * /admin/assign-user:
- *   post:
- *     summary: Assign a user to a lab
- *     description: Adds an existing user to a lab with a specific role (regular or manager)
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - labId
- *               - userId
- *               - role
- *             properties:
- *               labId:
- *                 type: integer
- *                 description: ID of the lab
- *               userId:
- *                 type: integer
- *                 description: ID of the user to be assigned
- *               role:
- *                 type: string
- *                 description: Role assigned to the user (e.g., "regular", "manager")
- *     responses:
- *       201:
- *         description: User assigned to lab successfully
- *       404:
- *         description: Lab not found or User does not exist
- *       409:
- *         description: User already in the lab
- *       500:
- *         description: Internal server error
- */
 
-export const assignUserToLab = async (req: Request, res: Response): Promise<void> => {
-    const { labId, userId, role } = req.body;
-    try {
-        const lab = await prisma.lab.findUnique({
-            where: { id: labId }
-        });
-        if (!lab) {
-            res.status(404).json({ error: 'Lab not found' });
-        }
-        const userExists = await prisma.user.findUnique({
-            where: { id: userId }
-        });
-        if (userExists) {
-            res.status(400).json({ error: 'User does not exist' });
-        }
-
-        const userInLab = await prisma.labMember.findFirst({
-            where: {
-                labId: labId,
-                userId: userId
-            }
-        });
-
-        if (userInLab) {
-            res.status(409).json({ error: 'User already in lab' });
-        }
-
-        const labMember = await prisma.labMember.create({
-            data: {
-                labId,
-                userId,
-                labRoleId: role,
-            }
-        });
-        res.status(201).json(labMember);
-
-    } catch (error) {
-        console.error('Error assigning user to lab:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
-/**
- * @swagger
- * /admin/update-role:
- *   put:
- *     summary: Change a user's role in a lab
- *     description: Promotes or changes a user's role in an existing lab
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - labId
- *               - userId
- *               - role
- *             properties:
- *               labId:
- *                 type: integer
- *                 description: ID of the lab
- *               userId:
- *                 type: integer
- *                 description: ID of the user
- *               role:
- *                 type: integer
- *                 description: New role for the user (e.g., "regular", "manager")
- *     responses:
- *       201:
- *         description: User role updated successfully
- *       404:
- *         description: Lab not found or User not in lab
- *       500:
- *         description: Internal server error
- */
-
-export const updateRole = async (req: Request, res: Response): Promise<void> => {
-    const { labId, userId, role } = req.body;
-    try {
-        const lab = await prisma.lab.findUnique({
-            where: { id: labId }
-        });
-        if (!lab) {
-            res.status(404).json({ error: 'Lab not found' });
-        }
-        const userExists = await prisma.user.findUnique({
-            where: { id: userId }
-        });
-        if (userExists) {
-            res.status(404).json({ error: 'User does not exist' });
-        }
-
-        const userInLab = await prisma.labMember.findFirst({
-            where: {
-                labId: labId,
-                userId: userId
-            }
-        });
-
-        if (!userInLab) {
-            res.status(404).json({ error: 'User not in lab' });
-            throw new Error('User not in lab');
-        }
-
-        const labMember = await prisma.labMember.update({
-            where: {
-                id: userInLab.id
-            },
-            data: {
-                labRoleId: role,
-            }
-        });
-        res.status(201).json(labMember);
-    } catch (error) {
-        console.error('Error promoting lab manager:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
-/**
- * @swagger
- * /admin/reset-password:
- *   put:
- *     summary: Reset a user's password
- *     description: Allows resetting a user's password
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userId
- *               - newPassword
- *             properties:
- *               userId:
- *                 type: integer
- *                 description: ID of the user
- *               newPassword:
- *                 type: string
- *                 description: New password for the user
- *     responses:
- *       200:
- *         description: Password reset successfully
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal server error
- */
-
-export const resetUserPassword = async (req: Request, res: Response): Promise<void> => {
-    const { userId, newPassword } = req.body;
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: userId }
-        });
-        if (!user) {
-            res.status(404).json({ error: 'User not found' });
-        }
-        const updatedUser = await prisma.user.update({
-            where: { id: userId },
-            data: {
-                loginPassword: await hashPassword(newPassword)
-            }
-        });
-        res.status(200).json(updatedUser);
-    } catch (error) {
-        console.error('Error resetting user password:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
 
 /**
  * @swagger
@@ -873,9 +684,8 @@ export const resetLabMemberPassword = async (req: Request, res: Response): Promi
         }
 
         // Security: Prevent lab managers from resetting admin passwords
-        const ADMIN_PERMISSION_LEVEL = 100;
-        const isRequestorAdmin = requestor.role.permissionLevel >= ADMIN_PERMISSION_LEVEL;
-        const isTargetAdmin = targetUser.role.permissionLevel >= ADMIN_PERMISSION_LEVEL;
+        const isRequestorAdmin = requestor.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
+        const isTargetAdmin = targetUser.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
 
         if (isTargetAdmin && !isRequestorAdmin) {
             res.status(403).json({ 
@@ -915,9 +725,9 @@ export const resetLabMemberPassword = async (req: Request, res: Response): Promi
 /**
  * @swagger
  * /admin/remove-user:
- *   post:
- *     summary: Remove a user from a lab
- *     description: Removes an existing user from a lab
+ *   delete:
+ *     summary: Remove a user from a lab (soft delete)
+ *     description: Removes a user from a lab by changing their role to "Former Member"
  *     tags: [Admin]
  *     requestBody:
  *       required: true
@@ -978,7 +788,7 @@ export const removeUserFromLab = async (req: Request, res: Response): Promise<vo
 
         // Find the "Former Member" role (permission level -1)
         const formerMemberRole = await prisma.labRole.findFirst({
-            where: { permissionLevel: -1 }
+            where: { permissionLevel: PERMISSIONS.FORMER_MEMBER }
         });
 
         if (!formerMemberRole) {
@@ -1020,51 +830,7 @@ export const removeUserFromLab = async (req: Request, res: Response): Promise<vo
     }
 }
 
-/**
- * @swagger
- * /admin/create-discussion-tag:
- *   post:
- *     summary: Create a new discussion tag
- *     description: Adds a new tag for discussions
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - tag
- *             properties:
- *               tag:
- *                 type: string
- *                 description: Name of the tag
- *               description:
- *                 type: string
- *                 nullable: true
- *                 description: Optional description of the tag
- *     responses:
- *       201:
- *         description: Tag created successfully
- *       500:
- *         description: Internal server error
- */
 
-export const createDiscussionTag = async (req: Request, res: Response): Promise<void> => {
-    const { tag, description } = req.body;
-    try {
-        const newTag = await prisma.postTag.create({
-            data: {
-                tag,
-                description,
-            },
-        });
-        res.status(201).json(newTag);
-    } catch (error) {
-        console.error('Error creating discussion tag:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
 
 /**
  * @swagger
@@ -1103,7 +869,8 @@ export const createDiscussionTag = async (req: Request, res: Response): Promise<
  */
 
 export const createDiscussionCategory = async (req: Request, res: Response): Promise<void> => {
-    const { labId, name, description } = req.body;
+    const { labId, name, description, postPermission, visiblePermission } = req.body;
+    const userId = (req.session as any)?.passport?.user;
 
     try {
         const lab = await prisma.lab.findUnique({
@@ -1111,13 +878,34 @@ export const createDiscussionCategory = async (req: Request, res: Response): Pro
         });
         if (!lab) {
             res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        // Permission check handled by middleware
+
+        // Prevent duplicates
+        const existingCategory = await prisma.discussion.findFirst({
+            where: {
+                labId: labId,
+                name: {
+                    equals: name.trim(),
+                    mode: 'insensitive'
+                }
+            }
+        });
+
+        if (existingCategory) {
+            res.status(400).json({ error: `A category named '${name}' already exists in this lab` });
+            return;
         }
 
         const newCategory = await prisma.discussion.create({
             data: {
                 labId,
-                name,
+                name: name.trim(),
                 description,
+                postPermission: postPermission || null,
+                visiblePermission: visiblePermission || null,
             },
         });
         res.status(201).json(newCategory);
@@ -1181,6 +969,86 @@ export const getAllItems = async (req: Request, res: Response): Promise<void> =>
         res.status(200).json(items);
     } catch (error) {
         console.error('Error fetching items:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+/**
+ * @swagger
+ * /admin/get-available-items-for-lab/{labId}:
+ *   get:
+ *     summary: Get all global items not already in a specific lab
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The lab ID to check for available items
+ *     responses:
+ *       200:
+ *         description: Available items for the lab
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: Item ID
+ *                   name:
+ *                     type: string
+ *                     description: Item name
+ *                   description:
+ *                     type: string
+ *                     description: Item description
+ *                   safetyInfo:
+ *                     type: string
+ *                     description: Safety information
+ *                   approval:
+ *                     type: boolean
+ *                     description: Whether the item is approved
+ *       400:
+ *         description: Invalid lab ID
+ *       403:
+ *         description: Forbidden - insufficient permissions for this lab
+ *       404:
+ *         description: Lab not found
+ *       500:
+ *         description: Internal server error
+ */
+export const getAvailableItemsForLab = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const labId = parseInt(req.params.labId);
+        
+        if (isNaN(labId)) {
+            res.status(400).json({ error: 'Invalid lab ID' });
+            return;
+        }
+
+        // Check if lab exists
+        const lab = await prisma.lab.findUnique({
+            where: { id: labId }
+        });
+
+        if (!lab) {
+            res.status(404).json({ error: 'Lab not found' });
+            return;
+        }
+
+        // Get all global items (filtering is done client-side)
+        const availableItems = await prisma.item.findMany({
+            orderBy: {
+                id: 'asc'
+            }
+        });
+
+        res.status(200).json(availableItems);
+    } catch (error) {
+        console.error('Error fetching available items for lab:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -1412,6 +1280,123 @@ export const getAllLabRoles = async (req: Request, res: Response): Promise<void>
 
 /**
  * @swagger
+ * /admin/get-all-instruments:
+ *   get:
+ *     summary: Get all instruments
+ *     description: Retrieves a list of all instruments in the system
+ *     tags: [Admin, Instruments]
+ *     responses:
+ *       200:
+ *         description: List of instruments fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                     nullable: true
+ *       500:
+ *         description: Internal server error
+ */
+export const getAllInstruments = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const instruments = await prisma.instrument.findMany({
+            orderBy: {
+                name: 'asc'
+            }
+        });
+        res.status(200).json(instruments);
+    } catch (error) {
+        console.error('Error fetching instruments:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * @swagger
+ * /admin/create-instrument:
+ *   post:
+ *     summary: Create a new instrument
+ *     description: Adds a new instrument to the system
+ *     tags: [Admin, Instruments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the instrument
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Description of the instrument
+ *     responses:
+ *       201:
+ *         description: Instrument created successfully
+ *       400:
+ *         description: Bad request (missing required fields or duplicate name)
+ *       500:
+ *         description: Internal server error
+ */
+export const createInstrument = async (req: Request, res: Response): Promise<void> => {
+    const { name, description } = req.body;
+
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+        res.status(400).json({ error: 'Instrument name is required and must be a non-empty string' });
+        return;
+    }
+
+    try {
+
+        // Check if instrument with this name already exists
+        const existingInstrument = await prisma.instrument.findFirst({
+            where: { 
+                name: {
+                    equals: name.trim(),
+                    mode: 'insensitive'
+                }
+            }
+        });
+
+        if (existingInstrument) {
+            res.status(400).json({ error: 'An instrument with this name already exists' });
+            return;
+        }
+
+        const newInstrument = await prisma.instrument.create({
+            data: {
+                name: name.trim(),
+                description: description?.trim() || null
+            }
+        });
+
+        res.status(201).json(newInstrument);
+    } catch (error) {
+        console.error('Error creating instrument:', error);
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === 'P2002') {
+                res.status(400).json({ error: 'An instrument with this name already exists' });
+                return;
+            }
+        }
+        res.status(500).json({ error: 'Internal server error while creating instrument' });
+    }
+};
+
+/**
+ * @swagger
  * /admin/create-lab-role:
  *   post:
  *     summary: Create a new lab role
@@ -1479,9 +1464,9 @@ export const createLabRole = async (req: Request, res: Response): Promise<void> 
         return;
     }
 
-    // Validate permission level range (assumption: Permissino level must be between 0-100)
+    // Validate permission level range (assumption: Permission level must be between 0 and 100)
     if (permissionLevel < 0 || permissionLevel > 100) {
-        res.status(400).json({ error: 'Permission level must be between 0 and 100' });
+        res.status(400).json({ error: `Permission level must be between 0 and 100` });
         return;
     }
 
@@ -1506,11 +1491,11 @@ export const createLabRole = async (req: Request, res: Response): Promise<void> 
         }
 
         
-        const hasGlobalPermission = user.role.permissionLevel >= 60;
+        const hasGlobalPermission = user.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
         
         // Check if user is lab manager in any lab
         const isLabManager = user.labMembers.some(member => 
-            member.labRole.permissionLevel >= 70
+            member.labRole.permissionLevel >= PERMISSIONS.LAB_MANAGER
         );
 
         if (!hasGlobalPermission && !isLabManager) {
@@ -1943,13 +1928,7 @@ export const addItemToLab = async (req: Request, res: Response): Promise<void> =
         return;
     }
 
-    // Check lab-based permissions (lab managers 60+ can manage, admins 60+ can access)
-    const permissionCheck = await checkLabPermission(req, labId, 60, 60);
-    
-    if (!permissionCheck.hasPermission) {
-        res.status(403).json({ error: permissionCheck.error || 'Access denied' });
-        return;
-    }
+    // Permission check handled by middleware
 
     if (!itemId || !location || !itemUnit || currentStock === undefined || minStock === undefined) {
         res.status(400).json({ error: 'All fields are required: itemId, location, itemUnit, currentStock, minStock' });
@@ -2033,11 +2012,12 @@ export const addItemToLab = async (req: Request, res: Response): Promise<void> =
             }
         });
 
-        // Log the item addition using permission check results
-        if (permissionCheck.userId) {
+        // Log the item addition
+        const userId = (req.session as any)?.passport?.user;
+        if (userId) {
             await logItemAdded(
                 newLabItem.id,
-                permissionCheck.userId,
+                userId,
                 {
                     itemId: newLabItem.itemId,
                     itemName: item.name,
@@ -2047,9 +2027,9 @@ export const addItemToLab = async (req: Request, res: Response): Promise<void> =
                     minStock: newLabItem.minStock,
                     labId: labId 
                 },
-                permissionCheck.source,
-                `Item added to lab via admin panel${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
-                permissionCheck.memberId
+                'ADMIN_PANEL',
+                'Item added to lab via admin panel',
+                null // memberId not needed for admin operations
             );
         }
 
@@ -2252,13 +2232,7 @@ export const removeItemFromLab = async (req: Request, res: Response): Promise<vo
         return;
     }
 
-    // Check lab-based permissions (lab managers 60+ can manage, admins 60+ can access)
-    const permissionCheck = await checkLabPermission(req, labId, 60, 60);
-    
-    if (!permissionCheck.hasPermission) {
-        res.status(403).json({ error: permissionCheck.error || 'Access denied' });
-        return;
-    }
+    // Permission check handled by middleware
 
     try {
         // Find the lab inventory item
@@ -2277,11 +2251,12 @@ export const removeItemFromLab = async (req: Request, res: Response): Promise<vo
             return;
         }
 
-        // Log the item removal before deletion using permission check results
-        if (permissionCheck.userId) {
+        // Log the item removal before deletion
+        const userId = (req.session as any)?.passport?.user;
+        if (userId) {
             await logItemRemoved(
                 itemId,
-                permissionCheck.userId,
+                userId,
                 {
                     itemId: existingItem.itemId,
                     itemName: existingItem.item.name,
@@ -2296,9 +2271,9 @@ export const removeItemFromLab = async (req: Request, res: Response): Promise<vo
                         description: existingItem.item.description
                     }
                 },
-                permissionCheck.source,
-                `Item removed from lab via admin panel${permissionCheck.isAdmin ? ' (admin user)' : ''}`,
-                permissionCheck.memberId
+                'ADMIN_PANEL',
+                'Item removed from lab via admin panel',
+                null // memberId not needed for admin operations
             );
         }
 
@@ -2560,12 +2535,12 @@ export const createTag = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        // Check if user has permission >= 60
-        const hasGlobalPermission = user.role.permissionLevel >= 60;
+        // Check if user has global admin permission
+        const hasGlobalPermission = user.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN;
         
         // Check if user is a lab manager in any lab
         const isLabManager = user.labMembers.some(member => 
-            member.labRole.permissionLevel >= 70
+            member.labRole.permissionLevel >= PERMISSIONS.LAB_MANAGER
         );
 
         if (!hasGlobalPermission && !isLabManager) {
@@ -2995,7 +2970,7 @@ export const getAvailableUsersForLab = async (req: Request, res: Response): Prom
                 labId: labId,
                 labRole: {
                     permissionLevel: {
-                        gte: 0 
+                        gte: PERMISSIONS.LAB_MEMBER 
                     }
                 }
             },
@@ -3045,7 +3020,7 @@ export const getAvailableUsersForLab = async (req: Request, res: Response): Prom
                     where: {
                         labId: labId,
                         labRole: {
-                            permissionLevel: -1 // Former member
+                            permissionLevel: PERMISSIONS.FORMER_MEMBER // Former member
                         }
                     },
                     select: {
@@ -3195,7 +3170,7 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
             return;
         }
 
-        if (labRole.permissionLevel === -1) {
+        if (labRole.permissionLevel === PERMISSIONS.FORMER_MEMBER) {
             res.status(400).json({ error: 'Cannot assign Former Member role directly' });
             return;
         }
@@ -3207,7 +3182,7 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
                 labId: labId,
                 labRole: {
                     permissionLevel: {
-                        gte: 0 
+                        gte: PERMISSIONS.LAB_MEMBER 
                     }
                 }
             }
@@ -3224,7 +3199,7 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
                 userId: userId,
                 labId: labId,
                 labRole: {
-                    permissionLevel: -1 
+                    permissionLevel: PERMISSIONS.FORMER_MEMBER 
                 }
             }
         });
@@ -3312,7 +3287,7 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
                     where: { id: userId },
                     data: {
                         lastViewedLabId: labId,
-                        lastViewed: `/lab/${labId}`
+                        lastViewed: `/home`
                     }
                 });
             }
@@ -3340,3 +3315,132 @@ export const addUserToLabEndpoint = async (req: Request, res: Response): Promise
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+/**
+ * @swagger
+ * /admin/lab/{labId}/update-discussion/{discussionId}:
+ *   put:
+ *     summary: Update a discussion category
+ *     description: Updates an existing discussion category for a lab. For default categories (Announcements, General), the name cannot be changed.
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: labId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the lab
+ *       - in: path
+ *         name: discussionId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the discussion category
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the discussion category (cannot be changed for Announcements/General)
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional description of the category
+ *               postPermission:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: Permission level required to post in this category
+ *               visiblePermission:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: Permission level required to view this category
+ *     responses:
+ *       200:
+ *         description: Category updated successfully
+ *       400:
+ *         description: Invalid input or attempting to rename protected category
+ *       404:
+ *         description: Lab or discussion not found
+ *       500:
+ *         description: Internal server error
+ */
+export const updateDiscussionCategory = async (req: Request, res: Response): Promise<void> => {
+    const { labId, discussionId } = req.params;
+    const { name, description, postPermission, visiblePermission } = req.body;
+    
+    const labIdInt = parseInt(labId);
+    const discussionIdInt = parseInt(discussionId);
+    
+    if (isNaN(labIdInt) || isNaN(discussionIdInt)) {
+        res.status(400).json({ error: 'Invalid lab ID or discussion ID' });
+        return;
+    }
+
+    try {
+        // Verify the discussion exists and belongs to the lab
+        const existingDiscussion = await prisma.discussion.findFirst({
+            where: { 
+                id: discussionIdInt,
+                labId: labIdInt 
+            }
+        });
+
+        if (!existingDiscussion) {
+            res.status(404).json({ error: 'Discussion category not found in this lab' });
+            return;
+        }
+
+        // Check if trying to rename protected (default) categories
+        const protectedNames = ['Announcements', 'General'];
+        if (protectedNames.includes(existingDiscussion.name) && name && name !== existingDiscussion.name) {
+            res.status(400).json({ 
+                error: `Cannot rename the '${existingDiscussion.name}' category as it is a system default.` 
+            });
+            return;
+        }
+
+        // Prevent renaming to existing category (prevent duplicates)
+        if (name && name.trim().toLowerCase() !== existingDiscussion.name.toLowerCase()) {
+            const duplicateCategory = await prisma.discussion.findFirst({
+                where: {
+                    labId: labIdInt,
+                    name: {
+                        equals: name.trim(),
+                        mode: 'insensitive'
+                    },
+                    id: { not: discussionIdInt } // Exclude current category
+                }
+            });
+
+            if (duplicateCategory) {
+                res.status(400).json({ 
+                    error: `A category named '${name}' already exists in this lab` 
+                });
+                return;
+            }
+        }
+
+        // Build update data
+        const updateData: any = {};
+        if (name !== undefined && !protectedNames.includes(existingDiscussion.name)) {
+            updateData.name = name.trim();
+        }
+        if (description !== undefined) updateData.description = description;
+        if (postPermission !== undefined) updateData.postPermission = postPermission;
+        if (visiblePermission !== undefined) updateData.visiblePermission = visiblePermission;
+
+        const updatedDiscussion = await prisma.discussion.update({
+            where: { id: discussionIdInt },
+            data: updateData
+        });
+
+        res.status(200).json(updatedDiscussion);
+    } catch (error) {
+        console.error('Error updating discussion category:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}

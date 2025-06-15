@@ -13,6 +13,7 @@ export interface AdmissionRequest {
     displayName: string;
     jobTitle?: string;
     office?: string;
+    profilePic?: string | null;
   };
   role?: {
     name: string;

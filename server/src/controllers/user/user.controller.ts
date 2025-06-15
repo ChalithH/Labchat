@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { User } from '@prisma/client';
 import { hashPassword } from '../../utils/hashing.util';
 import { prisma } from '../..';
 
@@ -310,6 +309,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
         dateJoined: true,
         lastViewed: true,
         lastViewedLabId: true,
+        profilePic: true,
         // Explicitly exclude 'loginPassword'
       }
     });
@@ -443,6 +443,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
         dateJoined: true,
         lastViewed: true,
         lastViewedLabId: true,
+        profilePic: true,
       }
     });
     

@@ -5,6 +5,8 @@ import setUsersLastViewed from '@/lib/set_last_viewed';
 import getUserFromSessionServer from '@/lib/get_user_server';
 import { transformLabMember } from '../../../transform-api-event';
 import getLabMember from '@/lib/get_lab_member';
+import { AxiosResponse } from 'axios';
+import api from '@/lib/api';
 
 type Params = Promise<{ eventId: string }>
 
@@ -20,6 +22,14 @@ export default async function SingleEventPage(props:{ params: Params}) {
   }
 
   const currentLabId = user.lastViewedLabId || 1;
+  if (!user.lastViewedLabId) {
+    redirect('/admission');
+  }
+  
+  const lab: AxiosResponse = await api.get(`/lab/${ user.lastViewedLabId }`)
+  if (!lab) {
+    redirect('/admission');
+  }
   const eventId = parseInt( await params.eventId, 10);
   
   const labMember = await getLabMember(Number(user.id), Number(currentLabId));

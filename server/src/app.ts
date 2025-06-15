@@ -45,7 +45,7 @@ if (ENV === 'production') {
 app.use(cors(corsOptions));
 
 // ===== SESSION CONFIGURATION =====
-const sessionOptions = {
+const sessionOptions: any = {
   secret: process.env.SESSION_SECRET!,
   saveUninitialized: false,
   resave: false,
@@ -55,16 +55,20 @@ const sessionOptions = {
     secure: ENV === 'production' ? false : undefined,
     sameSite: ENV === 'production' ? 'lax' as 'lax' : undefined,
     domain: ENV === 'production' ? process.env.DOMAIN : undefined
-  },
-  store: new PrismaSessionStore(
+  }
+};
+
+// Only use PrismaSessionStore in non-test environments
+if (ENV !== 'test') {
+  sessionOptions.store = new PrismaSessionStore(
     new PrismaClient(),
     {
       checkPeriod: 2 * 60 * 1000, /* 2 minutes */
       dbRecordIdIsSessionId: true,
       dbRecordIdFunction: undefined
     }
-  )
-};
+  );
+}
 
 app.use(session(sessionOptions));
 
@@ -73,7 +77,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // ===== EVENT STATUS UPDATE SERVICE =====
-initializeStatusUpdateService();
+// Only initialize in non-test environments to prevent background processes during testing
+if (ENV !== 'test') {
+  initializeStatusUpdateService();
+}
+
+// Export a cleanup function for tests
+export const cleanup = async () => {
+  // Any app-level cleanup can go here
+};
 
 // ===== API DOCUMENTATION =====
 swaggerDocs(app);

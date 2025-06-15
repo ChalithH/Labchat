@@ -9,12 +9,13 @@ import { EditEventDialog } from "@/calendar/components/dialogs/edit-event-dialog
 import { DeleteEventDialog } from "@/calendar/components/dialogs/delete-event-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EventLink } from "@/calendar/components/event-link";
 import { StatusAction } from "@/calendar/components/status-action";
 
 import type { IEvent } from "@/calendar/interfaces";
+import { useCalendar } from "../../contexts/calendar-context";
 
 interface IProps {
   event: IEvent;
@@ -23,9 +24,13 @@ interface IProps {
 
 export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
   const [event, setEvent] = useState(initialEvent);
+  const { currentUser } = useCalendar();
   
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
+  const canEditOrDelete = currentUser && (
+    event.user.id === currentUser.id || Number(currentUser.labRoleId) === 1
+  );
 
   // Get the type name with proper formatting
   const typeName = event.type?.name || "Event";
@@ -33,6 +38,8 @@ export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
   const handleStatusChange = (updatedEvent: IEvent) => {
     setEvent(updatedEvent);
   };
+
+  console.log("User picture path:", event.user.picturePath);
 
   return (
     <>
@@ -59,6 +66,7 @@ export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
                   <p className="text-sm font-medium text-gray-900">Assigner</p>
                   <div className="flex items-center gap-2 mt-1">
                     <Avatar className="h-6 w-6">
+                       <AvatarImage src={event.user.picturePath ?? undefined} alt={event.user.name} />
                       <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">
                         {event.user.name.charAt(0)}
                       </AvatarFallback>
@@ -78,6 +86,7 @@ export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
                       {event.assignments.map((assignment) => (
                         <div key={assignment.id} className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
+                            <AvatarImage src={assignment.picturePath ?? undefined} alt={event.user.name} />
                             <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">
                               {assignment.name.charAt(0)}
                             </AvatarFallback>
@@ -162,19 +171,24 @@ export function EventDetailsDialog({ event: initialEvent, children }: IProps) {
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Open Event Page
               </EventLink>
-              <DeleteEventDialog event={event}>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
-                </Button>
-              </DeleteEventDialog>
-              
-              <EditEventDialog event={event}>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-              </EditEventDialog>
+              {/* Only show Edit and Delete buttons if user has permission */}
+              {canEditOrDelete && (
+              <div className="flex flex-row gap-2">
+                <DeleteEventDialog event={event}>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </DeleteEventDialog>
+                
+                <EditEventDialog event={event}>
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                </EditEventDialog>
+              </div>
+              )}
             </div>
           </DialogFooter>
         </DialogContent>

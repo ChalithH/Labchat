@@ -57,7 +57,10 @@ export type EventWithRelations = Prisma.EventGetPayload<{
                 id: true;
                 user: {
                     select: {
+                        firstName: true;
+                        lastName: true;
                         displayName: true;
+                        profilePic: true; // Add profile picture
                     }
                 }
             }
@@ -77,6 +80,7 @@ export type EventWithRelations = Prisma.EventGetPayload<{
                         user: {
                             select: {
                                 displayName: true;
+                                profilePic: true; // Add profile picture
                             }
                         }
                     }
@@ -91,11 +95,13 @@ export interface TransformedEvent extends Omit<EventWithRelations, 'assigner' | 
     assigner: {
         id: number;
         name: string;
+        picturePath: string | null; // Add profile picture
     };
     eventAssignments: Array<{
         id: number;
         memberId: number;
         name: string;
+        picturePath: string | null; // Add profile picture
     }>;
 }
 

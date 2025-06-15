@@ -4,6 +4,8 @@ import getUserFromSessionServer from '@/lib/get_user_server'
 import { redirect } from 'next/navigation'
 import MembersClient from '../components/MembersClient'
 import { LabProvider } from '@/contexts/lab-context'
+import { AxiosResponse } from 'axios'
+import api from '@/lib/api'
 
 const MembersPage = async () => {
     setUsersLastViewed(`/members`)
@@ -17,6 +19,15 @@ const MembersPage = async () => {
     const lastViewedLabId = user.lastViewedLabId && !isNaN(parseInt(user.lastViewedLabId))
       ? parseInt(user.lastViewedLabId)
       : 1;
+
+    if (!user.lastViewedLabId) {
+      redirect('/admission');
+    }
+    
+    const lab: AxiosResponse = await api.get(`/lab/${ user.lastViewedLabId }`)
+    if (!lab) {
+      redirect('/admission');
+    }
 
     return (
       <LabProvider initialLabId={lastViewedLabId}>

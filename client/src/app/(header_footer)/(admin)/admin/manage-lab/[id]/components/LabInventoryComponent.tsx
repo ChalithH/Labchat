@@ -320,13 +320,13 @@ export default function LabInventoryComponent({ labId }: LabInventoryComponentPr
 
   const fetchGlobalItems = useCallback(async () => {
     try {
-      const response = await api.get('/admin/get-all-items');
+      const response = await api.get(`/admin/get-available-items-for-lab/${labId}`);
       setGlobalItems(response.data);
     } catch (error) {
-      console.error('Failed to fetch global items:', error);
-      toast.error('Failed to load global items');
+      console.error('Failed to fetch available items for lab:', error);
+      toast.error('Failed to load available items');
     }
-  }, []);
+  }, [labId]);
 
   const fetchAvailableTags = useCallback(async () => {
     try {

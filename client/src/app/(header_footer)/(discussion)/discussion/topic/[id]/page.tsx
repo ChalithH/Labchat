@@ -21,8 +21,19 @@ const DiscussionTopic = async (props:{ params: Params}) => {
     
     const user = await getUserFromSessionServer()
     const currentLabId = user.lastViewedLabId || 1
+    
+    if (!user.lastViewedLabId) {
+      redirect('/admission');
+    }
 
-    const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
+    const lab: AxiosResponse = await api.get(`/lab/${ user.lastViewedLabId }`)
+    if (!lab) {
+      redirect('/admission');
+    }
+    
+    const member = await api.get(`/member/get/user-lab/${ user.id }/${ currentLabId }`)
+    
+    const roleResponse: AxiosResponse = await api.get(`/lab/role/${ member.data.labId }/${ member.data.labRoleId }`)
     const userPermission = roleResponse.data.permissionLevel
 
     const categoryRequest: AxiosResponse = await api.get(`/discussion/categories/${ id }`)
@@ -31,7 +42,6 @@ const DiscussionTopic = async (props:{ params: Params}) => {
     if (!user || ((category.labId != currentLabId) && PermissionConfig.SEE_EVERYTHING_PERMISSION > userPermission)) {
       redirect('/home')
     }
-
     const postsRequest: AxiosResponse = await api.get(`/discussion/category-posts/${ currentLabId }/${ id }`)
     const allPosts: PostType[] = postsRequest.data
 

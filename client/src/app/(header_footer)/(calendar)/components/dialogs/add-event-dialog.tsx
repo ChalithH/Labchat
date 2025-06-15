@@ -105,6 +105,24 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     },
   });
 
+  useEffect(() => {
+    if (eventTypes.length > 0 && currentUser) {
+      const filteredTypes = Number(currentUser.labRoleId) === 1 
+        ? eventTypes 
+        : eventTypes.filter(type => !type.name?.toLowerCase().includes("booking"));
+      
+      const defaultTypeId = filteredTypes.length > 0 ? filteredTypes[0].id.toString() : "1";
+      
+      // Only update if the current value is invalid or empt
+      const currentTypeValue = form.getValues("type");
+      const isCurrentTypeValid = filteredTypes.some(type => type.id.toString() === currentTypeValue);
+      
+      if (!isCurrentTypeValid || !currentTypeValue) {
+        form.setValue("type", defaultTypeId);
+      }
+    }
+  }, [eventTypes, currentUser, form]);
+
   // Set the current user when users data is available
   useEffect(() => {
     const getCurrentUserId = () => {
@@ -173,15 +191,16 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     const selectedType = eventTypes.find(type => type.id.toString() === values.type);
 
     // Find the selected instrument if any
-    const selectedInstrument = values.instrumentId && values.instrumentId !== "none" 
+    const selectedInstrument = values.instrumentId && values.instrumentId !== "none" && currentType?.name?.toLowerCase().includes("booking")
       ? instruments.find(i => i.id.toString() === values.instrumentId)
       : null;
 
     // Prepare assignments with proper member IDs
-    const assignmentsWithMemberIds = selectedAssignees.map(assignee => ({
+    const assignmentsWithMemberIds =  !currentType?.name?.toLowerCase().includes("booking") ? 
+    selectedAssignees.map(assignee => ({
       ...assignee,
       memberId: typeof assignee.memberId === 'number' ? assignee.memberId : parseInt(assignee.memberId as unknown as string)
-    }));
+    })) : [];
 
     const eventData = {
       title: values.title,
@@ -255,7 +274,8 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
       {
         id: Date.now(), // Temporary ID
         memberId: userIdAsNumber,
-        name: user.name
+        name: user.name,
+        picturePath: user.picturePath || null, // Use user's picture if available
       }
     ]);
   };
@@ -268,8 +288,11 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
   // Get currently selected type ID
   const currentTypeId = form.watch("type");
   const currentType = eventTypes.find(t => t.id.toString() === currentTypeId);
-  const isEquipmentType = currentType?.name?.toLowerCase().includes("equipment") || 
-                         currentType?.name?.toLowerCase().includes("booking");
+  const isbooking = currentType?.name?.toLowerCase().includes("booking");
+
+  const filteredEventTypes = Number(currentUser?.labRoleId) === 1 
+    ? eventTypes 
+    : eventTypes.filter(type => !type.name?.toLowerCase().includes("booking"));
   
   // Reset assignments when dialog closes
   const handleOpenChange = (open: boolean) => {
@@ -358,7 +381,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                               <SelectValue placeholder={loadingTypes ? "Loading types..." : "Select event type"} />
                             </SelectTrigger>
                             <SelectContent>
-                              {eventTypes.map(type => (
+                              {filteredEventTypes.map(type => (
                                 <SelectItem key={type.id} value={type.id.toString()}>
                                   <div className="flex items-center gap-2">
                                     <div 
@@ -378,44 +401,47 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   />
 
                   {/* Instrument Selection */}
-                  <FormField
-                    control={form.control}
-                    name="instrumentId"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="w-full">
-                        <FormLabel className="text-gray-900">Instrument</FormLabel>
-                        <FormControl>
-                          <Select
-                            value={field.value !== null ? field.value : "none"}
-                            onValueChange={(value) => field.onChange(value === "none" ? null : value)}
-                          >
-                            <SelectTrigger className="w-full" data-invalid={fieldState.invalid}>
-                              <SelectValue placeholder="Select an instrument" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-gray-600">No instrument</span>
-                                </div>
-                              </SelectItem>
-                              {instruments.map(instrument => (
-                                <SelectItem key={instrument.id} value={instrument.id.toString()}>
-                                  <div className="flex items-center gap-2">
-                                    <Microscope className="h-4 w-4 text-gray-600" />
-                                    <span className="text-gray-900">{instrument.name}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+									{isbooking && (
+										<FormField
+											control={form.control}
+											name="instrumentId"
+											render={({ field, fieldState }) => (
+												<FormItem className="w-full">
+													<FormLabel className="text-gray-900">Instrument</FormLabel>
+													<FormControl>
+														<Select
+															value={field.value !== null ? field.value : "none"}
+															onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+														>
+															<SelectTrigger className="w-full" data-invalid={fieldState.invalid}>
+																<SelectValue placeholder="Select an instrument" />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value="none">
+																	<div className="flex items-center gap-2">
+																		<span className="text-gray-600">No instrument</span>
+																	</div>
+																</SelectItem>
+																{instruments.map(instrument => (
+																	<SelectItem key={instrument.id} value={instrument.id.toString()}>
+																		<div className="flex items-center gap-2">
+																			<Microscope className="h-4 w-4 text-gray-600" />
+																			<span className="text-gray-900">{instrument.name}</span>
+																		</div>
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									)}
                 </div>
 
                 {/* Assignees section */}
+								{!isbooking && hasUsers && (
                 <div className="space-y-3 border rounded-md p-3">
                   <div className="flex justify-between items-center">
                     <h3 className="text-sm font-medium text-gray-900">Assigned Members</h3>
@@ -429,6 +455,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                             <SelectItem key={user.id} value={user.id}>
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-5 w-5">
+                                  <AvatarImage src={user.picturePath || undefined} />
                                   <AvatarFallback className="text-[10px] bg-gray-100 text-gray-700">{user.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <span className="truncate text-gray-900">{user.name}</span>
@@ -462,6 +489,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                         <div key={assignee.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
+                              <AvatarImage src={assignee.picturePath || undefined} />
                               <AvatarFallback className="bg-gray-100 text-gray-700">{assignee.name[0]}</AvatarFallback>
                             </Avatar>
                             <span className="text-sm text-gray-900">{assignee.name}</span>
@@ -480,6 +508,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                     </div>
                   )}
                 </div>
+								)}
 
                 <FormField
                   control={form.control}

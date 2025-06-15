@@ -30,12 +30,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import ErrorBox from "./ErrorBox"
-import { Pencil } from "lucide-react"
+import { Edit, MessageCircle } from "lucide-react"
 
 
 const CONTACT_TYPES: {type: string, display: string}[]= [
   { type: 'email', display: 'Email' },
-  { type: 'phone', display: 'Phone' }]
+  { type: 'phone', display: 'Phone' },
+  { type: 'other', display: 'Other' }]
 
 const EditContact = ({ contact }:{ contact: ContactType }) => {
   const [type, setType] = useState<string>(contact.type)
@@ -65,19 +66,27 @@ const EditContact = ({ contact }:{ contact: ContactType }) => {
     const response: AxiosResponse = await api.put(`/profile/edit/${ contact.id }`, new_contact)
 
     setIsEditOpen(false)
-    setType('')
-    setName('')
-    setInfo('')
     setError('')
     router.refresh()
+  }
+
+  const handleCancel = () => {
+    // Reset to original values when canceling
+    setType(contact.type)
+    setName(contact.name)
+    setUseCase(contact.useCase)
+    setInfo(contact.info)
+    setError('')
+    setIsEditOpen(false)
   }
 
   return (
     <>
       <Dialog open={ isEditOpen } onOpenChange={ setIsEditOpen }>
         <DialogTrigger asChild>
-           <Pencil  
-              className="w-5 h-5 cursor-pointer text-muted-foreground" /> 
+          <Button size="sm" variant="outline">
+            <Edit className="h-4 w-4" />
+          </Button>
         </DialogTrigger>
 
         <DialogContent>
@@ -91,7 +100,7 @@ const EditContact = ({ contact }:{ contact: ContactType }) => {
 
             <div>
               <Label htmlFor="type" className='mb-1'>Icon</Label>
-              <Select onValueChange={ val => setType(val) }>
+              <Select value={type} onValueChange={ val => setType(val) }>
                 <SelectTrigger className="w-[100%] text-sm" id='type'>
                   <SelectValue placeholder='Select an icon' />
                 </SelectTrigger>
@@ -136,10 +145,8 @@ const EditContact = ({ contact }:{ contact: ContactType }) => {
           </section>
 
           <DialogFooter>
-						<DialogClose asChild>
-							<Button variant="outline">Cancel</Button>
-						</DialogClose>
-						<Button onClick={ handleEditContact }>
+            <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+            <Button onClick={ handleEditContact }>
               Save Changes
             </Button>
           </DialogFooter>

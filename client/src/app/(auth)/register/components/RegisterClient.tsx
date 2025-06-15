@@ -18,6 +18,20 @@ import headerImage from "@/../public/headerImage.svg"
 import frank from '/public/FrankIcon.svg'
 import { Home } from "lucide-react"
 
+const validatePassword = (password: string): string | null => {
+  if (password.length < 8)
+    return "Password must be at least 8 characters long"
+  if (!/[A-Z]/.test(password))
+    return "Password must include at least one uppercase letter"
+  if (!/[a-z]/.test(password))
+    return "Password must include at least one lowercase letter"
+  if (!/[0-9]/.test(password))
+    return "Password must include at least one number"
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
+    return "Password must include at least one special character"
+  return null
+}
+
 const RegisterClient = () => {
   const router = useRouter()
   const [firstName, setFirstName] = useState<string>("")
@@ -38,6 +52,14 @@ const RegisterClient = () => {
       if (password !== confirmPassword) {
         setMessage(undefined)
         setError("Passwords do not match")
+        setIsLoading(false)
+        return
+      }
+
+      const passwordError = validatePassword(password)
+      if (passwordError) {
+        setMessage(undefined)
+        setError(passwordError)
         setIsLoading(false)
         return
       }

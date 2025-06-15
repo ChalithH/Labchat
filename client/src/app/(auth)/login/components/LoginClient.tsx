@@ -43,10 +43,22 @@ const LoginClient = () => {
         const user = await getUserFromSession()
         const redirectPath = user?.lastViewed || DEFAULT_REDIRECT_ROUTE
         const baseUrl = process.env.NEXT_PUBLIC_CORS_ORIGIN || ""
-        router.push(`${baseUrl}/${redirectPath}`)
+
+        console.log(user)
+
+        if (user.lastViewedLabId) {
+          const labs = await api.get(`/lab/user/${ user.id }/labs/`)
+
+          if (labs.data.length > 0) {
+            router.push(`${baseUrl}/${redirectPath}`)
+            return
+          }
+        }
+        router.push(`${baseUrl}${DEFAULT_REDIRECT_ROUTE}`)
+
       } catch (err) {
         // If getting user session fails, redirect to default route
-        router.push(`/${DEFAULT_REDIRECT_ROUTE}`)
+        router.push(`${process.env.NEXT_PUBLIC_CORS_ORIGIN}/${DEFAULT_REDIRECT_ROUTE}`)
       }
     } catch (err: any) {
       setMessage(undefined)

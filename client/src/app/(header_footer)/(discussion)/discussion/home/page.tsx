@@ -23,9 +23,19 @@ const DiscussionHome = async () => {
       redirect('/home')
     }
 
-    const currentLabId = user.lastViewedLabId || 1
+    if (!user.lastViewedLabId) {
+      redirect('/admission');
+    }
 
-    const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`)
+    const lab: AxiosResponse = await api.get(`/lab/${ user.lastViewedLabId }`)
+    if (!lab) {
+      redirect('/admission');
+    }
+
+    const currentLabId = user.lastViewedLabId || 1
+    const member = await api.get(`/member/get/user-lab/${ user.id }/${ currentLabId }`)
+    
+    const roleResponse: AxiosResponse = await api.get(`/lab/role/${ member.data.labId }/${ member.data.labRoleId }`)
     const userPermission = roleResponse.data.permissionLevel
 
     const recentActivityRequest: AxiosResponse = await api.get(`/discussion/recent/${ currentLabId }`)

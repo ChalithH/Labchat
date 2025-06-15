@@ -177,6 +177,24 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ role }) => {
           </div>
         </div>
       </Link>
+
+      {/* Instruments Section */}
+      <Link
+        href="/admin/manage-instruments"
+        className="block border-t pt-6 mt-6 cursor-pointer hover:bg-gray-50 transition-colors rounded-md"
+      >
+        <div>
+          <h2 className="font-play text-3xl font-bold text-black">
+            Manage Instruments
+          </h2>
+          <p className="mt-1 text-muted-foreground whitespace-nowrap">
+            Create instruments that can be used for booking events in labs.
+          </p>
+          <div className="mt-4">
+            <Button>Go to Instruments</Button>
+          </div>
+        </div>
+      </Link>
     </div>
   )
 }

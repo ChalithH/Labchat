@@ -23,6 +23,19 @@ const DiscussionThread = async (props:{ params: Params}) => {
     
     const user = await getUserFromSessionServer()
     const currentLabId = user.lastViewedLabId || 1
+    if (!user.lastViewedLabId) {
+      redirect('/admission');
+    }
+
+    const lab: AxiosResponse = await api.get(`/lab/${ user.lastViewedLabId }`)
+    if (!lab) {
+      redirect('/admission');
+    }
+
+    const memberResponse = await api.get(`/member/get/user-lab/${ user.id }/${ currentLabId }`)
+    
+    const roleResponse: AxiosResponse = await api.get(`/lab/role/${ memberResponse.data.labId }/${ memberResponse.data.labRoleId }`)
+    const userPermission = roleResponse.data.permissionLevel
 
     const postResponse: AxiosResponse = await api.get(`/discussion/post/${ id }`)
     const post: PostType = postResponse.data
@@ -33,10 +46,8 @@ const DiscussionThread = async (props:{ params: Params}) => {
     const replyResponse: AxiosResponse = await api.get(`/discussion/replies/post/${ id }`)
     const replies: ReplyType[] = replyResponse.data
 
-    const roleResponse: AxiosResponse = await api.get(`/role/get/${ user.roleId }`) 
     const userRole: string = roleResponse.data.name
 
-    const userPermission = roleResponse.data.permissionLevel
     const visiblePermission = category.visiblePermission ?? 0
 
     const isNotVisible = userPermission < visiblePermission
@@ -49,7 +60,8 @@ const DiscussionThread = async (props:{ params: Params}) => {
       redirect('/home')
     }
 
-    const authorRole = await ResolveRoleName(post.member.user.roleId)
+    const authorRoleResponse: AxiosResponse = await api.get(`/lab/role/${ memberResponse.data.labId }/${ memberResponse.data.labRoleId }`)
+    const authorRole = authorRoleResponse.data.name
     const member = await api.get(`/member/get/user/${ user.id }`)
 
     return (

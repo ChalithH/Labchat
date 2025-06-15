@@ -1,5 +1,6 @@
 import { PrismaClient, InventoryAction, InventorySource } from '@prisma/client';
 import { Request } from 'express';
+import { PERMISSIONS } from '../config/permissions';
 
 const prisma = new PrismaClient();
 
@@ -68,7 +69,7 @@ export const getUserContextForLogging = async (req: Request, labId: number): Pro
       return { userId: null, memberId: null, source: InventorySource.API_DIRECT, isAdmin: false };
     }
 
-    const isAdmin = user.role.permissionLevel >= 60; // Admin level threshold
+    const isAdmin = user.role.permissionLevel >= PERMISSIONS.GLOBAL_ADMIN; // Admin level threshold
 
     
     const labMember = await prisma.labMember.findFirst({

@@ -430,11 +430,14 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 });
             }
 
+            const updatedRoleID = existingMember ? roleId : 3
+
             let updatedUser = null;
             if (!admissionRequest.user.lastViewedLabId) {
                 updatedUser = await tx.user.update({
                     where: { id: admissionRequest.userId },
                     data: {
+                        roleId: updatedRoleID,
                         lastViewedLabId: admissionRequest.labId,
                         lastViewed: `/dashboard` // or '/dashboard'
                     }
@@ -703,7 +706,8 @@ export const getLabAdmissionRequests = async (req: Request, res: Response): Prom
                         lastName: true,
                         displayName: true,
                         jobTitle: true,
-                        office: true
+                        office: true,
+                        profilePic: true,
                     }
                 },
                 role: {
