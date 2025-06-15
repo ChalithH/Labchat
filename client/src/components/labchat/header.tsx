@@ -260,7 +260,6 @@ const handleProfile = async () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-4">
-          <ModeSwitch />
           {userData && <NotificationBell userId={userData.id + ''} />}
 
           {/* Mobile Menu */}
@@ -347,9 +346,12 @@ const handleProfile = async () => {
               {/* Fixed Bottom Actions */}
               {isLoggedIn && (
                 <div className="flex-shrink-0 px-4 pb-4 pt-2 border-t space-y-3 bg-background">
-                  <Button variant="outline" className="w-full" onClick={handleProfile}>
-                    My Profile
-                  </Button>
+                  {memberData && ( 
+                  <SheetClose asChild>
+                    <Button variant="outline" className="w-full" onClick={handleProfile}>
+                      My Profile
+                    </Button> 
+                  </SheetClose>)}
                   <SheetClose asChild>
                     <Button
                       variant="destructive"
