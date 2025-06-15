@@ -401,7 +401,7 @@ We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTIN
 |------|------|---------|
 | **Backend Developer** | Caleb Wharton | [@calebwharton](https://github.com/calebwharton) |
 | **Full-Stack Developer** | Chalith Hewage | [@ChalithHewage](https://github.com/ChalithH) |
-| **Frontend Developer** | Cole Howard | [@cole-howard-nz](https://github.com/cole-howard-nz) |
+| **Full-Stack Developer** | Cole Howard | [@cole-howard-nz](https://github.com/cole-howard-nz) |
 | **Project Manager** | Mark McNaught | [@Mark-McNaught](https://github.com/Mark-McNaught) |
 | **DevOps Engineer** | Parin Kasabia | [@MateUrDreaming](https://github.com/MateUrDreaming) |
 
