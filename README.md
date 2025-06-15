@@ -428,7 +428,7 @@ Finally, we wish to acknowledge the resoruces we used to support development of 
 * https://www.youtube.com/watch?v=H93Vhy6pmow&t=636s (RDS setup)
 * https://www.youtube.com/watch?v=yhiuV6cqkNs (SSL setup with Nginx)
 
-##
+## Binary Bandits 
 Congratulations to Team 13 for completing their Capstone Project!
 * Proposal document: https://docs.google.com/document/d/1FedvVdMy9A9ripl-qBNBzSZkBCglH6ROw6JOKhI_yU0/edit?tab=t.0
 * Final Report: https://docs.google.com/document/d/1geD4MXczun_YtjJPhw80a-Jp18ZzUCmr/edit?rtpof=true&tab=t.0
