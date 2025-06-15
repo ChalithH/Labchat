@@ -328,29 +328,40 @@ export const getPostsByMember = async (req: Request, res: Response): Promise<voi
  */
 export const getPostsByTitle = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title } = req.body
+    const { title } = req.body;
     if (!title) {
-      res.status(400).json({ error: 'Failed to obtain a title from request' })
-      return
+      res.status(400).json({ error: 'Failed to obtain a title from request' });
+      return;
     }
 
     // Case insensitive partial search for the term supplied
-    const posts: DiscussionPost[] = await prisma.discussionPost.findMany({ 
+    const posts = await prisma.discussionPost.findMany({ 
       where: { 
         title: {
           contains: title,
           mode: 'insensitive'
         }
+      },
+      include: {
+        tags: { include: { postTag: true } },
+        member: { include: { user: true } },
+        reactions: { include: { reaction: true } }
       }
-    })
-    res.status(200).send(posts)
-    return
+    });
 
-  } catch(err: unknown) {
-    res.status(500).json({ error: 'Failed to retrieve post' })
-    return
+    const postsWithTags = posts.map(post => ({
+      ...post,
+      tags: post.tags.map(tag => tag.postTag)
+    }));
+
+    res.status(200).send(postsWithTags);
+    return;
+
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Failed to retrieve post' });
+    return;
   }   
-}
+};
 
 /*
  *      Get Posts By Category
@@ -438,14 +449,18 @@ export const getAnnouncementsByLab = async (req: Request, res: Response): Promis
 
     const announcements: DiscussionPost[] = await prisma.discussionPost.findMany({
       where: {
-        isAnnounce: true,
         discussion: {
           labId: labId,
+          name: "Announcements",
         },
       },
       include: {
         discussion: true, // Include discussion to confirm labId relation
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 5, // Limit to 5 most recent announcements for dashboard
     });
 
     res.status(200).json(announcements);

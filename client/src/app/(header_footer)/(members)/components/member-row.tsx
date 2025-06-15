@@ -89,6 +89,11 @@ export function MobileRow({ member, isExpanded, toggleExpand }: MemberRowProps) 
                         {activeStatus.status.statusName}
                       </span>
                     </div>
+                    {activeStatus.description && (
+                      <p className="text-sm">
+                        <span className="font-medium">Description:</span> {activeStatus.description}
+                      </p>
+                    )}
                     <p className="text-sm">
                       <span className="font-medium">Contact Name:</span> {activeStatus.contact.name || "Not provided"}
                     </p>
@@ -197,6 +202,11 @@ export function DesktopRow({ member, isExpanded, toggleExpand }: MemberRowProps)
                             {activeStatus.status.statusName}
                           </span>
                         </div>
+                        {activeStatus.description && (
+                          <p className="text-sm">
+                            <span className="font-medium">Description:</span> {activeStatus.description}
+                          </p>
+                        )}
                         <p className="text-sm">
                           <span className="font-medium">Contact Name:</span> {activeStatus.contact.name || "Not provided"}
                         </p>

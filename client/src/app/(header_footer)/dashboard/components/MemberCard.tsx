@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import type { Member } from './types'; 
 
@@ -25,12 +25,12 @@ export default function MemberCard({ member }: { member: Member }) { // Added ty
   return (
     <div className="flex items-center justify-between w-full py-2 bg-card text-card-foreground rounded-md">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full overflow-hidden"> 
-          <Avatar className="w-full h-full"> 
-            <img src={member.image || '/default_pfp.svg'} alt={member.name} className="w-full h-full object-cover" />
-            <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-          </Avatar>
-        </div>
+        <Avatar className="w-10 h-10 border-2 border-blue-500">
+          <AvatarImage src={member.image || undefined} alt={member.name} />
+          <AvatarFallback className="bg-zinc-950 text-zinc-50">
+            {getInitials(member.name)}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex flex-col items-start">
           <Badge>{member.role}</Badge>
           <div className="text-sm font-medium tracking-tighter">
