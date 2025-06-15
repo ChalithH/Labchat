@@ -12,19 +12,16 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
-type SearchPageProps = {
-  searchParams: { q?: string }
-}
+type SearchParams = Promise<{ q?: string }>
 
-const SearchResults = async ({ searchParams }: SearchPageProps) => {
+const SearchResults = async (props: { searchParams: SearchParams }) => {
+  const searchParams = await props.searchParams
   const query = searchParams.q?.trim() || ''
   let results: PostType[] = []
 
   if (query.length > 0) {
     try {
-      const response = await api.post('/discussion/title-posts', {
-        title: query
-      })
+      const response = await api.post('/discussion/title-posts', { title: query })
       results = response.data
     } catch (err) {
       results = []
@@ -45,7 +42,9 @@ const SearchResults = async ({ searchParams }: SearchPageProps) => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <h1 className="text-3xl font-bold mb-4">Search Results for &quot;{query}&quot;</h1>
+      <h1 className="text-3xl font-bold mb-4">
+        Search Results for &quot;{query}&quot;
+      </h1>
 
       {results.length === 0 ? (
         <div className="text-gray-500 italic text-center py-8">
