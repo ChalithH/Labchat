@@ -28,7 +28,11 @@
       "statusWeight": 7
     },
     {
-      "statusName": "On leave",
+      "statusName": "Meeting",
+      "statusWeight": 8
+    },
+    {
+      "statusName": "Sick",
       "statusWeight": 1
     }
   ]
