@@ -324,7 +324,6 @@ export const getLabRoles = async (req: Request, res: Response): Promise<void> =>
         permissionLevel: { gte: 0 } // Exclude Former Member and other negative permission roles
       },
       orderBy: { permissionLevel: 'asc' },
-      take: 3, 
     });
     res.json(roles);
   } catch (error) {
@@ -504,6 +503,7 @@ export const getLabRoleById = async (req: Request, res: Response): Promise<void>
   try {
     const lab = await prisma.lab.findUnique({ where: { id: Number(labId) } });
     if (!lab) {
+      console.log("no lab")
       res.status(404).json({ error: 'Lab not found' });
       return;
     }
@@ -513,6 +513,7 @@ export const getLabRoleById = async (req: Request, res: Response): Promise<void>
     });
 
     if (!role) {
+      console.log('no role')
       res.status(404).json({ error: 'Lab role not found' });
       return;
     }

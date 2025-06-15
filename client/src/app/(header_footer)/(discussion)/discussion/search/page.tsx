@@ -1,6 +1,4 @@
-// app/(header_footer)/discussion/search/page.tsx
 import React from 'react'
-import { notFound } from 'next/navigation'
 import api from '@/lib/api'
 import Thread from '@/components/discussion/Thread'
 import { PostType } from '@/types/post.type'
@@ -14,12 +12,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
+type SearchPageProps = {
+  searchParams: { q?: string }
+}
 
-type Params = Promise<{ q?: string }>
-
-const SearchResults = async (props:{ params: Params}) => {
-  const params = await props.params
-  const query = params.q?.trim() || ''
+const SearchResults = async ({ searchParams }: SearchPageProps) => {
+  const query = searchParams.q?.trim() || ''
   let results: PostType[] = []
 
   if (query.length > 0) {
@@ -40,30 +38,28 @@ const SearchResults = async (props:{ params: Params}) => {
           <BreadcrumbItem>
             <BreadcrumbLink href="/discussion/home">Discussion Home</BreadcrumbLink>
           </BreadcrumbItem>
-
           <BreadcrumbSeparator />
-
           <BreadcrumbItem>
             <BreadcrumbPage>Search</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      <h1 className="text-3xl font-bold mb-4">Search Results for &quot;{ query}&quot;</h1>
+      <h1 className="text-3xl font-bold mb-4">Search Results for &quot;{query}&quot;</h1>
 
-      { results.length === 0 ?
+      {results.length === 0 ? (
         <div className="text-gray-500 italic text-center py-8">
           No posts matched your search.
         </div>
-      : 
+      ) : (
         <ul className="space-y-6">
-          { results.map((post, idx) => (
-            <li key={ post.id } className={ idx !== results.length - 1 ? "mb-6" : "" }>
-              <Thread thread={ post } b_show_blurb={ true } />
+          {results.map((post, idx) => (
+            <li key={post.id} className={idx !== results.length - 1 ? "mb-6" : ""}>
+              <Thread thread={post} b_show_blurb={true} />
             </li>
-          )) }
+          ))}
         </ul>
-      }
+      )}
     </main>
   )
 }

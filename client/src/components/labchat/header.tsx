@@ -40,6 +40,7 @@ export default function Header() {
   const [activeLink, setActiveLink] = useState('#');
   const [isLabManager, setIsLabManager] = useState(false);
   const [isLabMember, setIsLabMember] = useState(false);
+  const [memberData, setMemberData] = useState<any>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -89,6 +90,34 @@ export default function Header() {
     checkLabPermissions();
     }, [userData?.lastViewedLabId, isLoggedIn, userData]);
 
+  useEffect(() => {
+    const fetchMemberData = async () => {
+      if (!isLoggedIn || !userData?.id || !userData?.lastViewedLabId) {
+        setMemberData(null);
+        return;
+      }
+
+      try {
+        console.log(`Fetching member data for user ${userData.id} in lab ${userData.lastViewedLabId}`);
+        
+        // Get the member association
+        const member = await api.get(`/member/get/user-lab/${userData.id}/${userData.lastViewedLabId}`);
+        
+        // Get the full member details including labRole
+        const memberResponse = await api.get(`/member/get/${member.data.id}`);
+        
+        console.log('Member data with labRole:', memberResponse.data);
+        setMemberData(memberResponse.data);
+        
+      } catch (error) {
+        console.error('Failed to fetch member data:', error);
+        setMemberData(null);
+      }
+    };
+
+    fetchMemberData();
+  }, [isLoggedIn, userData?.id, userData?.lastViewedLabId]);
+
   const handleLinkClick = (href: string) => setActiveLink(href);
 
  const handleLogout = async () => {
@@ -113,21 +142,25 @@ export default function Header() {
   }
 };
 
-  const handleProfile = async () => {
-    if (isLoggedIn) {
-      const user = await getUserFromSession();
+const handleProfile = async () => {
+  if (!isLoggedIn || !userData) {
+    return;
+  }
 
-      if (!user?.lastViewedLabId)
-        redirect('/admission');
-      
-      try {
-        const member = await api.get(`/member/get/user-lab/${ user.id }/${ user.lastViewedLabId }`)
-        redirect(`/profile/${member.data.id}`);
-      } catch (_) {
-        redirect(`/admission`);
-      }
-    }
-  };
+  if (!userData.lastViewedLabId) { 
+    router.push('/admission'); 
+    return;
+  } 
+
+  try {
+    const member = await api.get(`/member/get/user-lab/${userData.id}/${userData.lastViewedLabId}`);
+    const memberResponse = await api.get(`/member/get/${member.data.id}`);
+    router.push(`/profile/${member.data.id}`); 
+  } catch (error) {
+    router.push('/admission'); 
+  }
+};
+
 
   const handleLabChange = async (labId: number) => {
     console.log('Switched to lab:', labId);
@@ -202,7 +235,6 @@ export default function Header() {
   } else { 
     navItems = loggedOutsiteConfig.navItems;
   }
-
 
 
   return (
@@ -282,6 +314,12 @@ export default function Header() {
                       placeholder="Select lab..."
                       className="w-full"
                     />
+                    {memberData?.labRole?.name && (
+                        <div className=" flex flex-row justify-center items-center py-2 px-2">
+                            <p>Lab role: </p>
+                            <Badge variant="secondary">{memberData.labRole.name}</Badge>
+                        </div>
+                    )}
                   </div>
                 )}
 

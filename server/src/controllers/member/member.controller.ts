@@ -466,8 +466,7 @@ export const getMembershipsByUserId = async (req: Request, res: Response): Promi
 export const createMemberStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { memberId, statusId, contactId, description } = req.body;
-
-    if (!memberId || !statusId) {
+    if (!memberId || !statusId || !contactId) {
       res.status(400).json({ error: 'memberId and statusId are required' });
       return;
     }

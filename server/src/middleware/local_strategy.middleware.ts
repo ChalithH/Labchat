@@ -4,7 +4,7 @@ import { comparePasswords } from '../utils/hashing.util'
 
 import { Strategy as LocalStrategy } from 'passport-local'
 import passport from 'passport'
-import { prisma } from '..'
+import { prisma } from '../prisma'
 
 
 
@@ -49,7 +49,7 @@ passport.deserializeUser(async (id: number, done) => {
  *      loginEmail    : email of user attempting to login as, must match a user in the database
  *      loginPassword : password of user attempting to login as, must match a user in the database
  */
-export default passport.use(
+passport.use(
   new LocalStrategy({ usernameField: 'loginEmail', passwordField: 'loginPassword' }, async (loginEmail: string, loginPassword: string, done) => {
     try {
       const user = await prisma.user.findUnique({
