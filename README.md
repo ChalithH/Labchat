@@ -407,6 +407,38 @@ We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTIN
 
 ---
 
+## Future Work
+
+### System Enhancements
+
+* University tools integration - SSO, student directories, and academic database connections for streamlined onboarding
+* Performance optimizations - Database schema improvements, query optimization, and faster API response times
+* Desktop responsiveness improvements - Better layout scaling and spacing for larger screen devices
+* Comprehensive testing suite - Automated frontend testing with * Storybook and expanded Jest backend coverage
+* CI/CD pipeline integration - Automated testing and deployment using GitHub Actions or Jenkins
+* Enhanced calendar automation - Advanced scheduling algorithms and conflict resolution
+* Advanced analytics dashboard - Detailed usage metrics, trends, and lab performance insights
+
+
+## Acknowledgements 
+
+### Frontend learning resources
+* https://www.youtube.com/watch?v=Zq5fmkH0T78&t=27s (Next JS tutorial)
+* https://github.com/charlietlamb/calendar (Calendar inspiration)
+
+
+### Backend learning resources  
+* https://www.youtube.com/watch?v=9BD9eK9VqXA&t=15643s (Express.JS with prisma setup)
+* https://www.youtube.com/watch?v=nH9E25nkk3I&t=3371s (Passport JS with session cookies)
+* https://www.youtube.com/watch?v=J2dB96MUL8s&t=1090s (Dockerising PostgreSQL DB)
+
+
+### AWS deployment learning resources
+* https://www.youtube.com/watch?v=X1zCAPLvMtw (VPC setup) 
+* https://www.youtube.com/watch?v=H93Vhy6pmow&t=636s (RDS setup)
+* https://www.youtube.com/watch?v=yhiuV6cqkNs (SSL setup with Nginx)
+
+
 ## License
 
 This project is licensed under the MIT License – see the [LICENSE](./LICENSE) file for details.
