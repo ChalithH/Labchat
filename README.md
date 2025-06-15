@@ -393,20 +393,6 @@ We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTIN
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
----
-
-## Team Binary Bandits
-
-| Role | Name | GitHub |
-|------|------|---------|
-| **Backend Developer** | Caleb Wharton | [@calebwharton](https://github.com/calebwharton) |
-| **Full-Stack Developer** | Chalith Hewage | [@ChalithHewage](https://github.com/ChalithH) |
-| **Full-Stack Developer** | Cole Howard | [@cole-howard-nz](https://github.com/cole-howard-nz) |
-| **Project Manager** | Mark McNaught | [@Mark-McNaught](https://github.com/Mark-McNaught) |
-| **DevOps Engineer** | Parin Kasabia | [@MateUrDreaming](https://github.com/MateUrDreaming) |
-
----
-
 ## Future Work
 
 ### System Enhancements
@@ -421,7 +407,11 @@ We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTIN
 
 
 ## Acknowledgements 
+Special thanks to the [University of Auckland Computer Science Department](https://www.auckland.ac.nz/en/study/study-options/find-a-study-option/computer-science.html), our capstone facilitator [Asma](https://profiles.auckland.ac.nz/asma-shakil) for supporting our team and our clients [Rebecca](https://profiles.auckland.ac.nz/rebecca-jelley) and [Jen](https://profiles.auckland.ac.nz/jennifer-muhl) who provided invaluable feedback during development of Labchat.
 
+For support or questions, please visit our [GitHub Issues](https://github.com/uoa-compsci399-2025-s1/capstone-project-2025-s1-team-13/issues) or contact the team directly.
+
+Finally, we wish to acknowledge the resoruces we used to support development of our application. 
 ### Frontend learning resources
 * https://www.youtube.com/watch?v=Zq5fmkH0T78&t=27s (Next JS tutorial)
 * https://github.com/charlietlamb/calendar (Calendar inspiration)
@@ -438,16 +428,25 @@ We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTIN
 * https://www.youtube.com/watch?v=H93Vhy6pmow&t=636s (RDS setup)
 * https://www.youtube.com/watch?v=yhiuV6cqkNs (SSL setup with Nginx)
 
+##
+Congratulations to Team 13 for completing their Capstone Project!
+* Proposal document: https://docs.google.com/document/d/1FedvVdMy9A9ripl-qBNBzSZkBCglH6ROw6JOKhI_yU0/edit?tab=t.0
+* Final Report: https://docs.google.com/document/d/1geD4MXczun_YtjJPhw80a-Jp18ZzUCmr/edit?rtpof=true&tab=t.0
+* Deployed website: https://www.labchatuoa.com/
+* Api documentation: https://api.labchatuoa.com/api-docs/
+* Project timeline: https://github.com/orgs/uoa-compsci399-2025-s1/projects/36/views/2
+* Demo video: https://www.youtube.com/watch?v=SF7oTjKIhbg&t=3s
+
+
+| Role | Name | GitHub |
+|------|------|---------|
+| **Backend Developer** | Caleb Wharton | [@calebwharton](https://github.com/calebwharton) |
+| **Full-Stack Developer** | Chalith Hewage | [@ChalithHewage](https://github.com/ChalithH) |
+| **Full-Stack Developer** | Cole Howard | [@cole-howard-nz](https://github.com/cole-howard-nz) |
+| **Project Manager** | Mark McNaught | [@Mark-McNaught](https://github.com/Mark-McNaught) |
+| **DevOps Engineer** | Parin Kasabia | [@MateUrDreaming](https://github.com/MateUrDreaming) |
+
 
 ## License
 
 This project is licensed under the MIT License – see the [LICENSE](./LICENSE) file for details.
-
-
-
-## Acknowledgements
-
-Special thanks to the [University of Auckland Computer Science Department](https://www.auckland.ac.nz/en/study/study-options/find-a-study-option/computer-science.html) and our clients [Rebecca](https://profiles.auckland.ac.nz/rebecca-jelley) and [Jen](https://profiles.auckland.ac.nz/jennifer-muhl)  who provided invaluable feedback during development.
-
-For support or questions, please visit our [GitHub Issues](https://github.com/uoa-compsci399-2025-s1/capstone-project-2025-s1-team-13/issues) or contact the team directly.
-
