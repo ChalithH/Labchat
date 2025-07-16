@@ -430,8 +430,8 @@ export const approveAdmissionRequest = async (req: Request, res: Response): Prom
                 });
             }
 
-            const updatedRoleID = existingMember ? roleId : 3
-
+            const updatedRoleID = existingMember || (admissionRequest.user.roleId === 1) ? admissionRequest.user.roleId : 3; 
+            
             let updatedUser = null;
             if (!admissionRequest.user.lastViewedLabId) {
                 updatedUser = await tx.user.update({
